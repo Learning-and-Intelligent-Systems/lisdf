@@ -1,4 +1,4 @@
-"""Tests for main.py."""
+"""Tests for main.py file."""
 
 from lisdf.src import main
 
