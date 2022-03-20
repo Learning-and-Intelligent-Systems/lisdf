@@ -1,8 +1,17 @@
 #!/bin/bash
 
 echo "Running autoformatting."
-yapf -i -r --style .style.yapf . && docformatter -i -r . && isort .
+isort . && black .
 echo "Autoformatting complete."
+
+echo "Running linting."
+flake8
+if [ $? -eq 0 ]; then
+    echo "Linting passed."
+else
+    echo "Linting failed! Terminating check script early."
+    exit
+fi
 
 echo "Running type checking."
 mypy . --config-file mypy.ini
@@ -13,17 +22,8 @@ else
     exit
 fi
 
-echo "Running linting."
-pytest . --pylint -m pylint --pylint-rcfile=.pylintrc
-if [ $? -eq 0 ]; then
-    echo "Linting passed."
-else
-    echo "Linting failed! Terminating check script early."
-    exit
-fi
-
 echo "Running unit tests."
-pytest -s tests/ --cov-config=.coveragerc --cov=src/ --cov=tests/ --cov-fail-under=100 --cov-report=term-missing:skip-covered --durations=10
+pytest -s tests/ --cov-config=.coveragerc --cov=lisdf/ --cov=tests/ --cov-fail-under=100 --cov-report=term-missing:skip-covered --durations=10
 if [ $? -eq 0 ]; then
     echo "Unit tests passed."
 else
