@@ -1,6 +1,6 @@
 """Tests for main.py file."""
 
-from lisdf.src import main
+from lisdf import main
 
 
 def test_main():
