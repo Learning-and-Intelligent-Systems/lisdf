@@ -9,8 +9,8 @@ This repository requires Python 3.8+. We recommend you create a
 [virtual env](https://docs.python.org/3.8/library/venv.html) with an appropriate Python version before installing
 the other dependencies.
 
-If you are creating a virtual environment within the project directory, then you might want to call it `.env` or `env`
-as the code checks have been configured to exclude those directories.
+If you are creating a virtual environment within the project directory, then you might want to call it one of
+`.env, env, .venv, venv` as the code checks have been configured to exclude those directories.
 
 1. Run `pip install -r requirements.txt` to install dependencies.
 
@@ -38,8 +38,8 @@ for unit and integration testing. You can run all these commands in one simple s
 If you wish to run these commands individually, you can run these commands from the repo directory:
 1. `isort . && black .`
 2. `flake8 .`
-3. `mypy .`
-4. `pytest -s tests/ --cov-config=.coveragerc --cov=src/ --cov=tests/ --cov-fail-under=100 --cov-report=term-missing:skip-covered --durations=0`
+3. `mypy . --config-file mypy.ini`
+4. `pytest -s tests/ --cov-config=.coveragerc --cov=lisdf/ --cov=tests/ --cov-fail-under=100 --cov-report=term-missing:skip-covered --durations=10`
 
 * The 1st command is the autoformatting check, which runs `black` and `isort`.
 * The 2nd command is the linter check, which runs `flake8`

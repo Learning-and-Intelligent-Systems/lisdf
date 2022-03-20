@@ -4,3 +4,5 @@ extend-ignore = E203
 exclude =
     .env
     env
+    .venv
+    venv
