@@ -56,10 +56,10 @@ jobs:
     - name: Install dependencies
       run: |
         pip install -r requirements.txt
-        pip install pytest-pylint
-    - name: Pylint
+        pip install flake8
+    - name: Flake8
       run: |
-        pytest . --pylint -m pylint --pylint-rcfile=.pylintrc
+        flake8
   autoformat:
     runs-on: ubuntu-latest
     strategy:
@@ -72,9 +72,6 @@ jobs:
       with:
         python-version: ${{ matrix.python-version }}
         cache: 'pip'
-    - name: Run YAPF to test if python code is correctly formatted
-      uses: AlexanderMelde/yapf-action@master
-      with:
-        args: --verbose --style .style.yapf
+    - uses: psf/black@stable
     - name: Run isort to organize imports
       uses: isort/isort-action@master
