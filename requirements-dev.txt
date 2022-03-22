@@ -8,6 +8,11 @@ isort
 flake8
 mypy
 
+# Typing stubs for mypy
+types-PyYAML
+types-mock
+
 # Testing
 pytest
 pytest-cov
+mock

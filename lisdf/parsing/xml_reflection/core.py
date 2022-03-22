@@ -2,7 +2,7 @@ import copy
 import sys
 from xml.etree import ElementTree as ET
 
-from lisdf.xml_reflection.basics import (
+from lisdf.parsing.xml_reflection.basics import (
     YamlReflection,
     node_add,
     xml_children,
@@ -286,8 +286,8 @@ class DuckTypedFactory(ValueType):
                 error_set.append((value_type, e))
         # Should have returned, we encountered errors
         out = "Could not perform duck-typed parsing."
-        for (value_type, e) in error_set:
-            out += "\nValue Type: {}\nException: {}\n".format(value_type, e)
+        for (value_type, err) in error_set:
+            out += "\nValue Type: {}\nException: {}\n".format(value_type, err)
             raise ParseError(Exception(out), path)
 
     def write_xml(self, node, obj):

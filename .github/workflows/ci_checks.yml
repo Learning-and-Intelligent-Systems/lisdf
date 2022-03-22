@@ -21,7 +21,8 @@ jobs:
         pip install pytest-cov
     - name: Pytest
       run: |
-        pytest -s tests/ --cov-config=.coveragerc --cov=lisdf/ --cov=tests/ --cov-fail-under=100 --cov-report=term-missing:skip-covered
+        # Note tests/ directory is not included in coverage
+        pytest -s tests/ --cov-config=.coveragerc --cov=lisdf/ --cov-fail-under=75 --cov-report=term-missing:skip-covered
   static-type-checking:
     runs-on: ubuntu-latest
     strategy:

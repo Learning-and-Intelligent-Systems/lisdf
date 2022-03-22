@@ -1,5 +1,5 @@
-from lisdf.xml_reflection.basics import node_add, xml_children
-from lisdf.xml_reflection.core import (
+from lisdf.parsing.xml_reflection.basics import node_add, xml_children
+from lisdf.parsing.xml_reflection.core import (
     AggregateElement,
     Attribute,
     Element,
