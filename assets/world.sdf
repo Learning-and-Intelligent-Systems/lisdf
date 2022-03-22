@@ -2,12 +2,17 @@
 <sdf version="1.4">
 <world name="simple_world">
     <include>
-        <uri>package://assets/cube</uri>      
+        <uri>package://assets/cube</uri>
         <pose>0.8 0 0 0 0 0</pose>
     </include>
     <include>
         <uri>package://assets/rectangle</uri>
         <pose>0.5 0 0 0 0 0</pose>
+                <static>true</static>
+    </include>
+    <!-- Static Plane to prevent things falling to infinity -->
+    <include>
+        <uri>package://assets/plane</uri>
     </include>
   </world>
 </sdf>
