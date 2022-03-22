@@ -1,7 +1,16 @@
-from lisdf.xml_reflection.core import Attribute, Element, start_namespace, \
-    reflect, Object, ValueType, add_type, FactoryType, AggregateElement, \
-    end_namespace
 from lisdf.xml_reflection.basics import node_add, xml_children
+from lisdf.xml_reflection.core import (
+    AggregateElement,
+    Attribute,
+    Element,
+    FactoryType,
+    Object,
+    ValueType,
+    add_type,
+    end_namespace,
+    reflect,
+    start_namespace,
+)
 
 start_namespace("sdf")
 
@@ -33,7 +42,7 @@ class Inertia(Object):
         return [
             [self.ixx, self.ixy, self.ixz],
             [self.ixy, self.iyy, self.iyz],
-            [self.ixz, self.iyz, self.izz]
+            [self.ixz, self.iyz, self.izz],
         ]
 
 
@@ -52,8 +61,8 @@ reflect(
     params=[
         Element("mass", float, required=False),
         Element("inertia", Inertia, required=False),
-        pose_element
-    ]
+        pose_element,
+    ],
 )
 
 
@@ -322,9 +331,7 @@ class Joint(Object):
         self.type = value
 
 
-reflect(
-    Axis, parent_cls=Joint, params=[Element("xyz", "vector3", required=False)]
-)
+reflect(Axis, parent_cls=Joint, params=[Element("xyz", "vector3", required=False)])
 
 reflect(
     Joint,
