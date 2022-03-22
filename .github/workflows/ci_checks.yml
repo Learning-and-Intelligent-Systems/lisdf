@@ -16,12 +16,11 @@ jobs:
         python-version: ${{ matrix.python-version }}
         cache: 'pip'
     - run: |
-        pip install -r requirements.txt
-        pip install pytest
-        pip install pytest-cov
+        pip install -r requirements-dev.txt
     - name: Pytest
       run: |
-        pytest -s tests/ --cov-config=.coveragerc --cov=lisdf/ --cov=tests/ --cov-fail-under=100 --cov-report=term-missing:skip-covered
+        # Note tests/ directory is not included in coverage
+        pytest -s tests/ --cov-config=.coveragerc --cov=lisdf/ --cov-fail-under=75 --cov-report=term-missing:skip-covered
   static-type-checking:
     runs-on: ubuntu-latest
     strategy:
@@ -36,8 +35,7 @@ jobs:
         cache: 'pip'
     - name: Install dependencies
       run: |
-        pip install -r requirements.txt
-        pip install mypy
+        pip install -r requirements-dev.txt
     - name: Mypy
       run: |
         mypy . --config-file mypy.ini
@@ -55,8 +53,7 @@ jobs:
         cache: 'pip'
     - name: Install dependencies
       run: |
-        pip install -r requirements.txt
-        pip install flake8
+        pip install -r requirements-dev.txt
     - name: Flake8
       run: |
         flake8
