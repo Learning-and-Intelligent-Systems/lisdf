@@ -1,39 +1,25 @@
-import pdb
-from urdf_parser_py.xml_reflection.basics import *
-from urdf_parser_py.xml_reflection.core import get_type
-import urdf_parser_py.xml_reflection as xmlr
+from lisdf.xml_reflection.core import Attribute, Element, start_namespace, \
+    reflect, Object, ValueType, add_type, FactoryType, AggregateElement, \
+    end_namespace
+from lisdf.xml_reflection.basics import node_add, xml_children
 
-# TODO: add __str__ methods
+start_namespace("sdf")
 
-xmlr.start_namespace('sdf')
+name_attribute = Attribute("name", str)
+pose_element = Element("pose", "vector6", False)
 
-'''
-class Pose(xmlr.Object):
-    def __init__(self, vec=None):
-        self.pose = vec
 
-xmlr.reflect(Pose, tag='pose', params=[
-    xmlr.Attribute('pose', 'vector6', False, default=[0, 0, 0, 0, 0, 0]),
-])
-'''
-
-name_attribute = xmlr.Attribute('name', str)
-pose_element = xmlr.Element('pose', 'vector6', False)
-
-class Entity(xmlr.Object):
+class Entity(Object):
     def __init__(self, name=None, pose=None):
         self.name = name
         self.pose = pose
 
 
-xmlr.reflect(Entity, params=[
-    name_attribute,
-    pose_element
-])
+reflect(Entity, params=[name_attribute, pose_element])
 
 
-class Inertia(xmlr.Object):
-    KEYS = ['ixx', 'ixy', 'ixz', 'iyy', 'iyz', 'izz']
+class Inertia(Object):
+    KEYS = ["ixx", "ixy", "ixz", "iyy", "iyz", "izz"]
 
     def __init__(self, ixx=0.0, ixy=0.0, ixz=0.0, iyy=0.0, iyz=0.0, izz=0.0):
         self.ixx = ixx
@@ -47,28 +33,34 @@ class Inertia(xmlr.Object):
         return [
             [self.ixx, self.ixy, self.ixz],
             [self.ixy, self.iyy, self.iyz],
-            [self.ixz, self.iyz, self.izz]]
+            [self.ixz, self.iyz, self.izz]
+        ]
 
 
-xmlr.reflect(Inertia,
-             params=[xmlr.Element(key, float) for key in Inertia.KEYS])
+reflect(Inertia, params=[Element(key, float) for key in Inertia.KEYS])
 
 
-class Inertial(xmlr.Object):
+class Inertial(Object):
     def __init__(self, mass=0.0, inertia=None, pose=None):
         self.mass = mass
         self.inertia = inertia
         self.pose = pose
 
 
-xmlr.reflect(Inertial, params=[
-    xmlr.Element('mass', float, required=False),
-    xmlr.Element('inertia', Inertia, required=False),
-    pose_element
-])
+reflect(
+    Inertial,
+    params=[
+        Element("mass", float, required=False),
+        Element("inertia", Inertia, required=False),
+        pose_element
+    ]
+)
+
 
 class Link(Entity):
-    def __init__(self, name=None, pose=None, visual=None, inertial=None, collision=None):
+    def __init__(
+        self, name=None, pose=None, visual=None, inertial=None, collision=None
+    ):
         Entity.__init__(self, name, pose)
         self.aggregate_init()
         self.inertial = inertial
@@ -91,7 +83,7 @@ class Link(Entity):
         else:
             self.visuals.append(visual)
         if visual:
-            self.add_aggregate('visual', visual)
+            self.add_aggregate("visual", visual)
 
     def __get_collision(self):
         """Return the first collision or None."""
@@ -105,93 +97,108 @@ class Link(Entity):
         else:
             self.collisions.append(collision)
         if collision:
-            self.add_aggregate('collision', collision)
+            self.add_aggregate("collision", collision)
 
     # Properties for backwards compatibility
     visual = property(__get_visual, __set_visual)
     collision = property(__get_collision, __set_collision)
 
-class Material(xmlr.Object):
-    def __init__(self, script=None, ambient=None, diffuse=None, specular=None, emissive=None):
+
+class Material(Object):
+    def __init__(
+        self, script=None, ambient=None, diffuse=None, specular=None, emissive=None
+    ):
         self.script = script
         self.ambient = ambient
         self.diffuse = diffuse
         self.specular = specular
         self.emissive = emissive
 
-xmlr.reflect(Material, tag='material', params=[
-    xmlr.Element('script', str, required=False),
-    xmlr.Element('ambient', 'vector4', required=False),
-    xmlr.Element('diffuse', 'vector4', required=False),
-    xmlr.Element('specular', 'vector4', required=False),
-    xmlr.Element('emissive', 'vector4', required=False)
-])
 
-class Box(xmlr.Object):
+reflect(
+    Material,
+    tag="material",
+    params=[
+        Element("script", str, required=False),
+        Element("ambient", "vector4", required=False),
+        Element("diffuse", "vector4", required=False),
+        Element("specular", "vector4", required=False),
+        Element("emissive", "vector4", required=False),
+    ],
+)
+
+
+class Box(Object):
     def __init__(self, size=None):
         self.size = size
 
 
-xmlr.reflect(Box, tag='box', params=[
-    xmlr.Element('size', 'vector3')
-])
+reflect(Box, tag="box", params=[Element("size", "vector3")])
 
-class Plane(xmlr.Object):
+
+class Plane(Object):
     def __init__(self, normal=0.0, size=0.0):
         self.normal = normal
         self.size = size
 
-xmlr.reflect(Plane, tag='plane', params=[
-    xmlr.Element('normal', 'vector3'),
-    xmlr.Element('size', 'vector2')
-])
 
-class Cylinder(xmlr.Object):
+reflect(
+    Plane,
+    tag="plane",
+    params=[Element("normal", "vector3"), Element("size", "vector2")],
+)
+
+
+class Cylinder(Object):
     def __init__(self, radius=0.0, length=0.0):
         self.radius = radius
         self.length = length
 
 
-xmlr.reflect(Cylinder, tag='cylinder', params=[
-    xmlr.Element('radius', float),
-    xmlr.Element('length', float)
-])
+reflect(
+    Cylinder,
+    tag="cylinder",
+    params=[Element("radius", float), Element("length", float)],
+)
 
 
-class Sphere(xmlr.Object):
+class Sphere(Object):
     def __init__(self, radius=0.0):
         self.radius = radius
 
 
-xmlr.reflect(Sphere, tag='sphere', params=[
-    xmlr.Element('radius', float)
-])
+reflect(Sphere, tag="sphere", params=[Element("radius", float)])
 
 
-class Mesh(xmlr.Object):
+class Mesh(Object):
     def __init__(self, uri=None, scale=None):
         self.uri = uri
         self.scale = scale
 
 
-xmlr.reflect(Mesh, tag='mesh', params=[
-    xmlr.Element('uri', str),
-    xmlr.Element('scale', 'vector3', required=False)
-])
+reflect(
+    Mesh,
+    tag="mesh",
+    params=[Element("uri", str), Element("scale", "vector3", required=False)],
+)
 
-class GeometricType(xmlr.ValueType):
+
+class GeometricType(ValueType):
     def __init__(self):
-        self.factory = xmlr.FactoryType('geometric', {
-            'box': Box,
-            'cylinder': Cylinder,
-            'sphere': Sphere,
-            'mesh': Mesh,
-            'plane': Plane
-        })
+        self.factory = FactoryType(
+            "geometric",
+            {
+                "box": Box,
+                "cylinder": Cylinder,
+                "sphere": Sphere,
+                "mesh": Mesh,
+                "plane": Plane,
+            },
+        )
 
     def from_xml(self, node, path):
         children = xml_children(node)
-        assert len(children) == 1, 'One element only for geometric'
+        assert len(children) == 1, "One element only for geometric"
         return self.factory.from_xml(children[0], path=path)
 
     def write_xml(self, node, obj):
@@ -199,35 +206,46 @@ class GeometricType(xmlr.ValueType):
         child = node_add(node, name)
         obj.write_xml(child)
 
-xmlr.add_type('geometric', GeometricType())
+
+add_type("geometric", GeometricType())
+
 
 class Collision(Entity):
     def __init__(self, name=None, pose=None, geometry=None):
         Entity.__init__(self, name, pose)
         self.geometry = geometry
 
-xmlr.reflect(Collision, parent_cls=Link, params=[
-    pose_element,
-    xmlr.Element('geometry', 'geometric'),
-    xmlr.Element('material', Material, False),
-    xmlr.Element('surface', str, var='surface', required=False),
-])
+
+reflect(
+    Collision,
+    parent_cls=Link,
+    params=[
+        pose_element,
+        Element("geometry", "geometric"),
+        Element("material", Material, False),
+        Element("surface", str, var="surface", required=False),
+    ],
+)
 
 
 class Sensor(Entity):
     def __init__(self, name=None, pose=None):
         Entity.__init__(self, name, pose)
-        self.name=name
-        self.pose=pose
+        self.name = name
+        self.pose = pose
 
 
-xmlr.reflect(Sensor, parent_cls=Link, params=[
-    xmlr.Attribute("type", str),
-    xmlr.Element("always_on", str, required=False),
-    xmlr.Element("update_rate", float, required=False),
-    xmlr.Element("contact", str, required=False),
-    pose_element
-])
+reflect(
+    Sensor,
+    parent_cls=Link,
+    params=[
+        Attribute("type", str),
+        Element("always_on", str, required=False),
+        Element("update_rate", float, required=False),
+        Element("contact", str, required=False),
+        pose_element,
+    ],
+)
 
 
 class Visual(Entity):
@@ -236,31 +254,52 @@ class Visual(Entity):
         self.geometry = geometry
         self.material = material
 
-xmlr.reflect(Visual, parent_cls=Link, params=[
-    pose_element,
-    xmlr.Element('geometry', 'geometric'),
-    xmlr.Element('material', Material, required=False),
-    xmlr.Element('cast_shadows', str, required=False)
-])
+
+reflect(
+    Visual,
+    parent_cls=Link,
+    params=[
+        pose_element,
+        Element("geometry", "geometric"),
+        Element("material", Material, required=False),
+        Element("cast_shadows", str, required=False),
+    ],
+)
 
 
-xmlr.reflect(Link, parent_cls=Entity, params=[
-    xmlr.Element('inertial', Inertial, required=False),
-    xmlr.AggregateElement('visual', Visual, var='visuals'),
-    xmlr.AggregateElement('collision', Collision, var='collisions'),
-    xmlr.Element('self_collide', str, required=False),
-    xmlr.Element('sensor', Sensor, var='sensor', required=False)
-])
+reflect(
+    Link,
+    parent_cls=Entity,
+    params=[
+        Element("inertial", Inertial, required=False),
+        AggregateElement("visual", Visual, var="visuals"),
+        AggregateElement("collision", Collision, var="collisions"),
+        Element("self_collide", str, required=False),
+        Element("sensor", Sensor, var="sensor", required=False),
+    ],
+)
 
-class Axis(xmlr.Object):
+
+class Axis(Object):
     def __init__(self, xyz=None):
         self.xyz = xyz
 
-class Joint(xmlr.Object):
-    TYPES = ['unknown', 'ball', 'continuous', 'fixed', 'prismatic', 'revolute', 'screw', 'universal']
 
-    def __init__(self, name=None,  pose=None, parent=None, child=None, joint_type=None,
-                 axis=None):
+class Joint(Object):
+    TYPES = [
+        "unknown",
+        "ball",
+        "continuous",
+        "fixed",
+        "prismatic",
+        "revolute",
+        "screw",
+        "universal",
+    ]
+
+    def __init__(
+        self, name=None, pose=None, parent=None, child=None, joint_type=None, axis=None
+    ):
         self.name = name
         self.parent = parent
         self.child = child
@@ -269,29 +308,39 @@ class Joint(xmlr.Object):
         self.pose = pose
 
     def check_valid(self):
-        assert self.type in self.TYPES, "Invalid joint type: {}".format(self.type)  # noqa
+        assert self.type in self.TYPES, "Invalid joint type: {}".format(
+            self.type
+        )  # noqa
 
     # Aliases
     @property
-    def joint_type(self): return self.type
+    def joint_type(self):
+        return self.type
 
     @joint_type.setter
-    def joint_type(self, value): self.type = value
+    def joint_type(self, value):
+        self.type = value
 
-xmlr.reflect(Axis, parent_cls=Joint, params=[
-    xmlr.Element('xyz', 'vector3', required=False)
-    ])
 
-xmlr.reflect(Joint, tag='joint', params=[
-    name_attribute,
-    xmlr.Attribute('type', str),
-    pose_element,
-    xmlr.Element('axis', Axis, False),
-    xmlr.Element('parent', str),
-    xmlr.Element('child', str),
-])
+reflect(
+    Axis, parent_cls=Joint, params=[Element("xyz", "vector3", required=False)]
+)
 
-class Model(xmlr.Object):
+reflect(
+    Joint,
+    tag="joint",
+    params=[
+        name_attribute,
+        Attribute("type", str),
+        pose_element,
+        Element("axis", Axis, False),
+        Element("parent", str),
+        Element("child", str),
+    ],
+)
+
+
+class Model(Object):
     def __init__(self, name=None):
         self.name = name
         self.aggregate_init()
@@ -306,9 +355,9 @@ class Model(xmlr.Object):
         self.child_map = {}
 
     def add_aggregate(self, typeName, elem):
-        xmlr.Object.add_aggregate(self, typeName, elem)
+        Object.add_aggregate(self, typeName, elem)
 
-        if typeName == 'joint':
+        if typeName == "joint":
             joint = elem
             self.joint_map[joint.name] = joint
             self.parent_map[joint.child] = (joint.name, joint.parent)
@@ -316,15 +365,15 @@ class Model(xmlr.Object):
                 self.child_map[joint.parent].append((joint.name, joint.child))
             else:
                 self.child_map[joint.parent] = [(joint.name, joint.child)]
-        elif typeName == 'link':
+        elif typeName == "link":
             link = elem
             self.link_map[link.name] = link
 
     def add_link(self, link):
-        self.add_aggregate('link', link)
+        self.add_aggregate("link", link)
 
     def add_joint(self, joint):
-        self.add_aggregate('joint', joint)
+        self.add_aggregate("joint", joint)
 
     def get_chain(self, root, tip, joints=True, links=True, fixed=True):
         chain = []
@@ -334,7 +383,7 @@ class Model(xmlr.Object):
         while link != root:
             (joint, parent) = self.parent_map[link]
             if joints:
-                if fixed or self.joint_map[joint].joint_type != 'fixed':
+                if fixed or self.joint_map[joint].joint_type != "fixed":
                     chain.append(joint)
             if links:
                 chain.append(parent)
@@ -351,22 +400,31 @@ class Model(xmlr.Object):
         assert root is not None, "No roots detected, invalid URDF."
         return root
 
-xmlr.reflect(Model, tag='model', params=[
-    name_attribute,
-    pose_element,
-    xmlr.Element('static', str, required=False, default="false"),
-    xmlr.AggregateElement('link', Link, var='links'),
-    xmlr.AggregateElement('joint', Joint, var='joints'),
-])
 
-class SDF(xmlr.Object):
+reflect(
+    Model,
+    tag="model",
+    params=[
+        name_attribute,
+        pose_element,
+        Element("static", str, required=False, default="false"),
+        AggregateElement("link", Link, var="links"),
+        AggregateElement("joint", Joint, var="joints"),
+    ],
+)
+
+
+class SDF(Object):
     SUPPORTED_VERSIONS = ["1.5", "1.6", "1.7", "1.8", "1.9"]
 
     def __init__(self, version="1.9", scene=None, model=None, actor=None, light=None):
         self.aggregate_init()
 
         if version not in self.SUPPORTED_VERSIONS:
-            raise ValueError("Invalid version; only %s is supported" % (','.join(self.SUPPORTED_VERSIONS)))
+            raise ValueError(
+                "Invalid version; only %s is supported"
+                % (",".join(self.SUPPORTED_VERSIONS))
+            )
 
         self.version = version
         self.scene = scene
@@ -386,87 +444,114 @@ class SDF(xmlr.Object):
         if len(split) != 2:
             raise ValueError("The version attribute should be in the form 'x.y'")
 
-        if split[0] == '' or split[1] == '':
+        if split[0] == "" or split[1] == "":
             raise ValueError("Empty major or minor number is not allowed")
 
         if int(split[0]) < 0 or int(split[1]) < 0:
             raise ValueError("Version number must be positive")
 
         if self.version not in self.SUPPORTED_VERSIONS:
-            raise ValueError("Invalid version; only %s is supported" % (','.join(self.SUPPORTED_VERSIONS)))
+            raise ValueError(
+                "Invalid version; only %s is supported"
+                % (",".join(self.SUPPORTED_VERSIONS))
+            )
 
-class World(xmlr.Object):
+
+class World(Object):
     def __init__(self, name=None):
         self.name = name
         self.aggregate_init()
         self.models = []
         self.includes = []
 
-class State(xmlr.Object):
+
+class State(Object):
     def __init__(self, world_name=None):
         self.world_name = world_name
         self.aggregate_init()
         self.model_states = []
 
-class ModelState(xmlr.Object):
+
+class ModelState(Object):
     def __init__(self, name=None):
         self.name = name
         self.aggregate_init()
         self.joint_states = []
 
-class JointState(xmlr.Object):
+
+class JointState(Object):
     def __init__(self, name=None):
         self.name = name
         self.aggregate_init()
         self.angle = []
 
-class Include(xmlr.Object):
+
+class Include(Object):
     def __init__(self):
         pass
 
     @property
     def model_name(self):
-        return self.uri.split("/")[-1]+"/model.sdf"
+        return self.uri.split("/")[-1] + "/model.sdf"
 
 
+reflect(
+    JointState,
+    parent_cls=ModelState,
+    params=[name_attribute, Element("angle", float)],
+)
 
-xmlr.reflect(JointState, parent_cls=ModelState, params=[
-    name_attribute,
-    xmlr.Element('angle', float)
-    ])
+reflect(
+    ModelState,
+    parent_cls=State,
+    params=[
+        name_attribute,
+        AggregateElement("joint", JointState, var="joint_states"),
+    ],
+)
 
-xmlr.reflect(ModelState, parent_cls=State, params=[
-    name_attribute,
-    xmlr.AggregateElement('joint', JointState, var='joint_states')
-    ])
+reflect(
+    State,
+    tag="state",
+    params=[
+        Attribute("world_name", str),
+        AggregateElement("model", ModelState, var="model_states"),
+    ],
+)
 
-xmlr.reflect(State, tag='state', params=[
-    xmlr.Attribute('world_name', str),
-    xmlr.AggregateElement('model', ModelState, var='model_states')
-    ])
+reflect(
+    World,
+    tag="world",
+    params=[
+        name_attribute,
+        Element("state", State, required=False),
+        AggregateElement("model", Model, var="models"),
+        AggregateElement("include", Include, var="includes"),
+    ],
+)
 
-xmlr.reflect(World, tag='world', params=[
-    name_attribute,
-    xmlr.Element('state', State, required=False),
-    xmlr.AggregateElement('model', Model, var='models'),
-    xmlr.AggregateElement('include', Include, var='includes')
-    ])
-
-xmlr.reflect(Include, params=[
-    xmlr.Element('name', str, required=False),
-    xmlr.Element('uri', str, required=False),
-    xmlr.Element('pose', str, required=False)
-    ])
+reflect(
+    Include,
+    params=[
+        Element("name", str, required=False),
+        Element("uri", str, required=False),
+        Element("pose", str, required=False),
+    ],
+)
 
 
-xmlr.reflect(SDF, tag='sdf', params=[
-    xmlr.Attribute('version', str),
-    xmlr.Element('model', Model, required=False),
-    # TODO: add these
-    # xmlr.Element('scene', Scene, required=False),
-    # xmlr.Element('actor', Actor, required=False),
-    xmlr.Element('light', str, required=False),
-    xmlr.AggregateElement('world', World, var='worlds')
-    ])
+reflect(
+    SDF,
+    tag="sdf",
+    params=[
+        Attribute("version", str),
+        Element("model", Model, required=False),
+        # TODO: add these
+        # Element('scene', Scene, required=False),
+        # Element('actor', Actor, required=False),
+        Element("light", str, required=False),
+        AggregateElement("world", World, var="worlds"),
+    ],
+)
 
-xmlr.end_namespace()
+end_namespace()
