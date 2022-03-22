@@ -1,0 +1,19 @@
+<?xml version="1.0"?>
+<sdf version="1.4">
+  <model name="cube">
+      <link name="cube">
+        <inertial>
+            <mass>2.1</mass>
+            <inertia> <ixx>1.0</ixx> <ixy>0</ixy> <ixz>0</ixz> <iyy>1.0</iyy> <iyz>0</iyz> <izz>1.0</izz></inertia>
+        </inertial>
+        <visual name="vis">
+            <pose>0 0 0 0 0 0</pose>
+            <geometry><box><size>0.1 0.1 0.1</size></box></geometry>
+        </visual>
+        <collision name="col">
+            <pose> 0 0 0 0 0 0 </pose>
+            <geometry><box><size>0.1 0.1 0.1</size></box></geometry>
+        </collision>
+        </link>
+  </model>
+</sdf>

@@ -1,0 +1,12 @@
+<?xml version="1.0"?>
+<sdf version="1.4">
+<world name="simple_world">
+    <include>
+        <uri>package://assets/cube</uri>      
+    </include>
+    <include>
+        <uri>package://assets/rectangle</uri>
+        <pose>0.5 0 0 0 0 0</pose>
+    </include>
+  </world>
+</sdf>
