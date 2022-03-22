@@ -3,6 +3,7 @@
 <world name="simple_world">
     <include>
         <uri>package://assets/cube</uri>      
+        <pose>0.8 0 0 0 0 0</pose>
     </include>
     <include>
         <uri>package://assets/rectangle</uri>

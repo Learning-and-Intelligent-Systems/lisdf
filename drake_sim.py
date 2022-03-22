@@ -17,32 +17,17 @@ from pydrake.systems.sensors import (
     RgbdSensor,
 )
 from pydrake.math import RigidTransform, RotationMatrix, RollPitchYaw
+from utils.drake_utils import xyz_rpy_deg, make_robot_controller
+from drake_robot_position_controller import DrakeRobotPositionController
 import numpy as np
-
-def xyz_rpy_deg(xyz, rpy_deg):
-    """Shorthand for defining a pose."""
-    rpy_deg = np.asarray(rpy_deg)
-    return RigidTransform(RollPitchYaw(rpy_deg * np.pi / 180), xyz)
 
 builder = DiagramBuilder()
 plant, scene_graph = AddMultibodyPlantSceneGraph(builder, 0.001)
 
 parser = Parser(plant)
 parser.package_map().Add('assets', 'assets/')
-
+robot = parser.AddModelFromFile('assets/panda_arm_hand.urdf', model_name="robot")
 world = parser.AddAllModelsFromFile('assets/world.sdf')
-
-"""
-plant.WeldFrames(
-        frame_on_parent_P=plant.world_frame(),
-        frame_on_child_C=plant.GetFrameByName("rectangle"),
-        X_PC=xyz_rpy_deg([0, 0, 0], [0, 0, 0]))
-
-plant.WeldFrames(
-        frame_on_parent_P=plant.world_frame(),
-        frame_on_child_C=plant.GetFrameByName("cube"),
-        X_PC=xyz_rpy_deg([0, 0, 1], [0, 0, 0]))
-"""
 
 renderer_name = "renderer"
 scene_graph.AddRenderer(
@@ -67,6 +52,12 @@ meshcat_vis = ConnectMeshcatVisualizer(
     builder, scene_graph, zmq_url="new", open_browser=False)
 
 plant.Finalize()
+
+joint_controller = builder.AddSystem(DrakeRobotPositionController([np.zeros((9,))]))
+torque_controller = builder.AddSystem(make_robot_controller("assets/panda_arm_hand.urdf"))
+builder.Connect(joint_controller.get_output_port(), torque_controller.get_input_port_desired_state())
+builder.Connect(plant.get_state_output_port(panda_1), torque_controller.get_input_port_estimated_state())
+builder.Connect(torque_controller.get_output_port_control(), plant.get_actuation_input_port(robot))
 diagram = builder.Build()
 
 simulator = Simulator(diagram)
