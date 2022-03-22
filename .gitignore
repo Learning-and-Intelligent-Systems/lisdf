@@ -130,3 +130,6 @@ dmypy.json
 
 # IDEA IDEs
 .idea/
+
+# DS store is annoying
+**/.DS_Store

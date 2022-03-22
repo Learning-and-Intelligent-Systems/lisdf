@@ -39,10 +39,10 @@ If you wish to run these commands individually, you can run these commands from 
 1. `isort . && black .`
 2. `flake8 .`
 3. `mypy . --config-file mypy.ini`
-4. `pytest -s tests/ --cov-config=.coveragerc --cov=lisdf/ --cov=tests/ --cov-fail-under=100 --cov-report=term-missing:skip-covered --durations=10`
+4. `pytest -s tests/ --cov-config=.coveragerc --cov=lisdf/ --cov-fail-under=75 --cov-report=term-missing:skip-covered --durations=10`
 
 * The 1st command is the autoformatting check, which runs `black` and `isort`.
 * The 2nd command is the linter check, which runs `flake8`
 * The 3rd command is the static typing check, which uses `mypy` to verify type annotations. 
 * The 4th command is the unit testing check, which verifies that unit tests pass and that code is adequately covered. 
-  * The "100" means that all lines in every file must be covered.
+  * The "75" means that 75% of all lines in every file in `lisdf/` must be covered (excludes `tests/`).
