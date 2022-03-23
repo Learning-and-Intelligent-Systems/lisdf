@@ -1,0 +1,375 @@
+#! /usr/bin/env python3
+# -*- coding: utf-8 -*-
+# File   : mjcf.py
+# Author : Jiayuan Mao
+# Email  : maojiayuan@gmail.com
+# Date   : 03/23/2022
+#
+# This file is part of lisdf.
+# Distributed under terms of the MIT license.
+
+import os.path as osp
+import numpy as np
+from copy import deepcopy
+
+import lisdf.components as C
+from .string_utils import vector2f, vector3f, vector4f, wxyz_from_euler
+from .xml_j.xml import XMLNode
+from .xml_j.visitor import XMLVisitor
+
+__all__ = ['MJCFVisitorFlatten', 'MJCFVisitor']
+
+
+class MJCFVisitorFlatten(XMLVisitor):
+    """A simple MJCF reader that expands all include commands."""
+    def include(self, node: XMLNode) -> XMLNode:
+        filename = osp.join(osp.dirname(self.filename_stack[-1]), node.attributes['file'])
+        filename = osp.normpath(filename)
+        node = self.load_file(filename)
+        node.attributes['filename'] = filename
+        return node
+
+
+class MJCFVisitor(XMLVisitor):
+    """
+    A minimal MJCF reader that handles a subset of all attributes.
+    """
+
+    """Defaults"""
+    def default_init(self, node: XMLNode):
+        st = self._st['default']
+        if node.attributes.get('class', None) is None:
+            assert len(st) == 0
+            st.append(dict(geom=dict(), joint=dict(), position=dict()))
+            self._data.setdefault('defaults', dict())
+        else:
+            st.append(deepcopy(st[-1]))
+
+    def default(self, node: XMLNode):
+        st = self._st['default']
+        if node.attributes.get('class', None) is None:
+            st.pop()
+            assert len(st) == 0
+        else:
+            classname = node.attributes['class']
+            self._data['defaults'][classname] = self._st['default'][-1]
+            st.pop()
+        node.attributes.pop('class', None)
+        return self._check_done(node)
+
+    """Asset"""
+    def asset(self, node: XMLNode):
+        return self._check_done(node)
+
+    def mesh(self, node: XMLNode):
+        file = node.attributes.pop('file')
+        name = node.attributes.pop('name')
+        scale = node.attributes.pop('scale', '1 1 1')
+        data = self._data['mesh']
+        assert name not in data
+        data[name] = dict(filename=file, scale=scale)
+        return self._check_done(node)
+
+    def texture(self, node: XMLNode):
+        name = node.attributes.pop('name', 'skybox')
+        if name == 'skybox':
+            assert node.attributes['type'] == 'skybox'
+        data = self._data['texture']
+        assert name not in data
+        data[name] = node.attributes.copy()
+        return self._check_done(node, attr=False)
+
+    def material(self, node: XMLNode):
+        name = node.attributes.pop('name')
+        data = self._data['material']
+        assert name not in data
+        data[name] = node.attributes.copy()
+        return self._check_done(node, attr=False)
+
+    def include(self, node: XMLNode) -> XMLNode:
+        filename = osp.join(osp.dirname(self.filename_stack[-1]), node.attributes['file'])
+        filename = osp.normpath(filename)
+        node = self.load_file(filename)
+        if node is not None:
+            node.attributes['filename'] = filename
+        return node
+
+    def mujocoinclude(self, node: XMLNode):
+        """<mojocoinclude> are used only as the root tag for mujoco-included files."""
+        if len(node.children) == 0:
+            return self._check_done(node)
+        return node
+
+    def body_init(self, node: XMLNode):
+        name = node.attributes.get('name', None)
+        pose = self._find_pose(node)
+        parent = None
+        if len(self._st['body']):
+            parent = self._st['body'][-1].name
+
+        data = self._data['body']
+        if name is not None:
+            assert name not in data
+            data[name] = C.Link(name, parent, pose)
+            self._st['body'].append(data[name])
+        if 'childclass' in node.attributes:
+            self._st['class'].append(node.attributes['childclass'])
+
+    def body(self, node: XMLNode):
+        name = node.attributes.pop('name', None)
+        if name is not None:
+            self._st['body'].pop()
+
+        if 'childclass' in node.attributes:
+            self._st['class'].pop()
+            node.attributes.pop('childclass')
+
+        # TODO(Jiayuan Mao @ 03/23): fix this.
+        node.attributes.pop('mocap', None)
+        return self._check_done(node)
+
+    def camera(self, node: XMLNode):
+        # TODO(Jiayuan Mao @ 03/23): fix this.
+        return None
+
+    def inertial(self, node: XMLNode):
+        pose = self._find_pose(node)
+        mass = node.attributes.pop('mass')
+        diaginertia = node.attributes.pop('diaginertia')
+
+        inertial = C.Inertial(float(mass), pose, C.Inertia.from_diagnal(*vector3f(diaginertia)))
+        body = self._st['body'][-1]
+        assert body.inertial is None
+        body.inertial = inertial
+        return self._check_done(node)
+
+    def site(self, node: XMLNode):
+        name = node.attributes.pop('name')
+        type = node.attributes.pop('type', 'sphere')
+        pose = self._find_pose(node)
+        size = node.attributes.pop('size', '0.0005')
+        rgba = node.attributes.pop('rgba', '0.5 0.5 0.5 1')
+
+        if len(self._st['body']) == 0:
+            assert name is not None
+            body = C.Link(name, None, pose)
+            self._data.setdefault('body', dict())[name] = body
+            pose = C.Pose.identity()
+            name = None
+        else:
+            body = self._st['body'][-1]
+
+        assert type == 'sphere'
+        shape = C.ShapeInfo.from_type(type, radius=float(size))
+
+        data = self._data['site']
+        assert name not in data
+        data[name] = C.Geom(name, pose, shape, C.RGBA(*vector4f(rgba)))
+        body.geometries.append(data[name])
+
+        return self._check_done(node)
+
+    def geom(self, node: XMLNode):
+        st = self._st['default']
+        if len(st):
+            st[-1]['geom'].update(node.attributes)
+            assert len(node.children) == 0
+            return
+
+        cls = node.attributes.pop('class', None)
+        if cls is None and len(self._st['class']):
+            cls = self._st['class'][-1]
+        if cls is not None:
+            for k, v in self._data['defaults'][cls]['geom'].items():
+                node.attributes.setdefault(k, v)
+
+        name = node.attributes.pop('name', None)
+        type = node.attributes.pop('type', 'plane')
+        pose = self._find_pose(node)
+
+        if type == 'box':
+            size = node.attributes.pop('size', '0 0 0')
+            shape = C.BoxShapeInfo(vector3f(size))
+        elif type == 'mesh':
+            size = node.attributes.pop('size', None)
+            mesh = node.attributes.pop('mesh')
+            filename = self._data['mesh'][mesh]['filename']
+            if size is None:
+                size = self._data['mesh'][mesh]['scale']
+            shape = C.MeshShapeInfo(filename, vector3f(size))
+        elif type == 'plane':
+            size = node.attributes.pop('size', '0 0 0')
+            shape = C.PlaneShapeInfo(*vector3f(size)[:2])  # uses only the half width and the half height
+        elif type == 'sphere':
+            size = node.attributes.pop('size', '0')
+            shape = C.SphereShapeInfo(float(size))
+        elif type == 'cylinder':
+            r, hh = node.attributes.pop('size', '0 0').split()
+            shape = C.CylinderShapeInfo(float(r), float(hh))
+        elif type == 'capsule':
+            r, hh = node.attributes.pop('size', '0 0').split()
+            shape = C.CapsuleShapeInfo(float(r), float(hh))
+        else:
+            raise ValueError('Unknown type: {}.'.format(type))
+
+        if len(self._st['body']) == 0:
+            assert name is not None
+            body = C.Link(name, None, pose)
+            self._data.setdefault('body', dict())[name] = body
+            pose = C.Pose.identity()
+            name = None
+        else:
+            body = self._st['body'][-1]
+
+        material = node.attributes.pop('material', None)
+        rgba = node.attributes.pop('rgba', '0.5 0.5 0.5 1')
+
+        if material is not None:
+            visual = C.Material(material)
+        else:
+            visual = C.RGBA(*vector4f(rgba))
+
+        # TODO(Jiayuan Mao @ 03/23): fix this.
+        node.attributes.pop('mass', None)
+        node.attributes.pop('density', None)
+        node.attributes.pop('friction', None)
+        node.attributes.pop('margin', None)
+
+        node.attributes.pop('solimp', None)
+        node.attributes.pop('solref', None)
+        node.attributes.pop('user', None)
+
+        inertial_group = node.attributes.pop('group', 0)
+        contact_type = node.attributes.pop('contype', 0)
+        contact_affinity = node.attributes.pop('conaffinity', 0)
+        contact_dim = node.attributes.pop('condim', 3)  # frictional
+
+        geom = C.Geom(
+            name, pose, shape=shape, visual=visual,
+            mjcf_configs=dict(
+                inertial_group=inertial_group,
+                contact_type=contact_type,
+                contact_affinity=contact_affinity,
+                contact_dim=contact_dim
+            )
+        )
+        body.geometries.append(geom)
+        if name is not None:
+            self._data['geom'][name] = geom
+
+        return self._check_done(node)
+
+    def joint(self, node: XMLNode):
+        st = self._st['default']
+        if len(st):
+            st[-1]['joint'].update(node.attributes)
+            assert len(node.children) == 0
+            return
+
+        cls = node.attributes.pop('class', None)
+        if cls is None and len(self._st['class']):
+            cls = self._st['class'][-1]
+        if cls is not None:
+            for k, v in self._data['defaults'][cls]['joint'].items():
+                node.attributes.setdefault(k, v)
+
+        name = node.attributes.pop('name', None)
+        type = node.attributes.pop('type', 'hinge')
+        pose = self._find_pose(node)
+
+        if type == 'slide':
+            type = 'prismatic'
+
+        axis = node.attributes.pop('axis', '0 0 1')
+        limited = node.attributes.pop('limited', 'false')
+        range = node.attributes.pop('range', '0 0')
+        damping = node.attributes.pop('damping', 0)
+        armature = node.attributes.pop('armature', 0)
+        control = self._find_control(node)
+
+        joint = C.Joint(name, None, None, pose, C.JointInfo.from_type(
+            type,
+            axis=vector3f(axis), limited=limited, range=vector2f(range), damping=float(damping), armature=float(armature)
+        ), control)
+        if name is not None:
+            self._data['joint'][name] = joint
+
+        body_child = self._st['body'][-1]
+        body_parent = self._st['body'][-2]
+        joint.parent = body_parent.name
+        joint.child = body_child.name
+        return self._check_done(node)
+
+    def freejoint(self, node: XMLNode):
+        name = node.attributes.pop('name', None)
+        type = 'free'
+        control = self._find_control(node)
+
+        joint = C.Joint(name, None, None, C.Pose.identity(), C.JointInfo.from_type(type), control)
+        if name is not None:
+            self._data['joint'][name] = joint
+
+        body_child = self._st['body'][-1]
+        body_parent = self._st['body'][-2]
+        joint.parent = body_parent.name
+        joint.child = body_child.name
+        return self._check_done(node)
+
+    def worldbody(self, node: XMLNode):
+        if len(node.children) == 0:
+            return self._check_done(node)
+        return node
+
+    def actuator(self, node: XMLNode):
+        return self._check_done(node)
+
+    def position(self, node: XMLNode):
+        st = self._st['default']
+        if len(st):
+            st[-1]['joint'].update(node.attributes)
+            assert len(node.children) == 0
+            return
+
+        cls = node.attributes.pop('class', None)
+        if cls is None and len(self._st['class']):
+            cls = self._st['class'][-1]
+        if cls is not None:
+            for k, v in self._data['defaults'][cls]['position'].items():
+                node.attributes.setdefault(k, v)
+
+        joint = node.attributes.pop('joint')
+        kp = node.attributes.pop('kp')
+        control = self._find_control(node)
+
+        # TODO(Jiayuan Mao @ 03/23): fix this.
+        node.attributes.pop('user', None)
+
+        data = self._data['actuator']
+        assert joint not in data
+        # TODO(Jiayuan Mao @ 03/23): fix this.
+        self._data['actuator'][joint] = (joint, float(kp), control)
+        return self._check_done(node)
+
+    def _find_rotation(self, node: XMLNode):
+        found = set()
+        for name in ['quat', 'axisangle', 'euler', 'xyzaxes', 'zaxis']:
+            if name in node.attributes:
+                found.add(name)
+        assert len(found) <= 1
+        if len(found) == 0:
+            return np.array([1, 0, 0, 0], dtype='float32')
+        name = tuple(found)[0]
+        if name == 'quat':
+            return vector4f(node.attributes.pop(name))
+        elif name == 'euler':
+            return wxyz_from_euler(node.attributes.pop(name))
+        else:
+            raise NotImplementedError()
+
+    def _find_pose(self, node: XMLNode):
+        return C.Pose(pos=node.attributes.pop('pos', '0 0 0'), quat_wxyz=self._find_rotation(node))
+
+    def _find_control(self, node: XMLNode):
+        limited = node.attributes.pop('ctrllimited', 'false')
+        range = node.attributes.pop('ctrlrange', '0 0')
+        return C.ControlInfo(limited, range)
