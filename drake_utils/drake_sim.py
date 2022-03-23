@@ -25,8 +25,15 @@ def main():
 
     parser = Parser(plant)
     parser.package_map().Add("assets", "assets/")
-    robot = parser.AddModelFromFile("assets/panda_arm_hand.urdf", model_name="robot")
     world = parser.AddAllModelsFromFile("assets/world.sdf")  # noqa: F841
+    robot = parser.AddModelFromFile("assets/panda_arm_hand.urdf", model_name="robot")
+
+    # Weld robot to the world so dimensionalites become cool for some reason
+    plant.WeldFrames(
+        frame_on_parent_P=plant.world_frame(),
+        frame_on_child_C=plant.GetFrameByName("panda_link0", robot),
+        X_PC=xyz_rpy_deg([0, 0, 0], [0, 0, 0]),
+    )
 
     renderer_name = "renderer"
     scene_graph.AddRenderer(renderer_name, MakeRenderEngineVtk(RenderEngineVtkParams()))

@@ -1,3 +1,4 @@
+import math
 from typing import List
 
 import numpy as np
@@ -31,7 +32,7 @@ class RobotPositionController(LeafSystem):
 
     def CalcOutput(self, context, output, time_step: float = 2.0):
         # Determine which pose to use
-        pose_idx = max(len(self.poses) - 1, context.get_time() / time_step)
+        pose_idx = min(len(self.poses) - 1, math.floor(context.get_time() / time_step))
 
         # q, v and set output port
         q_des = self.poses[pose_idx]
