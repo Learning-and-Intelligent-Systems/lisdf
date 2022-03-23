@@ -1,0 +1,49 @@
+<?xml version="1.0" ?>
+<!-- https://automaticaddison.com/urdf-vs-sdf-link-pose-joint-pose-visual-collision/ -->
+<sdf version="1.6">
+  <model name="my_robot">  
+  <static>false</static>
+ 
+  <!-- ****************** ROBOT BASE FOOTPRINT ***************************  -->
+  <link name="base_footprint"/>
+ 
+  <!-- ********************** ROBOT BASE *********************************  -->
+  <link name="base_link">
+    <!-- The pose below is always the global pose with respect to the 
+    origin (i.e. base_footprint) of the robot model -->
+    <pose>0 0 0.2 0 0 0</pose>
+    <collision name="base_link_collision">
+      <!-- The pose below is the local pose with respect to this link -->     
+      <pose>0 0 -0.15 0 0 0</pose>
+      <geometry>
+        <box>
+          <size>0.7 0.3 0.1</size>
+        </box>
+      </geometry>
+    </collision>
+ 
+    <visual name="base_link_visual">
+      <pose>-0.10 0 0 1.5708 0 1.5708</pose>
+      <geometry>
+        <mesh>
+          <uri>model://my_robot/meshes/robot_base.stl</uri>
+          <scale>1.0 1.0 1.0</scale>
+        </mesh>
+      </geometry>
+      <material>
+        <ambient>1.0 1.0 1.0 1.0</ambient>
+        <diffuse>1.0 1.0 1.0 1.0</diffuse>
+        <specular>0.0 0.0 0.0 1.0</specular>
+        <emissive>0.0 0.0 0.0 1.0</emissive>
+      </material>
+    </visual>
+  </link>
+  <!-- ************************ JOINTS ***********************************  -->
+  <!-- Pose of the joint is the same as the child link frame -->
+  <joint name="base_joint" type="fixed">
+    <parent>base_footprint</parent>
+    <child>base_link</child>
+    <pose>0 0 0 0 0 0</pose>
+  </joint>
+  </model>
+</sdf>

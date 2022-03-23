@@ -1,5 +1,4 @@
 import os
-
 from lisdf.parsing.sdf import SDF, Collision, Link, Mesh, Visual
 
 
