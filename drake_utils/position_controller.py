@@ -6,7 +6,7 @@ from pydrake.systems.framework import BasicVector, LeafSystem
 
 
 class RobotPositionController(LeafSystem):
-    def __init__(self, poses: List[np.ndarray]):
+    def __init__(self, poses: List[np.ndarray], time_step: float = 1.0):
         """
         poses is a list of numpy.ndarray objects.
         Each object has shape (N, ) where N is the degrees of freedom of the robot.
@@ -14,6 +14,7 @@ class RobotPositionController(LeafSystem):
         So the planner should output a list of poses with shape (9, )
         """
         super().__init__()
+        self.time_step = time_step
 
         # Check dimensionalities of poses are the same
         pose_dims = set(pose.shape for pose in poses)
@@ -30,9 +31,11 @@ class RobotPositionController(LeafSystem):
             "robot_qv_des", BasicVector(self.dimensionality), self.CalcOutput
         )
 
-    def CalcOutput(self, context, output, time_step: float = 2.0):
+    def CalcOutput(self, context, output):
         # Determine which pose to use
-        pose_idx = min(len(self.poses) - 1, math.floor(context.get_time() / time_step))
+        pose_idx = min(
+            len(self.poses) - 1, math.floor(context.get_time() / self.time_step)
+        )
 
         # q, v and set output port
         q_des = self.poses[pose_idx]

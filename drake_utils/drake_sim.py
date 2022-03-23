@@ -15,6 +15,7 @@ from pydrake.systems.analysis import Simulator
 from pydrake.systems.framework import DiagramBuilder
 from pydrake.systems.meshcat_visualizer import ConnectMeshcatVisualizer
 from pydrake.systems.sensors import CameraInfo, RgbdSensor
+from pydrake.trajectories import PiecewisePolynomial
 
 from drake_utils.utils import make_robot_controller, xyz_rpy_deg
 
@@ -59,7 +60,23 @@ def main():
 
     plant.Finalize()
 
-    joint_controller = builder.AddSystem(RobotPositionController([np.zeros((9,))]))
+    # Make a traj that goes from 0 to home
+    panda_home = np.array([-0.19, 0.08, 0.23, -2.43, 0.03, 2.52, 0.86, 0.0, 0.0])
+    trajs = np.array([np.zeros((9,)), panda_home, panda_home])
+
+    t_all = np.array([0, 5.0, 10.0])
+    q_traj = PiecewisePolynomial.CubicShapePreserving(t_all, trajs.T)
+
+    qs_for_controller = [q_traj.value(t) for t in np.linspace(0, 5.0, 100)]
+    print("num robot confs q in traj:", len(qs_for_controller))
+
+    simulation_time = 10.0
+    time_step = simulation_time / len(qs_for_controller)
+
+    joint_controller = builder.AddSystem(
+        RobotPositionController(qs_for_controller, time_step=time_step)
+    )
+
     torque_controller = builder.AddSystem(
         make_robot_controller("assets/panda_arm_hand.urdf")
     )
@@ -84,9 +101,10 @@ def main():
         simulator.get_mutable_context()
     )
 
+    # Set initial state
     meshcat_vis.reset_recording()
     meshcat_vis.start_recording()
-    simulator.AdvanceTo(5.0)
+    simulator.AdvanceTo(simulation_time)
     meshcat_vis.publish_recording()
     meshcat_vis.vis.render_static()
     input("press enter to end\n")
