@@ -35,7 +35,7 @@ def inject_absolute_path(sdf: SDF, model_path: str):
 
 
 def load_sdf(model_directory: str):
-    sdf_path = os.path.join(model_directory, model_directory, "model.sdf")
+    sdf_path = os.path.join("models", model_directory)
     with open(sdf_path) as f:
         xml_str = f.read()
         sdf = SDF.from_xml_string(xml_str)
