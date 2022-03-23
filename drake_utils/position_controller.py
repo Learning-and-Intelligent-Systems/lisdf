@@ -9,10 +9,10 @@ class RobotPositionController(LeafSystem):
         """
         poses is a list of numpy.ndarray objects.
         Each object has shape (N, ) where N is the degrees of freedom of the robot.
-        E.G: On systems with the Panda, there are 7 joints and 2 fingers - So the planner should
-        output a list of poses with shape (9, )
+        E.G: On systems with the Panda, there are 7 joints and 2 fingers -
+        So the planner should output a list of poses with shape (9, )
         """
-        super.__init__(self)
+        super().__init__()
 
         # Check dimensionalities of poses are the same
         pose_dims = set(pose.shape for pose in poses)

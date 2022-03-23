@@ -1,8 +1,7 @@
 import numpy as np
-from pydrake.math import RigidTransform, RollPitchYaw, RotationMatrix
+from pydrake.math import RigidTransform, RollPitchYaw
 from pydrake.multibody.parsing import Parser
 from pydrake.multibody.plant import AddMultibodyPlantSceneGraph
-from pydrake.systems.analysis import Simulator
 from pydrake.systems.controllers import InverseDynamicsController
 from pydrake.systems.framework import DiagramBuilder
 

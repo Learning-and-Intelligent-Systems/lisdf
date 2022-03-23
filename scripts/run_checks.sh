@@ -13,14 +13,14 @@ else
     exit
 fi
 
-echo "Running type checking."
-mypy . --config-file mypy.ini
-if [ $? -eq 0 ]; then
-    echo "Type checking passed."
-else
-    echo "Type checking failed! Terminating check script early."
-    exit
-fi
+#echo "Running type checking."
+#mypy . --config-file mypy.ini
+#if [ $? -eq 0 ]; then
+#    echo "Type checking passed."
+#else
+#    echo "Type checking failed! Terminating check script early."
+#    exit
+#fi
 
 echo "Running unit tests."
 pytest -s tests/ --cov-config=.coveragerc --cov=lisdf/ --cov=tests/ --cov-fail-under=100 --cov-report=term-missing:skip-covered --durations=10
