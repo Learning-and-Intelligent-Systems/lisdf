@@ -113,6 +113,11 @@ class Link(Entity):
     collision = property(__get_collision, __set_collision)
 
 
+class Script(Object):
+    def __init__(self, uri=None):
+        self.uri = uri
+
+
 class Material(Object):
     def __init__(
         self, script=None, ambient=None, diffuse=None, specular=None, emissive=None
@@ -125,10 +130,19 @@ class Material(Object):
 
 
 reflect(
+    Script,
+    tag="script",
+    params=[
+        Element("uri", str),
+    ],
+)
+
+
+reflect(
     Material,
     tag="material",
     params=[
-        Element("script", str, required=False),
+        Element("script", Script, required=False),
         Element("ambient", "vector4", required=False),
         Element("diffuse", "vector4", required=False),
         Element("specular", "vector4", required=False),

@@ -1,0 +1,35 @@
+<?xml version="1.0" ?>
+<!-- Based on a M0M test run -->
+<sdf version="1.9">
+	<world name="M0M_problem_0">
+		<model name="banana#12_1">
+			<static>false</static>
+			<pose>0.0031472998671233654 0.004283192101866007 0.7528123259544373 0 0 0</pose>
+			<link name="banana">
+				<collision name="banana_collision">
+					<geometry>
+						<mesh>
+							<uri>textured.obj</uri>
+							<scale>1.0 1.0 1.0</scale>
+						</mesh>
+					</geometry>
+				</collision>
+				<visual name="banana_visual">
+					<geometry>
+						<mesh>
+							<uri>textured.obj</uri>
+							<scale>1.0 1.0 1.0</scale>
+						</mesh>
+					</geometry>
+					<material>
+						<script>
+							<name>banana_texture</name>
+							<uri>file://textured.mtl</uri>
+						</script>
+					</material>
+ 					
+				</visual>
+			</link>
+		</model>
+	</world>
+</sdf>
