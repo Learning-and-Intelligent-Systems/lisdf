@@ -31,11 +31,6 @@ class ControlInfo(object):
     limited: bool
     range: Vector2f
 
-    def __init__(self, limited: str, range: Vector2f):
-        assert limited in ("true", "false")
-        self.limited = limited == "true"
-        self.range = range
-
 
 @dataclass
 class JointInfo(StringConfigurable):
@@ -68,6 +63,10 @@ class FixedJointInfo(JointInfo, type="fixed"):
 
 @dataclass
 class ControllableJointInfo(JointInfo, type="controllable"):
+    # NB(Jiayuan Mao @ 03/24): intentionally wrote a explicit constructor.
+    # Otherwise inheritance will be a disaster.
+    # TODO(Jiayuan Mao @ 03/24): seems that the kw_only feature in Python 3.10 may help.
+    # But that's a too new release.
     limited: bool
     range: Vector2f
     damping: float
