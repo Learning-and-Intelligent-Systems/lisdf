@@ -24,7 +24,6 @@ __all__ = [
     "PlaneShapeInfo",
 ]
 
-from abc import abstractmethod
 from dataclasses import dataclass
 from typing import ClassVar, Dict, Optional, Type
 

@@ -8,7 +8,6 @@
 # This file is part of lisdf.
 # Distributed under terms of the MIT license.
 
-from abc import abstractmethod
 from dataclasses import dataclass
 from typing import ClassVar, Dict, Type
 
