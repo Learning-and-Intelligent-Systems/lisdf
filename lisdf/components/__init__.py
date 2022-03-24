@@ -22,7 +22,12 @@ from lisdf.components.model import (  # noqa: F401
 )
 
 from .model_mjcf import MJCFGeom  # noqa: F401
-from .model_sdf import SDFGeom, SDFSurfaceContact, SDFSurfaceFriction  # noqa: F401
+from .model_sdf import (  # noqa: F401
+    SDFGeom,
+    SDFLink,
+    SDFSurfaceContact,
+    SDFSurfaceFriction,
+)
 from .scene import LISDF  # noqa: F401
 from .sensor import CameraSensor, Sensor  # noqa: F401
 from .shape import (  # noqa: F401
