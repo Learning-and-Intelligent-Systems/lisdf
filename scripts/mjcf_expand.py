@@ -8,11 +8,17 @@
 # This file is part of lisdf.
 # Distributed under terms of the MIT license.
 
+"""
+This file expands all mujoco include nodes (i.e., it flatten the file).
+
+This can be a useful utility for debugging.
+"""
+
 import argparse
 
 from lisdf.parsing.mjcf import MJCFVisitorFlatten
 
-parser = argparse.ArgumentParser()
+parser = argparse.ArgumentParser(description=__doc__)
 parser.add_argument("file")
 args = parser.parse_args()
 
