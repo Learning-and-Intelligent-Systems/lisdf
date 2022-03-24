@@ -30,3 +30,4 @@ class NDArray(np.ndarray, Generic[Shape, DType]):
 
 Vector2f = NDArray[3, np.float32]
 Vector3f = NDArray[3, np.float32]
+Vector4f = NDArray[4, np.float32]

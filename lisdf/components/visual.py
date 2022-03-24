@@ -8,8 +8,12 @@
 # This file is part of lisdf.
 # Distributed under terms of the MIT license.
 
+import numpy as np
 from dataclasses import dataclass
+from lisdf.utils.typing import Vector4f
 from .base import StringConfigurable
+
+__all__ = ['VisualInfo', 'RGBA', 'PhongMaterial', 'MJCFMaterial']
 
 
 @dataclass
@@ -33,6 +37,23 @@ class RGBA(VisualInfo):
 
 
 @dataclass
-class Material(VisualInfo):
+class PhongMaterial(VisualInfo):
+    ambient: Vector4f
+    diffuse: Vector4f
+    specular: Vector4f
+    emissive: Vector4f
+
+    @classmethod
+    def default(cls):
+        return cls(
+            np.fromstring('1 1 1 1', sep=' ', dtype='float32'),
+            np.fromstring('1 1 1 1', sep=' ', dtype='float32'),
+            np.fromstring('0 0 0 1', sep=' ', dtype='float32'),
+            np.fromstring('0 0 0 1', sep=' ', dtype='float32')
+        )
+
+
+@dataclass
+class MJCFMaterial(VisualInfo):
     identifier: str
 

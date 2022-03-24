@@ -36,3 +36,15 @@ def vector4f(string):
     rv = np.fromstring(string, sep=' ', dtype='float32')
     assert rv.shape == (4, )
     return rv
+
+
+def vector6f(string):
+    rv = np.fromstring(string, sep=' ', dtype='float32')
+    assert rv.shape == (6, )
+    return rv
+
+
+def bool_string(string):
+    string = string.lower()
+    assert string in ('true', 'false')
+    return string == 'true'

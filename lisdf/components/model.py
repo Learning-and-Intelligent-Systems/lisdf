@@ -12,17 +12,28 @@ from typing import Optional, List, Dict
 from dataclasses import dataclass, field
 from functools import cached_property
 from lisdf.utils.typing import Vector3f
-from lisdf.utils.transformations import euler_from_quaternion
+from lisdf.utils.transformations import euler_from_quaternion, quaternion_from_euler
 from .base import StringConfigurable
 from .control import ControlInfo, JointInfo
+from .sensor import Sensor
 from .shape import ShapeInfo
 from .visual import VisualInfo
+
+__all__ = ['Pose', 'Inertia', 'Inertial', 'Geom', 'Joint', 'Link', 'Model', 'World', 'URDFModel']
 
 
 @dataclass
 class Pose(StringConfigurable):
     pos: Vector3f
     quat_wxyz: Vector3f
+
+    @classmethod
+    def from_rpy_6d(cls, a):
+        return cls.from_rpy(a[:3], a[3:])
+
+    @classmethod
+    def from_rpy(cls, pos, rpy):
+        return cls.from_quat_xyzw(pos, quaternion_from_euler(*rpy))
 
     @classmethod
     def from_quat_xyzw(cls, pos, xyzw):
@@ -51,6 +62,10 @@ class Inertia(StringConfigurable):
     izz: float
 
     @classmethod
+    def zeros(cls):
+        return cls(0, 0, 0, 0, 0, 0)
+
+    @classmethod
     def from_diagnal(cls, ixx, iyy, izz):
         return cls(ixx, 0, 0, iyy, 0, izz)
 
@@ -66,8 +81,12 @@ class Inertia(StringConfigurable):
 @dataclass
 class Inertial(StringConfigurable):
     mass: float
-    pose: Vector3f
+    pose: Pose
     inertia: Inertia
+
+    @classmethod
+    def zeros(cls):
+        return cls(0, Pose.identity(), Inertia.zeros())
 
 
 @dataclass
@@ -75,7 +94,7 @@ class Geom(object):
     name: str
     pose: Pose
     shape: ShapeInfo
-    visual: VisualInfo
+    visual: Optional[VisualInfo] = None
     mjcf_configs: Optional[Dict[str, str]] = None
 
     @property
@@ -90,7 +109,7 @@ class Joint(object):
     child: str
     pose: Pose
     joint_info: JointInfo
-    control: ControlInfo
+    control_info: Optional[ControlInfo] = None
 
     @property
     def type(self):
@@ -116,33 +135,35 @@ class Link(object):
     parent: str
     pose: Pose
     inertial: Inertial = None
-    geometries: List[Geom] = field(default_factory=list)
+    collisions: List[Geom] = field(default_factory=list)
+    visuals: List[Geom] = field(default_factory=list)
+    sensors: List[Sensor] = field(default_factory=list)
     model: Optional['Model'] = None
     # sites: List[Site] = None
 
     def set_model(self, model):
         self.model = model
 
-    def to_sdf(self):
-        fmt = ''
-        fmt += f'<link name={self.name}>\n'
-        relative_to = '' if self.relative_to is None else f' relative_to="{self.relative_to}"'
-        fmt += f'  <pose{relative_to}>{format_pose(self)}</pose>\n'
-        for geom in self.geometries:
-            fmt += jacinle.indent_text(geom.to_sdf(), 1).rstrip() + '\n'
-        fmt += '</link>\n'
-        return fmt
 
-
-@property
+@dataclass
 class Model(object):
     name: str
-    parent: str
+    pose: Pose
+    parent: Optional[str] = None
+    static: Optional[bool] = False
 
-    links: Dict[str, Link]
-    joints: Dict[str, Joint]
+    links: Dict[str, Link] = field(default_factory=list)
+    joints: Dict[str, Joint] = field(default_factory=list)
 
 
+@dataclass
+class World(object):
+    name: Optional[str] = None
+    static: Optional[bool] = False
+    models: List[Model] = field(default_factory=list)
+
+
+@dataclass
 class URDFModel(object):
     name: str
     uri: str

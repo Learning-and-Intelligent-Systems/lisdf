@@ -13,7 +13,7 @@ from dataclasses import dataclass
 from lisdf.utils.typing import Vector2f, Vector3f
 from .base import StringConfigurable
 
-__all__ = ['ControlInfo', 'JointInfo', 'HingeJointInfo', 'PrismaticJointInfo']
+__all__ = ['ControlInfo', 'JointInfo', 'FixedJointInfo', 'HingeJointInfo', 'PrismaticJointInfo']
 
 
 @dataclass
@@ -29,17 +29,6 @@ class ControlInfo(object):
 
 @dataclass
 class JointInfo(StringConfigurable):
-    limited: bool
-    range: Vector2f
-    damping: float
-    armatrue: float
-
-    def __init__(self, limited, range, damping, armature):
-        assert limited in ('true', 'false')
-        self.limited = (limited == 'true')
-        self.range = range
-        self.damping = damping
-        self.armatrue = armature
 
     type_mapping = dict()
 
@@ -54,19 +43,39 @@ class JointInfo(StringConfigurable):
 
 
 @dataclass
-class HingeJointInfo(JointInfo, type='hinge'):
+class FixedJointInfo(JointInfo, type='fixed'):
+    pass
+
+
+@dataclass
+class ControllableJointInfo(JointInfo, type='controllable'):
+    limited: bool
+    range: Vector2f
+    damping: float
+    armatrue: float
+
+    def __init__(self, limited, range, damping, armature):
+        assert limited in ('true', 'false')
+        self.limited = (limited == 'true')
+        self.range = range
+        self.damping = damping
+        self.armatrue = armature
+
+
+@dataclass
+class HingeJointInfo(ControllableJointInfo, type='hinge'):
     axis: Vector3f
 
-    def __init__(self, axis, limited, range, damping, armature):
+    def __init__(self, axis, limited='false', range=np.zeros(2, dtype='float32'), damping=0., armature=0.):
         super().__init__(limited, range, damping, armature)
         self.axis = axis
 
 
 @dataclass
-class PrismaticJointInfo(JointInfo, type='prismatic'):
+class PrismaticJointInfo(ControllableJointInfo, type='prismatic'):
     axis: Vector3f
 
-    def __init__(self, axis, limited, range, damping, armature):
+    def __init__(self, axis, limited='false', range=np.zeros(2, dtype='float32'), damping=0., armature=0.):
         super().__init__(limited, range, damping, armature)
         self.axis = axis
 
