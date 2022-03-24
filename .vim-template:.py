@@ -7,4 +7,3 @@
 #
 # This file is part of lisdf.
 # Distributed under terms of the %LICENSE% license.
-

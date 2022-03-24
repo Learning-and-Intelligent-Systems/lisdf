@@ -1,16 +1,23 @@
-__all__ = ['DEFAULT_TABSIZE', 'indent_text']
+from typing import Optional
+
+__all__ = ["DEFAULT_TABSIZE", "indent_text"]
 
 
 DEFAULT_TABSIZE = 2
 
 
-def indent_text(text, level=1, indent_format=None, tabsize=None):
+def indent_text(
+    text: str,
+    level: Optional[int] = 1,
+    indent_format: Optional[str] = None,
+    tabsize: Optional[int] = None,
+):
     if indent_format is not None:
-        assert tabsize is None, 'Cannot provide both indent format and tabsize.'
+        assert tabsize is None, "Cannot provide both indent format and tabsize."
     if tabsize is not None:
-        assert indent_format is None, 'Cannot provide both indent format and tabsize.'
-        indent_format = ' ' * tabsize
+        assert indent_format is None, "Cannot provide both indent format and tabsize."
+        indent_format = " " * tabsize
     if indent_format is None and tabsize is None:
-        indent_format = '  '
+        indent_format = "  "
     indent_format = indent_format * level
-    return indent_format + text.replace('\n', '\n' + indent_format)
+    return indent_format + text.replace("\n", "\n" + indent_format)

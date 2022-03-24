@@ -7,19 +7,35 @@
 #
 # Distributed under terms of the MIT license.
 
-import numpy as np
-from typing import Any, Optional, List, Dict
 from dataclasses import dataclass, field
 from functools import cached_property
-from lisdf.utils.typing import Vector3f
+from typing import Any, Dict, List, Optional
+
+import numpy as np
+
 from lisdf.utils.transformations import euler_from_quaternion, quaternion_from_euler
+from lisdf.utils.typing import Vector3f, Vector4f
+
 from .base import StringConfigurable
 from .control import ControlInfo, JointInfo
 from .sensor import Sensor
 from .shape import ShapeInfo
 from .visual import VisualInfo
 
-__all__ = ['Pose', 'Inertia', 'Inertial', 'SurfaceContact', 'SurfaceFriction', 'Surface', 'Geom', 'Joint', 'Link', 'Model', 'URDFModel', 'World']
+__all__ = [
+    "Pose",
+    "Inertia",
+    "Inertial",
+    "SurfaceContact",
+    "SurfaceFriction",
+    "Surface",
+    "Geom",
+    "Joint",
+    "Link",
+    "Model",
+    "URDFModel",
+    "World",
+]
 
 
 @dataclass
@@ -28,28 +44,33 @@ class Pose(StringConfigurable):
     quat_wxyz: Vector3f
 
     @classmethod
-    def from_rpy_6d(cls, a):
+    def from_rpy_6d(cls, a) -> "Pose":
         return cls.from_rpy(a[:3], a[3:])
 
     @classmethod
-    def from_rpy(cls, pos, rpy):
+    def from_rpy(cls, pos, rpy) -> "Pose":
         return cls.from_quat_xyzw(pos, quaternion_from_euler(*rpy))
 
     @classmethod
-    def from_quat_xyzw(cls, pos, xyzw):
+    def from_quat_xyzw(cls, pos, xyzw) -> "Pose":
         return cls(pos, np.array([xyzw[3], xyzw[0], xyzw[1], xyzw[2]]))
 
-    @cached_property
-    def quat_xyzw(self):
-        return np.array([self.quat_wxyz[1], self.quat_wxyz[2], self.quat_wxyz[3], self.quat_wxyz[0]])
-
-    @cached_property
-    def rpy(self):
-        return euler_from_quaternion(self.quat_xyzw)
-
     @classmethod
-    def identity(cls):
-        return cls(pos=np.zeros(3, dtype='float32'), quat_wxyz=np.array([1, 0, 0, 0], dtype='float32'))
+    def identity(cls) -> "Pose":
+        return cls(
+            pos=np.zeros(3, dtype="float32"),
+            quat_wxyz=np.array([1, 0, 0, 0], dtype="float32"),
+        )
+
+    @cached_property
+    def quat_xyzw(self) -> Vector4f:
+        return np.array(
+            [self.quat_wxyz[1], self.quat_wxyz[2], self.quat_wxyz[3], self.quat_wxyz[0]]
+        )
+
+    @cached_property
+    def rpy(self) -> Vector3f:
+        return euler_from_quaternion(self.quat_xyzw)
 
 
 @dataclass
@@ -62,20 +83,23 @@ class Inertia(StringConfigurable):
     izz: float
 
     @classmethod
-    def zeros(cls):
+    def zeros(cls) -> "Inertia":
         return cls(0, 0, 0, 0, 0, 0)
 
     @classmethod
-    def from_diagnal(cls, ixx, iyy, izz):
+    def from_diagnal(cls, ixx, iyy, izz) -> "Inertia":
         return cls(ixx, 0, 0, iyy, 0, izz)
 
     @property
-    def matrix(self):
-        return np.array([
-            [self.ixx, self.ixy, self.ixz],
-            [self.ixy, self.iyy, self.iyz],
-            [self.ixz, self.iyz, self.izz],
-        ], dtype=np.float32)
+    def matrix(self) -> np.ndarray:
+        return np.array(
+            [
+                [self.ixx, self.ixy, self.ixz],
+                [self.ixy, self.iyy, self.iyz],
+                [self.ixz, self.iyz, self.izz],
+            ],
+            dtype=np.float32,
+        )
 
 
 @dataclass
@@ -85,7 +109,7 @@ class Inertial(StringConfigurable):
     inertia: Inertia
 
     @classmethod
-    def zeros(cls):
+    def zeros(cls) -> "Inertial":
         return cls(0, Pose.identity(), Inertia.zeros())
 
 
@@ -113,7 +137,7 @@ class Geom(StringConfigurable):
     pose: Pose
     shape: ShapeInfo
     visual: Optional[VisualInfo] = None
-    surface: Surface = None
+    surface: Optional[Surface] = None
 
     mjcf_configs: Optional[Dict[str, Any]] = None
     sdf_configs: Optional[Dict[str, Any]] = None
@@ -139,7 +163,7 @@ class Joint(StringConfigurable):
     def type(self):
         return self.joint_info.type
 
-    model: Optional['Model'] = None
+    model: Optional["Model"] = None
 
     def set_model(self, model):
         self.model = model
@@ -156,13 +180,13 @@ class Joint(StringConfigurable):
 @dataclass
 class Link(StringConfigurable):
     name: str
-    parent: str
+    parent: Optional[str]
     pose: Pose
-    inertial: Inertial = None
+    inertial: Optional[Inertial] = None
     collisions: List[Geom] = field(default_factory=list)
     visuals: List[Geom] = field(default_factory=list)
     sensors: List[Sensor] = field(default_factory=list)
-    model: Optional['Model'] = None
+    model: Optional["Model"] = None
 
     mjcf_configs: Optional[Dict[str, str]] = None
     sdf_configs: Optional[Dict[str, str]] = None
@@ -179,8 +203,8 @@ class Model(StringConfigurable):
     parent: Optional[str] = None
     static: Optional[bool] = False
 
-    links: Dict[str, Link] = field(default_factory=list)
-    joints: Dict[str, Joint] = field(default_factory=list)
+    links: List[Link] = field(default_factory=list)
+    joints: List[Joint] = field(default_factory=list)
 
 
 @dataclass

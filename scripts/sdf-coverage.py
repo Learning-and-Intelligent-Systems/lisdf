@@ -8,26 +8,25 @@
 # This file is part of lisdf.
 # Distributed under terms of the MIT license.
 
-import jacinle
 import argparse
-from lisdf.parsing_v2.xml_j.xml import load_file
+
 from lisdf.parsing_v2.sdf import SDFVisitor
+from lisdf.parsing_v2.xml_j.xml import load_file
 
 parser = argparse.ArgumentParser()
-parser.add_argument('file')
+parser.add_argument("file")
 args = parser.parse_args()
 
 
 def main():
     node = load_file(args.file)
     print(node)
-    print('-' * 120)
+    print("-" * 120)
     visitor = SDFVisitor()
     visitor.set_verbose()
     node = visitor.load_file(args.file)
-    print('Coverage test passed.')
+    print("Coverage test passed.")
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()
-

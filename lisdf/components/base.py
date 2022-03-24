@@ -21,4 +21,3 @@ class StringConfigurable(object):
 
     def to_yaml(self) -> str:
         raise NotImplementedError()
-
