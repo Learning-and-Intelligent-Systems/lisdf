@@ -9,10 +9,11 @@
 # Distributed under terms of the MIT license.
 
 import argparse
+
 from lisdf.parsing_v2.mjcf import MJCFVisitorFlatten
 
 parser = argparse.ArgumentParser()
-parser.add_argument('file')
+parser.add_argument("file")
 args = parser.parse_args()
 
 
@@ -22,6 +23,5 @@ def main():
     print(node)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()
-

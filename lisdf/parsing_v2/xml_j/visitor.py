@@ -8,14 +8,16 @@
 # This file is part of lisdf.
 # Distributed under terms of the MIT license.
 
-import os.path as osp
 import functools
-from typing import Any, Optional
+import os.path as osp
 from collections import defaultdict
+from typing import Any, Callable, Optional
+
 from lisdf.utils.printing import indent_text
+
 from .xml import XMLNode, load_file
 
-__all__ = ['XMLVisitor']
+__all__ = ["XMLVisitor"]
 
 
 class XMLVisitor(object):
@@ -31,10 +33,11 @@ class XMLVisitor(object):
     def set_verbose(self, flag=True):
         self.verbose = flag
 
-    def _get_processor(self, tag):
+    def _get_processor(self, tag: str) -> Optional[Callable[[XMLNode], Any]]:
+        tag = tag.replace("-", "_")
         return getattr(self, tag, None)
 
-    def load_file(self, filename):
+    def load_file(self, filename: str) -> Any:
         node = load_file(filename)
         return self.visit(filename, node)
 
@@ -50,7 +53,7 @@ class XMLVisitor(object):
                     print(indent_text(node.text, self._indent + 1))
             self._indent += 1
             try:
-                proc = self._get_processor(node.tag + '_init')
+                proc = self._get_processor(node.tag + "_init")
                 if proc is not None:
                     proc(node)
                 self.node_stack.append(node)
@@ -67,8 +70,8 @@ class XMLVisitor(object):
                 if self.verbose:
                     print(indent_text(node.close_tag(), self._indent - 1))
                 return node
-            except:
-                raise
+            except Exception as e:
+                raise e
             finally:
                 self._indent -= 1
 
@@ -81,8 +84,10 @@ class XMLVisitor(object):
     def _resolve_path(self, path) -> str:
         return osp.normpath(osp.join(osp.dirname(self.filename_stack[-1]), path))
 
-    def _pop_children(self, node: XMLNode, tag: str, required=False, return_type='text', default=None):
-        assert return_type in ('node', 'text', 'data')
+    def _pop_children(
+        self, node: XMLNode, tag: str, required=False, return_type="text", default=None
+    ):
+        assert return_type in ("node", "text", "data")
 
         rv = list()
         for i, c in enumerate(node.children):
@@ -94,28 +99,28 @@ class XMLVisitor(object):
             return default
         else:
             obj = node.children[rv[0]]
-            node.children = node.children[:rv[0]] + node.children[rv[0] + 1:]
-            if return_type == 'node':
+            node.children = node.children[: rv[0]] + node.children[rv[0] + 1 :]
+            if return_type == "node":
                 return obj
-            elif return_type == 'text':
+            elif return_type == "text":
                 return obj.text
-            elif return_type == 'data':
+            elif return_type == "data":
                 return obj.data
             else:
-                raise ValueError('Unknown return type: {}.'.format(return_type))
+                raise ValueError("Unknown return type: {}.".format(return_type))
 
     def _check_done(self, node: XMLNode, attr=True, children=True):
         if attr:
             if len(node.attributes) != 0:
-                print('Unprocessed attributes.')
+                print("Unprocessed attributes.")
                 print(node)
-                print('-' * 120)
+                print("-" * 120)
                 raise ValueError()
         if children:
             if len(node.children) != 0:
-                print('Unprocessed children.')
+                print("Unprocessed children.")
                 print(node)
-                print('-' * 120)
+                print("-" * 120)
                 raise ValueError()
         return None
 
@@ -129,4 +134,5 @@ def check_done_decorator(func, attr=True, children=True):
         if children:
             assert len(rv.children) == 0
         return rv
+
     return wrapped

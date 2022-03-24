@@ -8,13 +8,13 @@
 # This file is part of lisdf.
 # Distributed under terms of the MIT license.
 
-__all__ = ['LISDF']
+__all__ = ["LISDF"]
 
 
 class LISDF(object):
     SUPPORTED_VERSIONS = ["1.5", "1.6", "1.7", "1.8", "1.9"]
 
-    def __init__(self, sdf_version='1.9'):
+    def __init__(self, sdf_version="1.9"):
         self.sdf_version = None
         self.set_sdf_version(sdf_version)
 
@@ -38,4 +38,3 @@ class LISDF(object):
                 % (",".join(self.SUPPORTED_VERSIONS))
             )
         self.sdf_version = version
-

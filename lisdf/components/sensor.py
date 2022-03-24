@@ -9,6 +9,8 @@
 # Distributed under terms of the MIT license.
 
 from dataclasses import dataclass
+from typing import Dict
+
 from .base import StringConfigurable
 
 
@@ -24,11 +26,10 @@ class Sensor(StringConfigurable):
         Sensor.type_mapping[type] = cls
 
     @staticmethod
-    def from_type(type, **kwargs):
+    def from_type(type, **kwargs) -> "Sensor":
         return Sensor.type_mapping[type](**kwargs)
 
 
 @dataclass
-class CameraSensor(Sensor, type='camera'):
+class CameraSensor(Sensor, type="camera"):
     pass
-

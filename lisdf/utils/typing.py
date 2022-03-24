@@ -8,7 +8,8 @@
 # This file is part of lisdf.
 # Distributed under terms of the MIT license.
 
-from typing import TypeVar, Generic, Tuple, Union, Optional
+from typing import Generic, TypeVar
+
 import numpy as np
 
 """
@@ -25,9 +26,10 @@ DType = TypeVar("DType")
 
 
 class NDArray(np.ndarray, Generic[Shape, DType]):
-   pass
+    pass
 
 
 Vector2f = NDArray[3, np.float32]
 Vector3f = NDArray[3, np.float32]
 Vector4f = NDArray[4, np.float32]
+Vector6f = NDArray[6, np.float32]

@@ -14,12 +14,21 @@ This file defines the basic structures for shapes, including built-in shapes and
 TODO(Jiayuan Mao @ 03/23): consider object and material mapping?
 """
 
-__all__ = ['ShapeInfo', 'BoxShapeInfo', 'SphereShapeInfo', 'CylinderShapeInfo', 'CapsuleShapeInfo', 'MeshShapeInfo', 'PlaneShapeInfo']
+__all__ = [
+    "ShapeInfo",
+    "BoxShapeInfo",
+    "SphereShapeInfo",
+    "CylinderShapeInfo",
+    "CapsuleShapeInfo",
+    "MeshShapeInfo",
+    "PlaneShapeInfo",
+]
 
-import numpy as np
-from typing import Optional
 from dataclasses import dataclass
-from lisdf.utils.typing import Vector2f, Vector3f
+from typing import Optional
+
+from lisdf.utils.typing import Vector3f
+
 from .base import StringConfigurable
 
 
@@ -33,12 +42,12 @@ class ShapeInfo(StringConfigurable):
         ShapeInfo.type_mapping[type] = cls
 
     @staticmethod
-    def from_type(type, **kwargs):
+    def from_type(type, **kwargs) -> "ShapeInfo":
         return ShapeInfo.type_mapping[type](**kwargs)
 
 
 @dataclass
-class BoxShapeInfo(ShapeInfo, type='box'):
+class BoxShapeInfo(ShapeInfo, type="box"):
     size: Vector3f
 
     def to_sdf(self):
@@ -49,7 +58,7 @@ class BoxShapeInfo(ShapeInfo, type='box'):
 
 
 @dataclass
-class SphereShapeInfo(ShapeInfo, type='sphere'):
+class SphereShapeInfo(ShapeInfo, type="sphere"):
     radius: float
 
     def to_sdf(self):
@@ -60,7 +69,7 @@ class SphereShapeInfo(ShapeInfo, type='sphere'):
 
 
 @dataclass
-class CylinderShapeInfo(ShapeInfo, type='cylinder'):
+class CylinderShapeInfo(ShapeInfo, type="cylinder"):
     radius: float
     half_height: float  # follows the mujoco standard.
 
@@ -77,7 +86,7 @@ class CylinderShapeInfo(ShapeInfo, type='cylinder'):
 
 
 @dataclass
-class CapsuleShapeInfo(ShapeInfo, type='capsule'):
+class CapsuleShapeInfo(ShapeInfo, type="capsule"):
     radius: float
     half_height: float  # follows the mujoco standard.
 
@@ -94,7 +103,7 @@ class CapsuleShapeInfo(ShapeInfo, type='capsule'):
 
 
 @dataclass
-class MeshShapeInfo(ShapeInfo, type='mesh'):
+class MeshShapeInfo(ShapeInfo, type="mesh"):
     filename: str
     size: Vector3f
 
@@ -107,7 +116,7 @@ class MeshShapeInfo(ShapeInfo, type='mesh'):
 
 
 @dataclass
-class PlaneShapeInfo(ShapeInfo, type='plane'):
+class PlaneShapeInfo(ShapeInfo, type="plane"):
     half_width: float  # follows the mujoco standard.
     half_height: float
     normal: Optional[Vector3f] = None
