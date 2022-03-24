@@ -25,7 +25,7 @@ __all__ = [
 ]
 
 from dataclasses import dataclass
-from typing import ClassVar, Optional, Dict, Type
+from typing import ClassVar, Dict, Optional, Type
 
 from lisdf.utils.typing import Vector3f
 
@@ -34,7 +34,7 @@ from .base import StringConfigurable
 
 @dataclass
 class ShapeInfo(StringConfigurable):
-    type_mapping: ClassVar[Dict[str, Type['ShapeInfo']]] = dict()
+    type_mapping: ClassVar[Dict[str, Type["ShapeInfo"]]] = dict()
 
     def __init_subclass__(cls, type: str, **kwargs):
         super().__init_subclass__(**kwargs)

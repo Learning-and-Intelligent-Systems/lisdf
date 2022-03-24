@@ -10,9 +10,10 @@
 
 import os.path as osp
 
+from lisdf.parsing.mjcf import load_mjcf
+
 
 def test_sdf_parsing():
-    from lisdf.parsing.mjcf import load_mjcf
 
     for filename in [
         osp.join(

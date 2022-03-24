@@ -16,10 +16,10 @@ So we only need to make sure it runs.
 import glob
 import os.path as osp
 
+from lisdf.parsing.sdf_j import load_sdf
+
 
 def test_sdf_parsing():
-    from lisdf.parsing.sdf_j import load_sdf
-
     for filename in glob.glob(
         osp.join(osp.dirname(osp.dirname(__file__)), "models", "*.sdf")
     ):

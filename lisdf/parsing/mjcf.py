@@ -104,7 +104,7 @@ class MJCFVisitor(XMLVisitor):
         return node
 
     def mujocoinclude(self, node: XMLNode):
-        """<mojocoinclude> are used only as the root tag for mujoco-included files."""
+        """<mujocoinclude> are used only as the root tag for mujoco-included files."""
         if len(node.children) == 0:
             return self._check_done(node)
         return node
@@ -259,17 +259,15 @@ class MJCFVisitor(XMLVisitor):
         contact_affinity = node.attributes.pop("conaffinity", 0)
         contact_dim = node.attributes.pop("condim", 3)  # frictional
 
-        geom = C.Geom(
+        geom = C.MJCFGeom(
             name,
             pose,
             shape=shape,
             visual=visual,
-            mjcf_configs=dict(
-                inertial_group=inertial_group,
-                contact_type=contact_type,
-                contact_affinity=contact_affinity,
-                contact_dim=contact_dim,
-            ),
+            inertial_group=inertial_group,
+            contact_type=contact_type,
+            contact_affinity=contact_affinity,
+            contact_dim=contact_dim,
         )
         body.collisions.append(geom)
         body.visuals.append(geom)
