@@ -8,6 +8,7 @@
 # This file is part of lisdf.
 # Distributed under terms of the MIT license.
 
+from abc import abstractmethod
 from dataclasses import dataclass
 from typing import ClassVar, Dict, Type
 
@@ -50,6 +51,11 @@ class JointInfo(StringConfigurable):
         super().__init_subclass__(**kwargs)
         setattr(cls, "type", type)
         JointInfo.type_mapping[type] = cls
+
+    # TODO(Jiayuan Mao @ 03/24): find a better way to declare this.
+    @property
+    def type(self):
+        raise NotImplementedError()
 
     @staticmethod
     def from_type(type, **kwargs) -> "JointInfo":

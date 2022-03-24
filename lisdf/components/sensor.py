@@ -25,6 +25,10 @@ class Sensor(StringConfigurable):
         setattr(cls, "type", type)
         Sensor.type_mapping[type] = cls
 
+    @property
+    def type(self):
+        raise NotImplementedError()
+
     @staticmethod
     def from_type(type, **kwargs) -> "Sensor":
         return Sensor.type_mapping[type](**kwargs)
