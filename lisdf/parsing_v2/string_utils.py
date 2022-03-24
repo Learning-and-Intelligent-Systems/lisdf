@@ -46,5 +46,5 @@ def vector6f(string):
 
 def bool_string(string):
     string = string.lower()
-    assert string in ('true', 'false')
-    return string == 'true'
+    assert string in ('true', 'false', '0', '1')
+    return string == 'true' or string == '1'

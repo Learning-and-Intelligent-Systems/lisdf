@@ -14,6 +14,10 @@ from .string_utils import bool_string, vector2f, vector3f, vector4f, vector6f
 
 
 class SDFVisitor(XMLVisitor):
+    def include(self, node):
+        # TODO: Fix
+        return None
+
     @check_done_decorator
     def inertia(self, node):
         return node.set_data(C.Inertia(
@@ -38,11 +42,41 @@ class SDFVisitor(XMLVisitor):
         ))
 
     @check_done_decorator
+    def contact(self, node):
+        if self.node_stack[-1].tag == 'surface':
+            return node.set_data(C.SurfaceContact(sdf_configs={
+                'collide_bitmask': int(self._pop_children(node, 'collide_bitmask', default='0xffff'), 0),
+                'collide_without_contact': bool_string(self._pop_children(node, 'collide_without_contact', default='false'))
+            }))
+        elif self.node_stack[-1].tag == 'sensor':
+            # TODO: Fix
+            node.children = list()
+        return node
+
+    @check_done_decorator
+    def friction(self, node):
+        configs = dict()
+
+        ode_node = self._pop_children(node, 'ode', return_type='node')
+        if ode_node is not None:
+            configs['ode_mu'] = float(self._pop_children(ode_node, 'mu', default=1))
+            configs['ode_mu2'] = float(self._pop_children(ode_node, 'mu2', default=1))
+        return node.set_data(C.SurfaceFriction(sdf_configs=configs))
+
+    @check_done_decorator
+    def surface(self, node):
+        return node.set_data(C.Surface(
+            self._pop_children(node, 'contact', return_type='data', default=C.SurfaceContact()),
+            self._pop_children(node, 'friction', return_type='data', default=C.SurfaceFriction())
+        ))
+
+    @check_done_decorator
     def link(self, node):
         name = node.attributes.pop('name')
         pose = self._pop_children(node, 'pose', return_type='data', default=C.Pose.identity())
         inertial = self._pop_children(node, 'inertial', return_type='data', default=C.Inertial.zeros())
-        link = C.Link(name, pose, inertial)
+        self_collide = bool_string(self._pop_children(node, 'self_collide', default='true'))
+        link = C.Link(name, pose, inertial, sdf_configs=dict(self_collide=self_collide))
         for c in node.children:
             if c.tag == 'collision':
                 link.collisions.append(c.data)
@@ -57,19 +91,24 @@ class SDFVisitor(XMLVisitor):
 
     @check_done_decorator
     def collision(self, node):
-        return node.set_data(C.Geom(
-            node.attributes.pop('name', None),
-            self._pop_children(node, 'pose', return_type='data', default=C.Pose.identity()),
-            self._pop_children(node, 'geometry', return_type='data', required=True)
-        ))
+        if self.node_stack[-1].tag == 'link':
+            return node.set_data(C.Geom(
+                node.attributes.pop('name', None),
+                self._pop_children(node, 'pose', return_type='data', default=C.Pose.identity()),
+                self._pop_children(node, 'geometry', return_type='data', required=True),
+                surface=self._pop_children(node, 'surface', return_type='data', default=C.Surface())
+            ))
+        return node
 
     @check_done_decorator
     def visual(self, node):
+        cast_shadows = bool_string(self._pop_children(node, 'cast_shadows', default='true'))
         return node.set_data(C.Geom(
             node.attributes.pop('name', None),
             self._pop_children(node, 'pose', return_type='data', default=C.Pose.identity()),
             self._pop_children(node, 'geometry', return_type='data', required=True),
-            self._pop_children(node, 'material', return_type='data', default=C.PhongMaterial.default())
+            self._pop_children(node, 'material', return_type='data', default=C.PhongMaterial.default()),
+            sdf_configs=dict(cast_shadows=cast_shadows)
         ))
 
     @check_done_decorator
@@ -119,7 +158,12 @@ class SDFVisitor(XMLVisitor):
     def sensor(self, node):
         name = node.attributes.pop('name')
         type = node.attributes.pop('type')
-        return node.set_data(C.Sensor.from_type(type, name=name))
+        if type == 'camera':
+            return node.set_data(C.Sensor.from_type(type, name=name))
+        else:
+            # TODO:: Fix.
+            node.children = list()
+            return node
 
     @check_done_decorator
     def joint(self, node):
@@ -181,6 +225,23 @@ class SDFVisitor(XMLVisitor):
                 raise NotImplementedError('Unknown tag: {}.'.format(c.tag))
         node.children = list()
         return node.set_data(model)
+
+    @check_done_decorator
+    def urdf_model(self, node):
+        """
+        <urdf-model name="pr2">
+            <uri>pr2.urdf</uri>
+            <pose>0 0 0 0 0 0</pose>
+            <size>1 1 1</pose>
+            <static>false</static>
+        </urdf-model>
+        """
+        name = node.attributes.pop('name', None)
+        uri = self._resolve_path(self._pop_children(node, 'uri', required=True))
+        size = vector3f(self._pop_children(node, 'size', default='1 1 1'))
+        pose = self._pop_children(node, 'pose', return_type='data', default=C.Pose.identity())
+        static = bool_string(self._pop_children(node, 'static', default='false'))
+        return C.URDFModel(name, uri, size, pose, static=static)
 
     @check_done_decorator
     def world(self, node):
