@@ -40,7 +40,8 @@ def load_sdf(model_name: str, models_dir: str = "models") -> SDF:
             for include in world.includes:
                 include_model = load_sdf(include.model_name)
                 world.models.append(include_model)
-    return inject_absolute_path(sdf, model_name)
+    model_path = os.path.join(models_dir, os.path.dirname(model_name))
+    return inject_absolute_path(sdf, model_path)
 
 
 if __name__ == "__main__":  # pragma: no cover
