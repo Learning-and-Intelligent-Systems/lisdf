@@ -160,7 +160,7 @@ class SDFVisitor(XMLVisitor):
                     node,
                     "material",
                     return_type="data",
-                    default=C.PhongMaterial.default(),
+                    default=C.PhongMaterial(),
                 ),
                 sdf_configs=dict(cast_shadows=cast_shadows),
             )

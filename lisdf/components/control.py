@@ -9,6 +9,7 @@
 # Distributed under terms of the MIT license.
 
 from dataclasses import dataclass
+from typing import ClassVar, Dict, Type
 
 import numpy as np
 
@@ -38,7 +39,7 @@ class ControlInfo(object):
 
 @dataclass
 class JointInfo(StringConfigurable):
-    type_mapping = dict()  # type: ignore
+    type_mapping: ClassVar[Dict[str, Type['JointInfo']]] = dict()
 
     def __init_subclass__(cls, type: str, **kwargs):
         super().__init_subclass__(**kwargs)

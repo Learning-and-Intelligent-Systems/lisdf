@@ -9,6 +9,7 @@
 # Distributed under terms of the MIT license.
 
 from dataclasses import dataclass
+from typing import ClassVar, Dict, Type
 
 from .base import StringConfigurable
 
@@ -17,7 +18,7 @@ from .base import StringConfigurable
 class Sensor(StringConfigurable):
     name: str
 
-    type_mapping = dict()  # type: ignore
+    type_mapping: ClassVar[Dict[str, Type['Sensor']]] = dict()
 
     def __init_subclass__(cls, type: str, **kwargs):
         super().__init_subclass__(**kwargs)
