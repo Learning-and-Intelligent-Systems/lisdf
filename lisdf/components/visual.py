@@ -8,7 +8,7 @@
 # This file is part of lisdf.
 # Distributed under terms of the MIT license.
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 import numpy as np
 
@@ -19,12 +19,12 @@ from .base import StringConfigurable
 __all__ = ["VisualInfo", "RGBA", "PhongMaterial", "MJCFMaterial"]
 
 
-@dataclass
+@dataclass(frozen=True)
 class VisualInfo(StringConfigurable):
     pass
 
 
-@dataclass
+@dataclass(frozen=True)
 class RGBA(VisualInfo):
     r: float
     g: float
@@ -32,30 +32,21 @@ class RGBA(VisualInfo):
     a: float
 
     @classmethod
-    def from_numpy(cls, a):
+    def from_numpy(cls, a: Vector4f) -> 'RGBA':
         if a.shape == (3,):
             return cls(a[0], a[1], a[2], 1)
         assert a.shape == (4,)
         return cls(a[0], a[1], a[2], a[3])
 
 
-@dataclass
+@dataclass(frozen=True)
 class PhongMaterial(VisualInfo):
-    ambient: Vector4f
-    diffuse: Vector4f
-    specular: Vector4f
-    emissive: Vector4f
-
-    @classmethod
-    def default(cls):
-        return cls(
-            np.fromstring("1 1 1 1", sep=" ", dtype="float32"),
-            np.fromstring("1 1 1 1", sep=" ", dtype="float32"),
-            np.fromstring("0 0 0 1", sep=" ", dtype="float32"),
-            np.fromstring("0 0 0 1", sep=" ", dtype="float32"),
-        )
+    ambient: Vector4f = field(default_factory=lambda: np.array([1, 1, 1, 1], dtype='float32'))
+    diffuse: Vector4f = field(default_factory=lambda: np.array([1, 1, 1, 1], dtype='float32'))
+    specular: Vector4f = field(default_factory=lambda: np.array([0, 0, 0, 1], dtype='float32'))
+    emissive: Vector4f = field(default_factory=lambda: np.array([0, 0, 0, 1], dtype='float32'))
 
 
-@dataclass
+@dataclass(frozen=True)
 class MJCFMaterial(VisualInfo):
     identifier: str

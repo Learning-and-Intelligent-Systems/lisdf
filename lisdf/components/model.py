@@ -14,7 +14,7 @@ from typing import Any, Dict, List, Optional
 import numpy as np
 
 from lisdf.utils.transformations import euler_from_quaternion, quaternion_from_euler
-from lisdf.utils.typing import Vector3f, Vector4f
+from lisdf.utils.typing import Vector3f, Vector4f, Vector6f
 
 from .base import StringConfigurable
 from .control import ControlInfo, JointInfo
@@ -44,15 +44,15 @@ class Pose(StringConfigurable):
     quat_wxyz: Vector3f
 
     @classmethod
-    def from_rpy_6d(cls, a) -> "Pose":
+    def from_rpy_6d(cls, a: Vector6f) -> "Pose":
         return cls.from_rpy(a[:3], a[3:])
 
     @classmethod
-    def from_rpy(cls, pos, rpy) -> "Pose":
+    def from_rpy(cls, pos: Vector3f, rpy: Vector3f) -> "Pose":
         return cls.from_quat_xyzw(pos, quaternion_from_euler(*rpy))  # type: ignore
 
     @classmethod
-    def from_quat_xyzw(cls, pos, xyzw) -> "Pose":
+    def from_quat_xyzw(cls, pos: Vector3f, xyzw: Vector4f) -> "Pose":
         return cls(pos, np.array([xyzw[3], xyzw[0], xyzw[1], xyzw[2]]))
 
     @classmethod
@@ -87,7 +87,7 @@ class Inertia(StringConfigurable):
         return cls(0, 0, 0, 0, 0, 0)
 
     @classmethod
-    def from_diagnal(cls, ixx, iyy, izz) -> "Inertia":
+    def from_diagonal(cls, ixx, iyy, izz) -> "Inertia":
         return cls(ixx, 0, 0, iyy, 0, izz)
 
     @property
@@ -115,14 +115,12 @@ class Inertial(StringConfigurable):
 
 @dataclass
 class SurfaceContact(StringConfigurable):
-    mjcf_configs: Optional[Dict[str, Any]] = None
-    sdf_configs: Optional[Dict[str, Any]] = None
+    pass
 
 
 @dataclass
 class SurfaceFriction(StringConfigurable):
-    mjcf_configs: Optional[Dict[str, Any]] = None
-    sdf_configs: Optional[Dict[str, Any]] = None
+    pass
 
 
 @dataclass
@@ -139,9 +137,6 @@ class Geom(StringConfigurable):
     visual: Optional[VisualInfo] = None
     surface: Optional[Surface] = None
 
-    mjcf_configs: Optional[Dict[str, Any]] = None
-    sdf_configs: Optional[Dict[str, Any]] = None
-
     @property
     def type(self):
         return self.shape.type
@@ -156,25 +151,13 @@ class Joint(StringConfigurable):
     joint_info: JointInfo
     control_info: Optional[ControlInfo] = None
 
-    mjcf_configs: Optional[Dict[str, Any]] = None
-    sdf_configs: Optional[Dict[str, Any]] = None
-
     @property
     def type(self):
         return self.joint_info.type
 
-    model: Optional["Model"] = None
-
-    def set_model(self, model):
-        self.model = model
-
-    @property
-    def parent_link(self):
-        return self.model.links[self.parent]
-
-    @property
-    def child_link(self):
-        return self.model.links[self.child]
+    # TODO(Jiayuan Mao @ 03/24): add a link to the corresponding `model`,
+    # so we can use joint.parent_link to access the corresponding link
+    # object.
 
 
 @dataclass
@@ -186,14 +169,6 @@ class Link(StringConfigurable):
     collisions: List[Geom] = field(default_factory=list)
     visuals: List[Geom] = field(default_factory=list)
     sensors: List[Sensor] = field(default_factory=list)
-    model: Optional["Model"] = None
-
-    mjcf_configs: Optional[Dict[str, str]] = None
-    sdf_configs: Optional[Dict[str, str]] = None
-    # sites: List[Site] = None
-
-    def set_model(self, model):
-        self.model = model
 
 
 @dataclass

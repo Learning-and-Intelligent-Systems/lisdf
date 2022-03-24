@@ -147,7 +147,7 @@ class MJCFVisitor(XMLVisitor):
         diaginertia = node.attributes.pop("diaginertia")
 
         inertial = C.Inertial(
-            float(mass), pose, C.Inertia.from_diagnal(*vector3f(diaginertia))
+            float(mass), pose, C.Inertia.from_diagonal(*vector3f(diaginertia))
         )
         body = self._st["body"][-1]
         assert body.inertial is None
