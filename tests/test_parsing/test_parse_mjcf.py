@@ -13,14 +13,11 @@ import os.path as osp
 from lisdf.parsing.mjcf import load_mjcf
 
 
-def test_sdf_parsing():
-
-    for filename in [
-        osp.join(
-            osp.dirname(osp.dirname(osp.dirname(__file__))),
-            "models",
-            "mjcf",
-            "sawyer_assembly_peg.xml",
-        )
-    ]:
-        _ = load_mjcf(filename)
+def test_mjcf_parsing():
+    filename = osp.join(
+        osp.dirname(osp.dirname(osp.dirname(__file__))),
+        "models",
+        "mjcf",
+        "sawyer_assembly_peg.xml",
+    )
+    _ = load_mjcf(filename)
