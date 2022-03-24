@@ -10,7 +10,7 @@
 
 import argparse
 
-from lisdf.parsing_v2.mjcf import MJCFVisitor
+from lisdf.parsing.mjcf import MJCFVisitor
 
 parser = argparse.ArgumentParser()
 parser.add_argument("file")

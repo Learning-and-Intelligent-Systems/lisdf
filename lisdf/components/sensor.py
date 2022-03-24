@@ -17,11 +17,11 @@ from .base import StringConfigurable
 class Sensor(StringConfigurable):
     name: str
 
-    type_mapping = dict()
+    type_mapping = dict()  # type: ignore
 
-    def __init_subclass__(cls, type, **kwargs):
+    def __init_subclass__(cls, type: str, **kwargs):
         super().__init_subclass__(**kwargs)
-        cls.type = type
+        setattr(cls, "type", type)
         Sensor.type_mapping[type] = cls
 
     @staticmethod
