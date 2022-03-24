@@ -29,8 +29,8 @@ def vector3f(string: str) -> Vector3f:
 
 
 def wxyz_from_euler(euler: str) -> Vector4f:
-    euler = vector3f(euler)
-    quat = _quaternion_from_euler(*euler)
+    eulerf = vector3f(euler)
+    quat = _quaternion_from_euler(*eulerf)
     return np.array([quat[3], quat[0], quat[1], quat[2]], dtype="float32")
 
 

@@ -12,6 +12,7 @@ mypy
 # Typing stubs for mypy
 types-PyYAML
 types-mock
+types-numpy
 
 # Testing
 pytest

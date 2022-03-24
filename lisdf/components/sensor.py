@@ -9,7 +9,6 @@
 # Distributed under terms of the MIT license.
 
 from dataclasses import dataclass
-from typing import Dict
 
 from .base import StringConfigurable
 

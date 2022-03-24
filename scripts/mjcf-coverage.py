@@ -17,14 +17,11 @@ parser.add_argument("file")
 args = parser.parse_args()
 
 
-def main():
+def main() -> None:
     visitor = MJCFVisitor()
     visitor.set_verbose()
     node = visitor.load_file(args.file)
     print(node)
-    from IPython import embed
-
-    embed()
 
 
 if __name__ == "__main__":
