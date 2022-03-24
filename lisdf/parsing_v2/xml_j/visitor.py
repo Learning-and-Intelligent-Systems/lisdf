@@ -78,7 +78,7 @@ class XMLVisitor(object):
         finally:
             self.filename_stack.pop()
 
-    def _resolve_path(self, path):
+    def _resolve_path(self, path) -> str:
         return osp.normpath(osp.join(osp.dirname(self.filename_stack[-1]), path))
 
     def _pop_children(self, node: XMLNode, tag: str, required=False, return_type='text', default=None):

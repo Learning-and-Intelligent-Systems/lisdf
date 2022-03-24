@@ -96,7 +96,7 @@ class CapsuleShapeInfo(ShapeInfo, type='capsule'):
 @dataclass
 class MeshShapeInfo(ShapeInfo, type='mesh'):
     filename: str
-    size: np.ndarray
+    size: Vector3f
 
     def to_sdf(self):
         return f"""<mesh>

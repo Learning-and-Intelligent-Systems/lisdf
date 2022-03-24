@@ -8,7 +8,7 @@
 # Distributed under terms of the MIT license.
 
 import numpy as np
-from typing import Optional, List, Dict
+from typing import Any, Optional, List, Dict
 from dataclasses import dataclass, field
 from functools import cached_property
 from lisdf.utils.typing import Vector3f
@@ -19,7 +19,7 @@ from .sensor import Sensor
 from .shape import ShapeInfo
 from .visual import VisualInfo
 
-__all__ = ['Pose', 'Inertia', 'Inertial', 'Geom', 'Joint', 'Link', 'Model', 'World', 'URDFModel']
+__all__ = ['Pose', 'Inertia', 'Inertial', 'SurfaceContact', 'SurfaceFriction', 'Surface', 'Geom', 'Joint', 'Link', 'Model', 'URDFModel', 'World']
 
 
 @dataclass
@@ -90,12 +90,33 @@ class Inertial(StringConfigurable):
 
 
 @dataclass
-class Geom(object):
+class SurfaceContact(StringConfigurable):
+    mjcf_configs: Optional[Dict[str, Any]] = None
+    sdf_configs: Optional[Dict[str, Any]] = None
+
+
+@dataclass
+class SurfaceFriction(StringConfigurable):
+    mjcf_configs: Optional[Dict[str, Any]] = None
+    sdf_configs: Optional[Dict[str, Any]] = None
+
+
+@dataclass
+class Surface(StringConfigurable):
+    contact: Optional[SurfaceContact] = None
+    friction: Optional[SurfaceFriction] = None
+
+
+@dataclass
+class Geom(StringConfigurable):
     name: str
     pose: Pose
     shape: ShapeInfo
     visual: Optional[VisualInfo] = None
-    mjcf_configs: Optional[Dict[str, str]] = None
+    surface: Surface = None
+
+    mjcf_configs: Optional[Dict[str, Any]] = None
+    sdf_configs: Optional[Dict[str, Any]] = None
 
     @property
     def type(self):
@@ -103,13 +124,16 @@ class Geom(object):
 
 
 @dataclass
-class Joint(object):
+class Joint(StringConfigurable):
     name: str
     parent: str
     child: str
     pose: Pose
     joint_info: JointInfo
     control_info: Optional[ControlInfo] = None
+
+    mjcf_configs: Optional[Dict[str, Any]] = None
+    sdf_configs: Optional[Dict[str, Any]] = None
 
     @property
     def type(self):
@@ -130,7 +154,7 @@ class Joint(object):
 
 
 @dataclass
-class Link(object):
+class Link(StringConfigurable):
     name: str
     parent: str
     pose: Pose
@@ -139,6 +163,9 @@ class Link(object):
     visuals: List[Geom] = field(default_factory=list)
     sensors: List[Sensor] = field(default_factory=list)
     model: Optional['Model'] = None
+
+    mjcf_configs: Optional[Dict[str, str]] = None
+    sdf_configs: Optional[Dict[str, str]] = None
     # sites: List[Site] = None
 
     def set_model(self, model):
@@ -146,7 +173,7 @@ class Link(object):
 
 
 @dataclass
-class Model(object):
+class Model(StringConfigurable):
     name: str
     pose: Pose
     parent: Optional[str] = None
@@ -157,14 +184,17 @@ class Model(object):
 
 
 @dataclass
-class World(object):
-    name: Optional[str] = None
+class URDFModel(StringConfigurable):
+    name: str
+    uri: str
+    size: Vector3f
+    pose: Pose
+    parent: Optional[str] = None
     static: Optional[bool] = False
-    models: List[Model] = field(default_factory=list)
 
 
 @dataclass
-class URDFModel(object):
-    name: str
-    uri: str
-    pose: Pose
+class World(StringConfigurable):
+    name: Optional[str] = None
+    static: Optional[bool] = False
+    models: List[Model] = field(default_factory=list)
