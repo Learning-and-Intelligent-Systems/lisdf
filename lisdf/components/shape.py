@@ -23,16 +23,13 @@ from lisdf.utils.typing import Vector3f
 
 @dataclass
 class ShapeInfo(StringConfigurable):
+    type: ClassVar[str] = "ShapeInfo"
     type_mapping: ClassVar[Dict[str, Type["ShapeInfo"]]] = dict()
 
     def __init_subclass__(cls, type: str, **kwargs):
         super().__init_subclass__(**kwargs)
         setattr(cls, "type", type)
         ShapeInfo.type_mapping[type] = cls
-
-    @property
-    def type(self) -> str:
-        raise NotImplementedError()
 
     @staticmethod
     def from_type(type, **kwargs) -> "ShapeInfo":
