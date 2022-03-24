@@ -165,7 +165,7 @@ class MJCFVisitor(XMLVisitor):
         data = self._data['site']
         assert name not in data
         data[name] = C.Geom(name, pose, shape, C.RGBA(*vector4f(rgba)))
-        body.geometries.append(data[name])
+        body.visuals.append(data[name])
 
         return self._check_done(node)
 
