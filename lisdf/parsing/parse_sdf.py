@@ -13,7 +13,6 @@ def _handle_component(component, model_path: str) -> None:
             if isinstance(link_component, (Collision, Visual)) and isinstance(
                 link_component.geometry, Mesh
             ):
-                print("yup")
                 link_component.geometry.uri = os.path.join(
                     model_path, link_component.geometry.uri
                 )
