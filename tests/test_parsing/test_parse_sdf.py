@@ -13,6 +13,3 @@ def test_m0m():
     world = parsed_sdf.aggregate_order[0]
     assert len(world.includes) == 0
     assert len(world.models) == 6
-
-
-test_m0m()
