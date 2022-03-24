@@ -18,7 +18,7 @@ parser.add_argument("file")
 args = parser.parse_args()
 
 
-def main():
+def main() -> None:
     node = load_file(args.file)
     print(node)
     print("-" * 120)

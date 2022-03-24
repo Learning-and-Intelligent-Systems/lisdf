@@ -8,7 +8,7 @@
 # This file is part of lisdf.
 # Distributed under terms of the MIT license.
 
-from typing import Generic, TypeVar
+# from typing import Generic, TypeVar
 
 import numpy as np
 
@@ -21,15 +21,20 @@ There are a few more options to do fine-grained numpy typing.
 """
 
 
-Shape = TypeVar("Shape")
-DType = TypeVar("DType")
+# Shape = TypeVar("Shape")
+# DType = TypeVar("DType")
+#
+#
+# class NDArray(np.ndarray, Generic[Shape, DType]):
+#     pass
+#
+#
+# Vector2f = NDArray[3, np.float32]
+# Vector3f = NDArray[3, np.float32]
+# Vector4f = NDArray[4, np.float32]
+# Vector6f = NDArray[6, np.float32]
 
-
-class NDArray(np.ndarray, Generic[Shape, DType]):
-    pass
-
-
-Vector2f = NDArray[3, np.float32]
-Vector3f = NDArray[3, np.float32]
-Vector4f = NDArray[4, np.float32]
-Vector6f = NDArray[6, np.float32]
+Vector2f = np.ndarray
+Vector3f = np.ndarray
+Vector4f = np.ndarray
+Vector6f = np.ndarray
