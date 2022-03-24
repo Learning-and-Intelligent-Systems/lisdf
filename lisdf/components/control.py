@@ -35,17 +35,13 @@ class JointInfo(StringConfigurable):
     will be equivalent to C.HingeJointInfo(axis=np.array([0, 0, 1], dtype='float32'))
     """
 
+    type: ClassVar[str] = "JointInfo"
     type_mapping: ClassVar[Dict[str, Type["JointInfo"]]] = dict()
 
     def __init_subclass__(cls, type: str, **kwargs):
         super().__init_subclass__(**kwargs)
         setattr(cls, "type", type)
         JointInfo.type_mapping[type] = cls
-
-    # TODO(Jiayuan Mao @ 03/24): find a better way to declare this.
-    @property
-    def type(self) -> str:
-        raise NotImplementedError()
 
     @staticmethod
     def from_type(type, **kwargs) -> "JointInfo":
