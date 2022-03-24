@@ -331,7 +331,7 @@ class SDFVisitor(XMLVisitor):
             node, "pose", return_type="data", default=C.Pose.identity()
         )
         static = bool_string(self._pop_children(node, "static", default="false"))
-        return C.URDFModel(name, uri, size, pose, static=static)
+        return node.set_data(C.URDFModel(name, uri, size, pose, static=static))
 
     @check_done_decorator
     def world(self, node):
