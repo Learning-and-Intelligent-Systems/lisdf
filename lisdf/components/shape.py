@@ -24,6 +24,7 @@ __all__ = [
     "PlaneShapeInfo",
 ]
 
+from abc import abstractmethod
 from dataclasses import dataclass
 from typing import ClassVar, Dict, Optional, Type
 
@@ -40,6 +41,10 @@ class ShapeInfo(StringConfigurable):
         super().__init_subclass__(**kwargs)
         setattr(cls, "type", type)
         ShapeInfo.type_mapping[type] = cls
+
+    @property
+    def type(self):
+        raise NotImplementedError()
 
     @staticmethod
     def from_type(type, **kwargs) -> "ShapeInfo":
