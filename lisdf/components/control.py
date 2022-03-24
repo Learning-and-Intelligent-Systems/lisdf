@@ -53,7 +53,7 @@ class JointInfo(StringConfigurable):
 
     # TODO(Jiayuan Mao @ 03/24): find a better way to declare this.
     @property
-    def type(self):
+    def type(self) -> str:
         raise NotImplementedError()
 
     @staticmethod
