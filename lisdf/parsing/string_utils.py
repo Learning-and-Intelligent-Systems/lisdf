@@ -30,7 +30,7 @@ def vector3f(string: str) -> Vector3f:
 
 def wxyz_from_euler(euler: str) -> Vector4f:
     eulerf = vector3f(euler)
-    quat = _quaternion_from_euler(*eulerf)
+    quat = _quaternion_from_euler(*eulerf)  # type: ignore
     return np.array([quat[3], quat[0], quat[1], quat[2]], dtype="float32")
 
 
