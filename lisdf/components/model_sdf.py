@@ -10,7 +10,7 @@
 
 from dataclasses import dataclass
 
-from .model import Geom, Link, SurfaceContact, SurfaceFriction
+from lisdf.components.model import Geom, Link, SurfaceContact, SurfaceFriction
 
 
 @dataclass

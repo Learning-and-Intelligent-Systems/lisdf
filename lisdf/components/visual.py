@@ -12,11 +12,8 @@ from dataclasses import dataclass, field
 
 import numpy as np
 
+from lisdf.components.base import StringConfigurable
 from lisdf.utils.typing import Vector4f
-
-from .base import StringConfigurable
-
-__all__ = ["VisualInfo", "RGBA", "PhongMaterial", "MJCFMaterial"]
 
 
 @dataclass(frozen=True)

@@ -8,11 +8,9 @@
 # This file is part of lisdf.
 # Distributed under terms of the MIT license.
 
-__all__ = ["LISDF"]
-
 from typing import List, Optional
 
-from .model import Model, World
+from lisdf.components.model import Model, World
 
 
 class LISDF:

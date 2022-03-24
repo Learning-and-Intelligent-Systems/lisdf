@@ -9,11 +9,14 @@
 # Distributed under terms of the MIT license.
 
 import lisdf.components as C
-
-from .string_utils import bool_string, vector2f, vector3f, vector4f, vector6f
-from .xml_j.visitor import XMLVisitor, check_done_decorator
-
-__all__ = ["SDFVisitor", "load_sdf"]
+from lisdf.parsing.string_utils import (
+    bool_string,
+    vector2f,
+    vector3f,
+    vector4f,
+    vector6f,
+)
+from lisdf.parsing.xml_j.visitor import XMLVisitor, check_done_decorator
 
 
 class SDFVisitor(XMLVisitor):

@@ -13,11 +13,8 @@ import os.path as osp
 from collections import defaultdict
 from typing import Any, Callable, Dict, List, Optional
 
+from lisdf.parsing.xml_j.xml import XMLNode, load_file
 from lisdf.utils.printing import indent_text
-
-from .xml import XMLNode, load_file
-
-__all__ = ["XMLVisitor"]
 
 
 class XMLVisitor(object):

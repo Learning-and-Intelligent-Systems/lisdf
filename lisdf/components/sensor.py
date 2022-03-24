@@ -11,7 +11,7 @@
 from dataclasses import dataclass
 from typing import ClassVar, Dict, Type
 
-from .base import StringConfigurable
+from lisdf.components.base import StringConfigurable
 
 
 @dataclass

@@ -14,12 +14,15 @@ from copy import deepcopy
 import numpy as np
 
 import lisdf.components as C
-
-from .string_utils import bool_string, vector2f, vector3f, vector4f, wxyz_from_euler
-from .xml_j.visitor import XMLVisitor
-from .xml_j.xml import XMLNode
-
-__all__ = ["MJCFVisitorFlatten", "MJCFVisitor", "load_mjcf"]
+from lisdf.parsing.string_utils import (
+    bool_string,
+    vector2f,
+    vector3f,
+    vector4f,
+    wxyz_from_euler,
+)
+from lisdf.parsing.xml_j.visitor import XMLVisitor
+from lisdf.parsing.xml_j.xml import XMLNode
 
 
 class MJCFVisitorFlatten(XMLVisitor):

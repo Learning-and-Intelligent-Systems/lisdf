@@ -13,17 +13,8 @@ from typing import ClassVar, Dict, Type
 
 import numpy as np
 
+from lisdf.components.base import StringConfigurable
 from lisdf.utils.typing import Vector2f, Vector3f
-
-from .base import StringConfigurable
-
-__all__ = [
-    "ControlInfo",
-    "JointInfo",
-    "FixedJointInfo",
-    "HingeJointInfo",
-    "PrismaticJointInfo",
-]
 
 
 @dataclass
