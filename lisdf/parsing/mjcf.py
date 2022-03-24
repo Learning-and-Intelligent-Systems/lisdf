@@ -15,7 +15,7 @@ import numpy as np
 
 import lisdf.components as C
 
-from .string_utils import vector2f, vector3f, vector4f, wxyz_from_euler
+from .string_utils import bool_string, vector2f, vector3f, vector4f, wxyz_from_euler
 from .xml_j.visitor import XMLVisitor
 from .xml_j.xml import XMLNode
 
@@ -298,7 +298,7 @@ class MJCFVisitor(XMLVisitor):
             type = "prismatic"
 
         axis = node.attributes.pop("axis", "0 0 1")
-        limited = node.attributes.pop("limited", "false")
+        limited = bool_string(node.attributes.pop("limited", "false"))
         range = node.attributes.pop("range", "0 0")
         damping = node.attributes.pop("damping", 0)
         armature = node.attributes.pop("armature", 0)
@@ -402,7 +402,7 @@ class MJCFVisitor(XMLVisitor):
         )
 
     def _find_control(self, node: XMLNode):
-        limited = node.attributes.pop("ctrllimited", "false")
+        limited = bool_string(node.attributes.pop("ctrllimited", "false"))
         range = node.attributes.pop("ctrlrange", "0 0")
         return C.ControlInfo(limited, range)
 
