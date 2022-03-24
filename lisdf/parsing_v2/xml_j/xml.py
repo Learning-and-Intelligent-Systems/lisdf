@@ -10,7 +10,7 @@
 
 
 import xml.etree.ElementTree as et
-from typing import Optional, List
+from typing import Any, Optional, List
 from lisdf.utils.printing import indent_text
 
 __all__ = ['XMLNode', 'load_file', 'load_string']
@@ -27,6 +27,7 @@ class XMLNode(object):
     children: List['XMLNode']
     parent: Optional['XMLNode'] = None
     text: Optional[str]
+    data: Any
 
     def __init__(self, tag):
         self.tag = tag
@@ -34,6 +35,7 @@ class XMLNode(object):
         self.children = list()
         self.parent = None
         self.text = ''
+        self.data = None
 
     def add(self, node: 'XMLNode'):
         self.children.append(node)
@@ -44,6 +46,10 @@ class XMLNode(object):
 
     def set_parent(self, parent: 'XMLNode'):
         self.parent = parent
+
+    def set_data(self, data: Any):
+        self.data = data
+        return self
 
     def clone(self) -> 'XMLNode':
         node = XMLNode(self.tag)
@@ -91,6 +97,8 @@ def _xml2obj(element) -> XMLNode:
 
     node = XMLNode(element.tag)
     node.attributes.update(element.attrib)
+    if element.text is not None:
+        node.set_text(element.text)
     for c in element:
         c = _xml2obj(c)
         if isinstance(c, str):

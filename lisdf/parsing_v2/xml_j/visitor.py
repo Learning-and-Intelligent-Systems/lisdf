@@ -8,6 +8,8 @@
 # This file is part of lisdf.
 # Distributed under terms of the MIT license.
 
+import os.path as osp
+import functools
 from typing import Any, Optional
 from collections import defaultdict
 from lisdf.utils.printing import indent_text
@@ -44,6 +46,8 @@ class XMLVisitor(object):
         def _inner(node: XMLNode):
             if self.verbose:
                 print(indent_text(node.open_tag(), self._indent))
+                if node.text:
+                    print(indent_text(node.text, self._indent + 1))
             self._indent += 1
             try:
                 proc = self._get_processor(node.tag + '_init')
@@ -74,6 +78,32 @@ class XMLVisitor(object):
         finally:
             self.filename_stack.pop()
 
+    def _resolve_path(self, path):
+        return osp.normpath(osp.join(osp.dirname(self.filename_stack[-1]), path))
+
+    def _pop_children(self, node: XMLNode, tag: str, required=False, return_type='text', default=None):
+        assert return_type in ('node', 'text', 'data')
+
+        rv = list()
+        for i, c in enumerate(node.children):
+            if c.tag == tag:
+                rv.append(i)
+        assert len(rv) in (0, 1)
+        if len(rv) == 0:
+            assert not required
+            return default
+        else:
+            obj = node.children[rv[0]]
+            node.children = node.children[:rv[0]] + node.children[rv[0] + 1:]
+            if return_type == 'node':
+                return obj
+            elif return_type == 'text':
+                return obj.text
+            elif return_type == 'data':
+                return obj.data
+            else:
+                raise ValueError('Unknown return type: {}.'.format(return_type))
+
     def _check_done(self, node: XMLNode, attr=True, children=True):
         if attr:
             if len(node.attributes) != 0:
@@ -89,3 +119,14 @@ class XMLVisitor(object):
                 raise ValueError()
         return None
 
+
+def check_done_decorator(func, attr=True, children=True):
+    @functools.wraps(func)
+    def wrapped(*args, **kwargs):
+        rv = func(*args, **kwargs)
+        if attr:
+            assert len(rv.attributes) == 0
+        if children:
+            assert len(rv.children) == 0
+        return rv
+    return wrapped

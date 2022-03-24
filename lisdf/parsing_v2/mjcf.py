@@ -225,7 +225,7 @@ class MJCFVisitor(XMLVisitor):
         rgba = node.attributes.pop('rgba', '0.5 0.5 0.5 1')
 
         if material is not None:
-            visual = C.Material(material)
+            visual = C.MJCFMaterial(material)
         else:
             visual = C.RGBA(*vector4f(rgba))
 
@@ -253,7 +253,8 @@ class MJCFVisitor(XMLVisitor):
                 contact_dim=contact_dim
             )
         )
-        body.geometries.append(geom)
+        body.collisions.append(geom)
+        body.visuals.append(geom)
         if name is not None:
             self._data['geom'][name] = geom
 

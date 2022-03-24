@@ -17,6 +17,7 @@ TODO(Jiayuan Mao @ 03/23): consider object and material mapping?
 __all__ = ['ShapeInfo', 'BoxShapeInfo', 'SphereShapeInfo', 'CylinderShapeInfo', 'CapsuleShapeInfo', 'MeshShapeInfo', 'PlaneShapeInfo']
 
 import numpy as np
+from typing import Optional
 from dataclasses import dataclass
 from lisdf.utils.typing import Vector2f, Vector3f
 from .base import StringConfigurable
@@ -109,6 +110,7 @@ class MeshShapeInfo(ShapeInfo, type='mesh'):
 class PlaneShapeInfo(ShapeInfo, type='plane'):
     half_width: float  # follows the mujoco standard.
     half_height: float
+    normal: Optional[Vector3f] = None
 
     @property
     def width(self):
