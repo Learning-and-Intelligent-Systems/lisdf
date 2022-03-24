@@ -13,6 +13,8 @@ import lisdf.components as C
 from .string_utils import bool_string, vector2f, vector3f, vector4f, vector6f
 from .xml_j.visitor import XMLVisitor, check_done_decorator
 
+__all__ = ['SDFVisitor', 'load_sdf']
+
 
 class SDFVisitor(XMLVisitor):
     def include(self, node):
@@ -358,3 +360,8 @@ class SDFVisitor(XMLVisitor):
                 raise NotImplementedError("Unknown tag: {}.".format(c.tag))
         node.children = list()
         return node.set_data(lisdf)
+
+
+def load_sdf(filename):
+    visitor = SDFVisitor()
+    return visitor.load_file(filename).data
