@@ -26,7 +26,7 @@ class Sensor(StringConfigurable):
         Sensor.type_mapping[type] = cls
 
     @property
-    def type(self):
+    def type(self) -> str:
         raise NotImplementedError()
 
     @staticmethod

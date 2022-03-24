@@ -42,7 +42,7 @@ class ShapeInfo(StringConfigurable):
         ShapeInfo.type_mapping[type] = cls
 
     @property
-    def type(self):
+    def type(self) -> str:
         raise NotImplementedError()
 
     @staticmethod
