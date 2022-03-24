@@ -56,20 +56,16 @@ class SDFVisitor(XMLVisitor):
     def contact(self, node):
         if self.node_stack[-1].tag == "surface":
             return node.set_data(
-                C.SurfaceContact(
-                    sdf_configs={
-                        "collide_bitmask": int(
-                            self._pop_children(
-                                node, "collide_bitmask", default="0xffff"
-                            ),
-                            0,
-                        ),
-                        "collide_without_contact": bool_string(
-                            self._pop_children(
-                                node, "collide_without_contact", default="false"
-                            )
-                        ),
-                    }
+                C.SDFSurfaceContact(
+                    collide_bitmask=int(
+                        self._pop_children(node, "collide_bitmask", default="0xffff"),
+                        0,
+                    ),
+                    collide_without_contact=bool_string(
+                        self._pop_children(
+                            node, "collide_without_contact", default="false"
+                        )
+                    ),
                 )
             )
         elif self.node_stack[-1].tag == "sensor":
@@ -79,13 +75,15 @@ class SDFVisitor(XMLVisitor):
 
     @check_done_decorator
     def friction(self, node):
-        configs = dict()
-
-        ode_node = self._pop_children(node, "ode", return_type="node")
+        # TODO: Handle other types.
+        ode_node = self._pop_children(node, "ode", required=True, return_type="node")
         if ode_node is not None:
-            configs["ode_mu"] = float(self._pop_children(ode_node, "mu", default=1))
-            configs["ode_mu2"] = float(self._pop_children(ode_node, "mu2", default=1))
-        return node.set_data(C.SurfaceFriction(sdf_configs=configs))
+            return node.set_data(
+                C.SDFSurfaceFriction(
+                    ode_mu=float(self._pop_children(ode_node, "mu", default=1)),
+                    ode_mu2=float(self._pop_children(ode_node, "mu2", default=1)),
+                )
+            )
 
     @check_done_decorator
     def surface(self, node):
@@ -112,7 +110,7 @@ class SDFVisitor(XMLVisitor):
         self_collide = bool_string(
             self._pop_children(node, "self_collide", default="true")
         )
-        link = C.Link(name, pose, inertial, sdf_configs=dict(self_collide=self_collide))
+        link = C.SDFLink(name, pose, inertial, self_collide=self_collide)
         for c in node.children:
             if c.tag == "collision":
                 link.collisions.append(c.data)
@@ -150,7 +148,7 @@ class SDFVisitor(XMLVisitor):
             self._pop_children(node, "cast_shadows", default="true")
         )
         return node.set_data(
-            C.Geom(
+            C.SDFGeom(
                 node.attributes.pop("name", None),
                 self._pop_children(
                     node, "pose", return_type="data", default=C.Pose.identity()
@@ -162,7 +160,7 @@ class SDFVisitor(XMLVisitor):
                     return_type="data",
                     default=C.PhongMaterial(),
                 ),
-                sdf_configs=dict(cast_shadows=cast_shadows),
+                cast_shadows=cast_shadows,
             )
         )
 

@@ -70,8 +70,6 @@ class XMLVisitor(object):
                 if self.verbose:
                     print(indent_text(node.close_tag(), self._indent - 1))
                 return node
-            except Exception as e:
-                raise e
             finally:
                 self._indent -= 1
 

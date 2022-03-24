@@ -1,6 +1,6 @@
 #! /usr/bin/env python3
 # -*- coding: utf-8 -*-
-# File   : sdf-coverage.py
+# File   : mjcf_coverage.py
 # Author : Jiayuan Mao
 # Email  : maojiayuan@gmail.com
 # Date   : 03/23/2022
@@ -10,8 +10,7 @@
 
 import argparse
 
-from lisdf.parsing.sdf_j import SDFVisitor
-from lisdf.parsing.xml_j.xml import load_file
+from lisdf.parsing.mjcf import MJCFVisitor
 
 parser = argparse.ArgumentParser()
 parser.add_argument("file")
@@ -19,13 +18,10 @@ args = parser.parse_args()
 
 
 def main() -> None:
-    node = load_file(args.file)
-    print(node)
-    print("-" * 120)
-    visitor = SDFVisitor()
+    visitor = MJCFVisitor()
     visitor.set_verbose()
     node = visitor.load_file(args.file)
-    print("Coverage test passed.")
+    print(node)
 
 
 if __name__ == "__main__":

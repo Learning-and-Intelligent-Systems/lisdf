@@ -10,15 +10,16 @@
 
 __all__ = ["LISDF"]
 
-from typing import Optional, List
-from .model import World, Model
+from typing import List, Optional
+
+from .model import Model, World
 
 
 class LISDF:
     SUPPORTED_VERSIONS = {"1.5", "1.6", "1.7", "1.8", "1.9"}
 
     def __init__(self, sdf_version: str = "1.9"):
-        self.sdf_version = None
+        self.sdf_version = ""
         self.set_sdf_version(sdf_version)
 
         self.model: Optional[Model] = None
