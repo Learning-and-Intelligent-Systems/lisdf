@@ -14,22 +14,11 @@ This file defines the basic structures for shapes, including built-in shapes and
 TODO(Jiayuan Mao @ 03/23): consider object and material mapping?
 """
 
-__all__ = [
-    "ShapeInfo",
-    "BoxShapeInfo",
-    "SphereShapeInfo",
-    "CylinderShapeInfo",
-    "CapsuleShapeInfo",
-    "MeshShapeInfo",
-    "PlaneShapeInfo",
-]
-
 from dataclasses import dataclass
 from typing import ClassVar, Dict, Optional, Type
 
+from lisdf.components.base import StringConfigurable
 from lisdf.utils.typing import Vector3f
-
-from .base import StringConfigurable
 
 
 @dataclass
