@@ -20,6 +20,7 @@ from lisdf.parsing.sdf_j import load_sdf
 
 
 def gen_test(filename_base: str) -> Callable[[], None]:
+    # TODO(Jiayuan Mao @ 03/24): add more assertions.
     def _test_file():
         filename = osp.join(
             osp.dirname(osp.dirname(osp.dirname(__file__))),
