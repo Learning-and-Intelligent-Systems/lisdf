@@ -1,7 +1,7 @@
 import os
 
 from lisdf.parsing.sdf import SDF, Collision, Link, Mesh, Visual
-from lisdf.parsing.urdf import Robot as URDF
+from lisdf.parsing.urdf import Robot as URDF # type: ignore
 
 
 def _handle_component(component, model_path: str) -> None:

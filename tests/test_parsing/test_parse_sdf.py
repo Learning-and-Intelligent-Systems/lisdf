@@ -2,7 +2,7 @@ from collections import Counter
 
 from lisdf.parsing.parse_sdf import load_sdf
 from lisdf.parsing.sdf import Model
-from lisdf.parsing.urdf import Robot
+from lisdf.parsing.urdf import Robot # type: ignore
 
 
 def test_recursive_sdf_parsing():
