@@ -56,6 +56,9 @@ class Pose(StringConfigurable):
     def rpy(self) -> Vector3f:
         return euler_from_quaternion(self.quat_xyzw)  # type: ignore
 
+    def to_sdf(self) -> str:
+        return f'<pose>{self.pos[0]}, {self.pos[1]}, {self.pos[2]}, {self.rpy[0]}, {self.rpy[1]}, {self.rpy[2]}</pose>'
+
 
 @dataclass
 class Inertia(StringConfigurable):
@@ -85,6 +88,16 @@ class Inertia(StringConfigurable):
             dtype=np.float32,
         )
 
+    def to_sdf(self) -> str:
+        return f"""<inertia>
+    <ixx>{self.ixx}</ixx>
+    <ixy>{self.ixy}</ixy>
+    <ixz>{self.ixz}</ixz>
+    <iyy>{self.iyy}</iyy>
+    <iyz>{self.iyz}</iyz>
+    <izz>{self.izz}</izz>
+</inertia>"""
+
 
 @dataclass
 class Inertial(StringConfigurable):
@@ -95,6 +108,13 @@ class Inertial(StringConfigurable):
     @classmethod
     def zeros(cls) -> "Inertial":
         return cls(0, Pose.identity(), Inertia.zeros())
+
+    def to_sdf(self) -> str:
+        return f"""<inertial>
+    <mass>{self.mass}</mass>
+    {self.pose.to_sdf()}
+    {self.inertia.to_sdf()}
+</inertial>"""
 
 
 @dataclass
@@ -125,6 +145,12 @@ class Geom(StringConfigurable):
     def type(self):
         return self.shape.type
 
+    def to_sdf(self) -> str:
+        return f"""<geometry>
+    {self.pose.to_sdf()}
+    {self.shape.to_sdf()} 
+</geometry>"""
+
 
 @dataclass
 class Joint(StringConfigurable):
@@ -143,6 +169,14 @@ class Joint(StringConfigurable):
     # so we can use joint.parent_link to access the corresponding link
     # object.
 
+    def to_sdf(self) -> str:
+        return f"""<joint name="{self.name}" type="{self.type}">
+    <parent>{self.parent}</parent>
+    <child>{self.child}</child>
+    {self.pose.to_sdf()}
+    {self.joint_info.to_sdf()}
+</joint>"""
+
 
 @dataclass
 class Link(StringConfigurable):
@@ -155,6 +189,22 @@ class Link(StringConfigurable):
     sensors: List[Sensor] = field(default_factory=list)
 
 
+    def to_sdf(self) -> str:
+        collision_str = "\n".join([c.to_sdf() for c in self.collisions])
+        visual_str = "\n".join([v.to_sdf() for c in self.visuals])
+        return f"""<link name="{self.name}">
+    {self.pose.to_sdf()}
+    {self.inertial.to_sdf() if self.inertial else ""}
+    <collision>
+        {collision_str} 
+    </collision>
+    <visual>
+        {visual_str}  
+    </visual>
+</link>
+"""
+
+
 @dataclass
 class Model(StringConfigurable):
     name: str
@@ -164,6 +214,17 @@ class Model(StringConfigurable):
 
     links: List[Link] = field(default_factory=list)
     joints: List[Joint] = field(default_factory=list)
+
+    def to_sdf(self) -> str:
+        link_str = "\n".join([l.to_sdf() for l in self.links])
+        joint_str = "\n".join([j.to_sdf() for j in self.joints])
+        return f"""<model name="{self.name}">
+    <static>{self.static}</static>
+    {self.pose.to_sdf()}
+    {link_str}
+    {joint_str}
+</model>
+"""
 
 
 @dataclass
