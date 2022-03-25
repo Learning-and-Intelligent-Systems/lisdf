@@ -1,12 +1,3 @@
-#! /usr/bin/env python3
-# -*- coding: utf-8 -*-
-# File   : model.py
-# Author : Jiayuan Mao
-# Email  : maojiayuan@gmail.com
-# Date   : 03/23/2022
-#
-# Distributed under terms of the MIT license.
-
 from dataclasses import dataclass, field
 from functools import cached_property
 from typing import List, Optional

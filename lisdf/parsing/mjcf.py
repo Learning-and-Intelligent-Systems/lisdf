@@ -1,13 +1,3 @@
-#! /usr/bin/env python3
-# -*- coding: utf-8 -*-
-# File   : mjcf.py
-# Author : Jiayuan Mao
-# Email  : maojiayuan@gmail.com
-# Date   : 03/23/2022
-#
-# This file is part of lisdf.
-# Distributed under terms of the MIT license.
-
 import os.path as osp
 from copy import deepcopy
 

@@ -1,13 +1,3 @@
-#! /usr/bin/env python3
-# -*- coding: utf-8 -*-
-# File   : visitor.py
-# Author : Jiayuan Mao
-# Email  : maojiayuan@gmail.com
-# Date   : 03/23/2022
-#
-# This file is part of lisdf.
-# Distributed under terms of the MIT license.
-
 import functools
 import os.path as osp
 from collections import defaultdict
@@ -21,6 +11,9 @@ class XMLVisitor(object):
     def __init__(self) -> None:
         self.filename_stack: List[str] = list()
         self.node_stack: List[XMLNode] = list()
+
+        # The SDF parser doesn't rely on additional stacks.
+        # These are primarily for the MJCF parser.
         self._st: Dict[str, List[Any]] = defaultdict(list)  # optional stacks.
         self._data: Dict[str, Dict[str, Any]] = defaultdict(dict)  # optional data.
         self._indent: int = 0
@@ -70,6 +63,7 @@ class XMLVisitor(object):
             finally:
                 self._indent -= 1
 
+        # NB(Jiayuan Mao @ 03/25): Essentially, `defer self.filename_stack.pop()`.
         try:
             root = root.clone()
             return _inner(root)
