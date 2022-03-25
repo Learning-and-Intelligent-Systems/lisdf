@@ -99,8 +99,8 @@ class MeshShapeInfo(ShapeInfo, type="mesh"):
 
     def to_sdf(self) -> str:
         return f"""<mesh>
-    <uri>{self.filename}</uri>
-    <scale>{self.size[0]} {self.size[1]} {self.size[2]}</scale>
+  <uri>{self.filename}</uri>
+  <scale>{self.size[0]} {self.size[1]} {self.size[2]}</scale>
 </mesh>
 """
 
@@ -121,6 +121,6 @@ class PlaneShapeInfo(ShapeInfo, type="plane"):
 
     def to_sdf(self) -> str:
         return f"""<plane>
-    <size>{self.width} {self.height}</size>
+  <size>{self.width} {self.height}</size>
 </plane>
 """
