@@ -29,7 +29,7 @@ def test_sdf_parsing_j(filename_base: str):
     filename = osp.join(
         osp.dirname(osp.dirname(osp.dirname(__file__))),
         "models",
-        filename_base + ".sdf",
+        filename_base + "/model.sdf",
     )
     _ = load_sdf(
         filename
