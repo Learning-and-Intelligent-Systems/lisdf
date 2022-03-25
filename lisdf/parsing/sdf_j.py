@@ -364,6 +364,6 @@ class SDFVisitor(XMLVisitor):
         return node.set_data(lisdf)
 
 
-def load_sdf(filename):
+def load_sdf(filename: str) -> C.LISDF:
     visitor = SDFVisitor()
     return visitor.load_file(filename).data

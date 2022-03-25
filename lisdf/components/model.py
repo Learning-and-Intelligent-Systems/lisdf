@@ -18,6 +18,7 @@ from lisdf.components.control import ControlInfo, JointInfo
 from lisdf.components.sensor import Sensor
 from lisdf.components.shape import ShapeInfo
 from lisdf.components.visual import VisualInfo
+from lisdf.utils.printing import indent_text
 from lisdf.utils.transformations import euler_from_quaternion, quaternion_from_euler
 from lisdf.utils.typing import Vector3f, Vector4f, Vector6f
 
@@ -59,7 +60,7 @@ class Pose(StringConfigurable):
     def to_sdf(self) -> str:
         return (
             f"<pose>{self.pos[0]}, {self.pos[1]}, {self.pos[2]}, "
-            "{self.rpy[0]}, {self.rpy[1]}, {self.rpy[2]}</pose>"
+            f"{self.rpy[0]}, {self.rpy[1]}, {self.rpy[2]}</pose>"
         )
 
 
@@ -93,12 +94,12 @@ class Inertia(StringConfigurable):
 
     def to_sdf(self) -> str:
         return f"""<inertia>
-    <ixx>{self.ixx}</ixx>
-    <ixy>{self.ixy}</ixy>
-    <ixz>{self.ixz}</ixz>
-    <iyy>{self.iyy}</iyy>
-    <iyz>{self.iyz}</iyz>
-    <izz>{self.izz}</izz>
+  <ixx>{self.ixx}</ixx>
+  <ixy>{self.ixy}</ixy>
+  <ixz>{self.ixz}</ixz>
+  <iyy>{self.iyy}</iyy>
+  <iyz>{self.iyz}</iyz>
+  <izz>{self.izz}</izz>
 </inertia>"""
 
 
@@ -114,9 +115,9 @@ class Inertial(StringConfigurable):
 
     def to_sdf(self) -> str:
         return f"""<inertial>
-    <mass>{self.mass}</mass>
-    {self.pose.to_sdf()}
-    {self.inertia.to_sdf()}
+  <mass>{self.mass}</mass>
+  {self.pose.to_sdf()}
+  {indent_text(self.inertia.to_sdf()).strip()}
 </inertial>"""
 
 
@@ -150,8 +151,8 @@ class Geom(StringConfigurable):
 
     def to_sdf(self) -> str:
         return f"""<geometry>
-    {self.pose.to_sdf()}
-    {self.shape.to_sdf()}
+  {self.pose.to_sdf()}
+  {indent_text(self.shape.to_sdf()).strip()}
 </geometry>"""
 
 
@@ -174,10 +175,10 @@ class Joint(StringConfigurable):
 
     def to_sdf(self) -> str:
         return f"""<joint name="{self.name}" type="{self.type}">
-    <parent>{self.parent}</parent>
-    <child>{self.child}</child>
-    {self.pose.to_sdf()}
-    {self.joint_info.to_sdf()}
+  <parent>{self.parent}</parent>
+  <child>{self.child}</child>
+  {self.pose.to_sdf()}
+  {indent_text(self.joint_info.to_sdf()).strip()}
 </joint>"""
 
 
@@ -195,14 +196,14 @@ class Link(StringConfigurable):
         collision_str = "\n".join([c.to_sdf() for c in self.collisions])
         visual_str = "\n".join([v.to_sdf() for v in self.visuals])
         return f"""<link name="{self.name}">
-    {self.pose.to_sdf()}
-    {self.inertial.to_sdf() if self.inertial else ""}
-    <collision>
-        {collision_str}
-    </collision>
-    <visual>
-        {visual_str}
-    </visual>
+  {self.pose.to_sdf()}
+  {indent_text(self.inertial.to_sdf()).strip() if self.inertial else "<!--empty inertial-->"}
+  <collision>
+    {indent_text(collision_str, 2).strip()}
+  </collision>
+  <visual>
+    {indent_text(visual_str, 2).strip()}
+  </visual>
 </link>
 """
 
@@ -212,7 +213,7 @@ class Model(StringConfigurable):
     name: str
     pose: Pose
     parent: Optional[str] = None
-    static: Optional[bool] = False
+    static: bool = False
 
     links: List[Link] = field(default_factory=list)
     joints: List[Joint] = field(default_factory=list)
@@ -221,10 +222,10 @@ class Model(StringConfigurable):
         link_str = "\n".join([link.to_sdf() for link in self.links])
         joint_str = "\n".join([joint.to_sdf() for joint in self.joints])
         return f"""<model name="{self.name}">
-    <static>{self.static}</static>
-    {self.pose.to_sdf()}
-    {link_str}
-    {joint_str}
+  <static>{self.static}</static>
+  {self.pose.to_sdf()}
+  {indent_text(link_str).strip()}
+  {indent_text(joint_str).strip()}
 </model>
 """
 
@@ -236,11 +237,11 @@ class URDFModel(StringConfigurable):
     size: Vector3f
     pose: Pose
     parent: Optional[str] = None
-    static: Optional[bool] = False
+    static: bool = False
 
 
 @dataclass
 class World(StringConfigurable):
     name: Optional[str] = None
-    static: Optional[bool] = False
+    static: bool = False
     models: List[Model] = field(default_factory=list)
