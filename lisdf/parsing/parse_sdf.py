@@ -32,7 +32,7 @@ def inject_absolute_path(sdf: SDF, model_path: str) -> SDF:
     return sdf
 
 
-def load_urdf(model_name: str, models_dir: str = "models") -> URDF:
+def load_urdf(model_name: str, models_dir: str) -> URDF:
     urdf_path = os.path.join(models_dir, model_name)
     with open(urdf_path) as f:
         xml_str = f.read()
@@ -40,7 +40,7 @@ def load_urdf(model_name: str, models_dir: str = "models") -> URDF:
     return urdf
 
 
-def load_sdf(model_name: str, models_dir: str = "models") -> SDF:
+def load_sdf(model_name: str, models_dir: str) -> SDF:
     sdf_path = os.path.join(models_dir, model_name)
     with open(sdf_path) as f:
         xml_str = f.read()
@@ -61,5 +61,5 @@ def load_sdf(model_name: str, models_dir: str = "models") -> SDF:
 
 if __name__ == "__main__":  # pragma: no cover
     sdf_test = "mud_test/model.sdf"
-    sdf_results = load_sdf(sdf_test)
+    sdf_results = load_sdf(sdf_test, models_dir="lisdf-models/models/")
     # print(sdf_results)

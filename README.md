@@ -1,8 +1,15 @@
 # LISdf
-A repository for a universal I/O spec for TAMP, along with scripts to convert from popular specs to our spec
-
+A repository for a universal I/O spec for Task and Motion Planning (TAMP), along with scripts to convert from 
+popular specs to our spec.
 
 ## Installation
+1. Clone the repository using `git clone`. 
+2. If you wish to use the `lisdf-models` repository which includes our model files then run 
+   `git submodule update --init`
+   - **WARNING!** The models in this repo are ~600MB as of 2022-03-25.
+3. Follow the instructions below to install dependencies. If you plan on contributing or running the tests, then 
+   additionally follow the "Instructions for Contributing" section.
+
 ### Dependencies
 This repository requires Python 3.8+. We recommend you create a 
 [conda env](https://docs.conda.io/projects/conda/en/latest/user-guide/tasks/manage-environments.html) or 
