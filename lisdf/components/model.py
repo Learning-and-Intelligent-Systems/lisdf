@@ -57,7 +57,10 @@ class Pose(StringConfigurable):
         return euler_from_quaternion(self.quat_xyzw)  # type: ignore
 
     def to_sdf(self) -> str:
-        return f'<pose>{self.pos[0]}, {self.pos[1]}, {self.pos[2]}, {self.rpy[0]}, {self.rpy[1]}, {self.rpy[2]}</pose>'
+        return (
+            f"<pose>{self.pos[0]}, {self.pos[1]}, {self.pos[2]}, "
+            "{self.rpy[0]}, {self.rpy[1]}, {self.rpy[2]}</pose>"
+        )
 
 
 @dataclass
@@ -148,7 +151,7 @@ class Geom(StringConfigurable):
     def to_sdf(self) -> str:
         return f"""<geometry>
     {self.pose.to_sdf()}
-    {self.shape.to_sdf()} 
+    {self.shape.to_sdf()}
 </geometry>"""
 
 
@@ -188,18 +191,17 @@ class Link(StringConfigurable):
     visuals: List[Geom] = field(default_factory=list)
     sensors: List[Sensor] = field(default_factory=list)
 
-
     def to_sdf(self) -> str:
         collision_str = "\n".join([c.to_sdf() for c in self.collisions])
-        visual_str = "\n".join([v.to_sdf() for c in self.visuals])
+        visual_str = "\n".join([v.to_sdf() for v in self.visuals])
         return f"""<link name="{self.name}">
     {self.pose.to_sdf()}
     {self.inertial.to_sdf() if self.inertial else ""}
     <collision>
-        {collision_str} 
+        {collision_str}
     </collision>
     <visual>
-        {visual_str}  
+        {visual_str}
     </visual>
 </link>
 """
@@ -216,8 +218,8 @@ class Model(StringConfigurable):
     joints: List[Joint] = field(default_factory=list)
 
     def to_sdf(self) -> str:
-        link_str = "\n".join([l.to_sdf() for l in self.links])
-        joint_str = "\n".join([j.to_sdf() for j in self.joints])
+        link_str = "\n".join([link.to_sdf() for link in self.links])
+        joint_str = "\n".join([joint.to_sdf() for joint in self.joints])
         return f"""<model name="{self.name}">
     <static>{self.static}</static>
     {self.pose.to_sdf()}
