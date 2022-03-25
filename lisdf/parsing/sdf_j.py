@@ -114,7 +114,7 @@ class SDFVisitor(XMLVisitor):
             self._pop_children(node, "self_collide", default="true")
         )
         # TODO(Jiayuan Mao @ 03/24: handle parent.
-        link = C.SDFLink(name, '', pose, inertial, self_collide=self_collide)
+        link = C.SDFLink(name, "", pose, inertial, self_collide=self_collide)
         for c in node.children:
             if c.tag == "collision":
                 link.collisions.append(c.data)
