@@ -14,27 +14,17 @@ This file defines the basic structures for shapes, including built-in shapes and
 TODO(Jiayuan Mao @ 03/23): consider object and material mapping?
 """
 
-__all__ = [
-    "ShapeInfo",
-    "BoxShapeInfo",
-    "SphereShapeInfo",
-    "CylinderShapeInfo",
-    "CapsuleShapeInfo",
-    "MeshShapeInfo",
-    "PlaneShapeInfo",
-]
-
 from dataclasses import dataclass
-from typing import Optional
+from typing import ClassVar, Dict, Optional, Type
 
+from lisdf.components.base import StringConfigurable
 from lisdf.utils.typing import Vector3f
-
-from .base import StringConfigurable
 
 
 @dataclass
 class ShapeInfo(StringConfigurable):
-    type_mapping = dict()  # type: ignore
+    type: ClassVar[str] = "ShapeInfo"
+    type_mapping: ClassVar[Dict[str, Type["ShapeInfo"]]] = dict()
 
     def __init_subclass__(cls, type: str, **kwargs):
         super().__init_subclass__(**kwargs)
@@ -50,7 +40,7 @@ class ShapeInfo(StringConfigurable):
 class BoxShapeInfo(ShapeInfo, type="box"):
     size: Vector3f
 
-    def to_sdf(self):
+    def to_sdf(self) -> str:
         return f"""<box>
   <size>{self.size[0]} {self.size[1]} {self.size[2]}</size>
 </box>
@@ -61,7 +51,7 @@ class BoxShapeInfo(ShapeInfo, type="box"):
 class SphereShapeInfo(ShapeInfo, type="sphere"):
     radius: float
 
-    def to_sdf(self):
+    def to_sdf(self) -> str:
         return f"""<sphere>
   <radius>{self.radius}</radius>
 </sphere>
@@ -74,10 +64,10 @@ class CylinderShapeInfo(ShapeInfo, type="cylinder"):
     half_height: float  # follows the mujoco standard.
 
     @property
-    def length(self):
+    def length(self) -> float:
         return self.half_height * 2
 
-    def to_sdf(self):
+    def to_sdf(self) -> str:
         return f"""<cylinder>
   <radius>{self.radius}</radius>
   <length>{self.length}</length>
@@ -91,10 +81,10 @@ class CapsuleShapeInfo(ShapeInfo, type="capsule"):
     half_height: float  # follows the mujoco standard.
 
     @property
-    def length(self):
+    def length(self) -> float:
         return self.half_height * 2
 
-    def to_sdf(self):
+    def to_sdf(self) -> str:
         return f"""<capsule>
   <radius>{self.radius}</radius>
   <length>{self.length}</length>
@@ -107,7 +97,7 @@ class MeshShapeInfo(ShapeInfo, type="mesh"):
     filename: str
     size: Vector3f
 
-    def to_sdf(self):
+    def to_sdf(self) -> str:
         return f"""<mesh>
     <uri>{self.filename}</uri>
     <scale>{self.size[0]} {self.size[1]} {self.size[2]}</scale>
@@ -122,14 +112,14 @@ class PlaneShapeInfo(ShapeInfo, type="plane"):
     normal: Optional[Vector3f] = None
 
     @property
-    def width(self):
+    def width(self) -> float:
         return self.half_width * 2
 
     @property
-    def height(self):
+    def height(self) -> float:
         return self.half_height * 2
 
-    def to_sdf(self):
+    def to_sdf(self) -> str:
         return f"""<plane>
     <size>{self.width} {self.height}</size>
 </plane>

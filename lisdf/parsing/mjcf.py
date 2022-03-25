@@ -14,12 +14,15 @@ from copy import deepcopy
 import numpy as np
 
 import lisdf.components as C
-
-from .string_utils import vector2f, vector3f, vector4f, wxyz_from_euler
-from .xml_j.visitor import XMLVisitor
-from .xml_j.xml import XMLNode
-
-__all__ = ["MJCFVisitorFlatten", "MJCFVisitor", "load_mjcf"]
+from lisdf.parsing.string_utils import (
+    bool_string,
+    vector2f,
+    vector3f,
+    vector4f,
+    wxyz_from_euler,
+)
+from lisdf.parsing.xml_j.visitor import XMLVisitor
+from lisdf.parsing.xml_j.xml import XMLNode
 
 
 class MJCFVisitorFlatten(XMLVisitor):
@@ -39,6 +42,11 @@ class MJCFVisitor(XMLVisitor):
     """
     A minimal MJCF reader that handles a subset of all attributes.
     """
+
+    # TODO(Jiayuan Mao @ 03/24): think about a better way to unify
+    # the parsing of sdf and mjcf files.
+
+    # TODO(Jiayuan Mao @ 03/24): write better docs for self._check_done.
 
     """Defaults"""
 
@@ -104,7 +112,7 @@ class MJCFVisitor(XMLVisitor):
         return node
 
     def mujocoinclude(self, node: XMLNode):
-        """<mojocoinclude> are used only as the root tag for mujoco-included files."""
+        """<mujocoinclude> are used only as the root tag for mujoco-included files."""
         if len(node.children) == 0:
             return self._check_done(node)
         return node
@@ -147,7 +155,7 @@ class MJCFVisitor(XMLVisitor):
         diaginertia = node.attributes.pop("diaginertia")
 
         inertial = C.Inertial(
-            float(mass), pose, C.Inertia.from_diagnal(*vector3f(diaginertia))
+            float(mass), pose, C.Inertia.from_diagonal(*vector3f(diaginertia))
         )
         body = self._st["body"][-1]
         assert body.inertial is None
@@ -259,17 +267,15 @@ class MJCFVisitor(XMLVisitor):
         contact_affinity = node.attributes.pop("conaffinity", 0)
         contact_dim = node.attributes.pop("condim", 3)  # frictional
 
-        geom = C.Geom(
+        geom = C.MJCFGeom(
             name,
             pose,
             shape=shape,
             visual=visual,
-            mjcf_configs=dict(
-                inertial_group=inertial_group,
-                contact_type=contact_type,
-                contact_affinity=contact_affinity,
-                contact_dim=contact_dim,
-            ),
+            inertial_group=inertial_group,
+            contact_type=contact_type,
+            contact_affinity=contact_affinity,
+            contact_dim=contact_dim,
         )
         body.collisions.append(geom)
         body.visuals.append(geom)
@@ -300,7 +306,7 @@ class MJCFVisitor(XMLVisitor):
             type = "prismatic"
 
         axis = node.attributes.pop("axis", "0 0 1")
-        limited = node.attributes.pop("limited", "false")
+        limited = bool_string(node.attributes.pop("limited", "false"))
         range = node.attributes.pop("range", "0 0")
         damping = node.attributes.pop("damping", 0)
         armature = node.attributes.pop("armature", 0)
@@ -404,7 +410,7 @@ class MJCFVisitor(XMLVisitor):
         )
 
     def _find_control(self, node: XMLNode):
-        limited = node.attributes.pop("ctrllimited", "false")
+        limited = bool_string(node.attributes.pop("ctrllimited", "false"))
         range = node.attributes.pop("ctrlrange", "0 0")
         return C.ControlInfo(limited, range)
 

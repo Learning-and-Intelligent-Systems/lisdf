@@ -8,8 +8,11 @@
 # This file is part of lisdf.
 # Distributed under terms of the MIT license.
 
+from abc import ABC
 
-class StringConfigurable(object):
+
+class StringConfigurable(ABC):
+    # TODO(Jiayuan Mao @ 03/24): implement these methods for the child classes.
     def to_sdf(self) -> str:
         raise NotImplementedError()
 

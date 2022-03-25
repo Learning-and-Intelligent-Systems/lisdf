@@ -12,5 +12,6 @@ exclude_lines =
     @abc.abstractmethod
 
 omit =
+    # The GREAT transformations.py. We don't need to test it here.
+    # It has been tested everywhere.
     lisdf/utils/transformations.py
-
