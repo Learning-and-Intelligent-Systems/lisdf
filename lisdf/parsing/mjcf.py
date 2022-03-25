@@ -11,7 +11,7 @@ from lisdf.parsing.string_utils import (
     vector4f,
     wxyz_from_euler,
 )
-from lisdf.parsing.xml_j.visitor import XMLVisitor
+from lisdf.parsing.xml_j.visitor import XMLVisitor, check_done
 from lisdf.parsing.xml_j.xml import XMLNode
 
 
@@ -36,7 +36,7 @@ class MJCFVisitor(XMLVisitor):
     # TODO(Jiayuan Mao @ 03/24): think about a better way to unify
     # the parsing of sdf and mjcf files.
 
-    # TODO(Jiayuan Mao @ 03/24): write better docs for self._check_done.
+    # TODO(Jiayuan Mao @ 03/24): write better docs for check_done.
 
     """Defaults"""
 
@@ -59,12 +59,12 @@ class MJCFVisitor(XMLVisitor):
             self._data["defaults"][classname] = self._st["default"][-1]
             st.pop()
         node.attributes.pop("class", None)
-        return self._check_done(node)
+        return check_done(node)
 
     """Asset"""
 
     def asset(self, node: XMLNode):
-        return self._check_done(node)
+        return check_done(node)
 
     def mesh(self, node: XMLNode):
         file = node.attributes.pop("file")
@@ -73,7 +73,7 @@ class MJCFVisitor(XMLVisitor):
         data = self._data["mesh"]
         assert name not in data
         data[name] = dict(filename=file, scale=scale)
-        return self._check_done(node)
+        return check_done(node)
 
     def texture(self, node: XMLNode):
         name = node.attributes.pop("name", "skybox")
@@ -82,14 +82,14 @@ class MJCFVisitor(XMLVisitor):
         data = self._data["texture"]
         assert name not in data
         data[name] = node.attributes.copy()
-        return self._check_done(node, attr=False)
+        return check_done(node, attr=False)
 
     def material(self, node: XMLNode):
         name = node.attributes.pop("name")
         data = self._data["material"]
         assert name not in data
         data[name] = node.attributes.copy()
-        return self._check_done(node, attr=False)
+        return check_done(node, attr=False)
 
     def include(self, node: XMLNode) -> XMLNode:
         filename = osp.join(
@@ -104,7 +104,7 @@ class MJCFVisitor(XMLVisitor):
     def mujocoinclude(self, node: XMLNode):
         """<mujocoinclude> are used only as the root tag for mujoco-included files."""
         if len(node.children) == 0:
-            return self._check_done(node)
+            return check_done(node)
         return node
 
     def body_init(self, node: XMLNode):
@@ -133,7 +133,7 @@ class MJCFVisitor(XMLVisitor):
 
         # TODO(Jiayuan Mao @ 03/23): fix this.
         node.attributes.pop("mocap", None)
-        return self._check_done(node)
+        return check_done(node)
 
     def camera(self, node: XMLNode):
         # TODO(Jiayuan Mao @ 03/23): fix this.
@@ -150,7 +150,7 @@ class MJCFVisitor(XMLVisitor):
         body = self._st["body"][-1]
         assert body.inertial is None
         body.inertial = inertial
-        return self._check_done(node)
+        return check_done(node)
 
     def site(self, node: XMLNode):
         name = node.attributes.pop("name")
@@ -176,7 +176,7 @@ class MJCFVisitor(XMLVisitor):
         data[name] = C.Geom(name, pose, shape, C.RGBA(*vector4f(rgba)))
         body.visuals.append(data[name])
 
-        return self._check_done(node)
+        return check_done(node)
 
     def geom(self, node: XMLNode):
         st = self._st["default"]
@@ -272,7 +272,7 @@ class MJCFVisitor(XMLVisitor):
         if name is not None:
             self._data["geom"][name] = geom
 
-        return self._check_done(node)
+        return check_done(node)
 
     def joint(self, node: XMLNode):
         st = self._st["default"]
@@ -324,7 +324,7 @@ class MJCFVisitor(XMLVisitor):
         body_parent = self._st["body"][-2]
         joint.parent = body_parent.name
         joint.child = body_child.name
-        return self._check_done(node)
+        return check_done(node)
 
     def freejoint(self, node: XMLNode):
         name = node.attributes.pop("name", None)
@@ -341,15 +341,15 @@ class MJCFVisitor(XMLVisitor):
         body_parent = self._st["body"][-2]
         joint.parent = body_parent.name
         joint.child = body_child.name
-        return self._check_done(node)
+        return check_done(node)
 
     def worldbody(self, node: XMLNode):
         if len(node.children) == 0:
-            return self._check_done(node)
+            return check_done(node)
         return node
 
     def actuator(self, node: XMLNode):
-        return self._check_done(node)
+        return check_done(node)
 
     def position(self, node: XMLNode):
         st = self._st["default"]
@@ -376,7 +376,7 @@ class MJCFVisitor(XMLVisitor):
         assert joint not in data
         # TODO(Jiayuan Mao @ 03/23): fix this.
         self._data["actuator"][joint] = (joint, float(kp), control)
-        return self._check_done(node)
+        return check_done(node)
 
     def _find_rotation(self, node: XMLNode):
         found = set()

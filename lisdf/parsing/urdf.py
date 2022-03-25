@@ -306,10 +306,10 @@ xmlr.reflect(
     JointLimit,
     tag="limit",
     params=[
-        xmlr.Attribute("effort", float, False),
+        xmlr.Attribute("effort", float),
         xmlr.Attribute("lower", float, False, 0),
         xmlr.Attribute("upper", float, False, 0),
-        xmlr.Attribute("velocity", float, False),
+        xmlr.Attribute("velocity", float),
     ],
 )
 

@@ -39,6 +39,37 @@ class XMLNode(object):
         self.data = data
         return self
 
+    def pop(self, tag: str, required=False, return_type="text", default=None) -> Any:
+        """Pop a child node from the children list based on the tag name.
+        This function also checks the uniqueness of such child node."""
+        assert return_type in ("node", "text", "data")
+
+        rv = list()
+        for i, c in enumerate(self.children):
+            if c.tag == tag:
+                rv.append(i)
+        assert len(rv) in (0, 1)
+        if len(rv) == 0:
+            assert not required
+            return default
+        else:
+            obj = self.children[rv[0]]
+            self.children = self.children[: rv[0]] + self.children[rv[0] + 1 :]
+            if return_type == "node":
+                return obj
+            elif return_type == "text":
+                return obj.text
+            elif return_type == "data":
+                return obj.data
+            else:
+                raise ValueError("Unknown return type: {}.".format(return_type))
+
+    def pop_all_children(self) -> List["XMLNode"]:
+        try:
+            return self.children
+        finally:
+            self.children = list()
+
     def clone(self) -> "XMLNode":
         node = XMLNode(self.tag)
         node.attributes.update(self.attributes.copy())
