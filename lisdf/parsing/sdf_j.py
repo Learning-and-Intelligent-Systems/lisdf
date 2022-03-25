@@ -1,6 +1,6 @@
 #! /usr/bin/env python3
 # -*- coding: utf-8 -*-
-# File   : sdf.py
+# File   : sdf_j.py
 # Author : Jiayuan Mao
 # Email  : maojiayuan@gmail.com
 # Date   : 03/23/2022
@@ -13,7 +13,7 @@ import lisdf.components as C
 from .string_utils import bool_string, vector2f, vector3f, vector4f, vector6f
 from .xml_j.visitor import XMLVisitor, check_done_decorator
 
-__all__ = ['SDFVisitor', 'load_sdf']
+__all__ = ["SDFVisitor", "load_sdf"]
 
 
 class SDFVisitor(XMLVisitor):

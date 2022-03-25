@@ -10,15 +10,15 @@
 
 import argparse
 
-from lisdf.parsing_v2.sdf import SDFVisitor
-from lisdf.parsing_v2.xml_j.xml import load_file
+from lisdf.parsing.sdf_j import SDFVisitor
+from lisdf.parsing.xml_j.xml import load_file
 
 parser = argparse.ArgumentParser()
 parser.add_argument("file")
 args = parser.parse_args()
 
 
-def main():
+def main() -> None:
     node = load_file(args.file)
     print(node)
     print("-" * 120)

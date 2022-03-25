@@ -49,7 +49,7 @@ class Pose(StringConfigurable):
 
     @classmethod
     def from_rpy(cls, pos, rpy) -> "Pose":
-        return cls.from_quat_xyzw(pos, quaternion_from_euler(*rpy))
+        return cls.from_quat_xyzw(pos, quaternion_from_euler(*rpy))  # type: ignore
 
     @classmethod
     def from_quat_xyzw(cls, pos, xyzw) -> "Pose":
@@ -70,7 +70,7 @@ class Pose(StringConfigurable):
 
     @cached_property
     def rpy(self) -> Vector3f:
-        return euler_from_quaternion(self.quat_xyzw)
+        return euler_from_quaternion(self.quat_xyzw)  # type: ignore
 
 
 @dataclass

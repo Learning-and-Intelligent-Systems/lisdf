@@ -38,12 +38,11 @@ class ControlInfo(object):
 
 @dataclass
 class JointInfo(StringConfigurable):
+    type_mapping = dict()  # type: ignore
 
-    type_mapping = dict()
-
-    def __init_subclass__(cls, type, **kwargs):
+    def __init_subclass__(cls, type: str, **kwargs):
         super().__init_subclass__(**kwargs)
-        cls.type = type
+        setattr(cls, "type", type)
         JointInfo.type_mapping[type] = cls
 
     @staticmethod

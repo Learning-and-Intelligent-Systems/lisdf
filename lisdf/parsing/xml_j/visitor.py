@@ -11,7 +11,7 @@
 import functools
 import os.path as osp
 from collections import defaultdict
-from typing import Any, Callable, Optional
+from typing import Any, Callable, Dict, List, Optional
 
 from lisdf.utils.printing import indent_text
 
@@ -21,16 +21,16 @@ __all__ = ["XMLVisitor"]
 
 
 class XMLVisitor(object):
-    def __init__(self):
-        self.filename_stack = list()
-        self.node_stack = list()
-        self._st = defaultdict(list)  # optional stacks.
-        self._data = defaultdict(dict)  # optional data.
-        self._indent = 0
+    def __init__(self) -> None:
+        self.filename_stack: List[str] = list()
+        self.node_stack: List[XMLNode] = list()
+        self._st: Dict[str, List[Any]] = defaultdict(list)  # optional stacks.
+        self._data: Dict[str, Dict[str, Any]] = defaultdict(dict)  # optional data.
+        self._indent: int = 0
 
         self.verbose = False
 
-    def set_verbose(self, flag=True):
+    def set_verbose(self, flag: bool = True) -> None:
         self.verbose = flag
 
     def _get_processor(self, tag: str) -> Optional[Callable[[XMLNode], Any]]:

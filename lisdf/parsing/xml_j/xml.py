@@ -113,10 +113,10 @@ def _xml2obj(element) -> XMLNode:
     return node
 
 
-def load_string(value):
+def load_string(value: str) -> XMLNode:
     return _xml2obj(et.fromstring(value))
 
 
-def load_file(filename):
+def load_file(filename: str) -> XMLNode:
     with open(filename) as f:
         return _xml2obj(et.fromstring(f.read()))

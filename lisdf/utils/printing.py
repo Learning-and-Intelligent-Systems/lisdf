@@ -8,7 +8,7 @@ DEFAULT_TABSIZE = 2
 
 def indent_text(
     text: str,
-    level: Optional[int] = 1,
+    level: int = 1,
     indent_format: Optional[str] = None,
     tabsize: Optional[int] = None,
 ):
@@ -19,5 +19,6 @@ def indent_text(
         indent_format = " " * tabsize
     if indent_format is None and tabsize is None:
         indent_format = "  "
+    assert isinstance(indent_format, str)
     indent_format = indent_format * level
     return indent_format + text.replace("\n", "\n" + indent_format)
