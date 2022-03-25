@@ -9,20 +9,12 @@
 # Distributed under terms of the MIT license.
 
 from dataclasses import dataclass
+from typing import ClassVar, Dict, Type
 
 import numpy as np
 
+from lisdf.components.base import StringConfigurable
 from lisdf.utils.typing import Vector2f, Vector3f
-
-from .base import StringConfigurable
-
-__all__ = [
-    "ControlInfo",
-    "JointInfo",
-    "FixedJointInfo",
-    "HingeJointInfo",
-    "PrismaticJointInfo",
-]
 
 
 @dataclass
@@ -30,15 +22,21 @@ class ControlInfo(object):
     limited: bool
     range: Vector2f
 
-    def __init__(self, limited: str, range: Vector2f):
-        assert limited in ("true", "false")
-        self.limited = limited == "true"
-        self.range = range
-
 
 @dataclass
 class JointInfo(StringConfigurable):
-    type_mapping = dict()  # type: ignore
+    """
+    When inherit from this class, child classes should pass type="XXX"
+    as a keyword argument. This will register a new JointInfo type
+    in this class. Then,
+
+    >>> JointInfo.from_type('hinge', axis=np.array([0, 0, 1], dtype='float32'))
+
+    will be equivalent to C.HingeJointInfo(axis=np.array([0, 0, 1], dtype='float32'))
+    """
+
+    type: ClassVar[str] = "JointInfo"
+    type_mapping: ClassVar[Dict[str, Type["JointInfo"]]] = dict()
 
     def __init_subclass__(cls, type: str, **kwargs):
         super().__init_subclass__(**kwargs)
@@ -57,17 +55,31 @@ class FixedJointInfo(JointInfo, type="fixed"):
 
 @dataclass
 class ControllableJointInfo(JointInfo, type="controllable"):
+    # NB(Jiayuan Mao @ 03/24): intentionally wrote a explicit constructor.
+    # Otherwise inheritance will be a disaster.
+    # TODO(Jiayuan Mao @ 03/24): seems that the kw_only feature in Python 3.10 may help.
+    # But that's a too new release.
     limited: bool
     range: Vector2f
     damping: float
     armatrue: float
 
-    def __init__(self, limited, range, damping, armature):
-        assert limited in ("true", "false")
-        self.limited = limited == "true"
+    def __init__(
+        self,
+        limited: bool = False,
+        range: Vector2f = np.zeros(2, dtype="float32"),
+        damping: float = 0.0,
+        armature: float = 0.0,
+    ):
+        self.limited = limited
         self.range = range
         self.damping = damping
         self.armatrue = armature
+
+
+@dataclass
+class FreeJointInfo(ControllableJointInfo, type="free"):
+    pass
 
 
 @dataclass
@@ -76,11 +88,11 @@ class HingeJointInfo(ControllableJointInfo, type="hinge"):
 
     def __init__(
         self,
-        axis,
-        limited="false",
-        range=np.zeros(2, dtype="float32"),
-        damping=0.0,
-        armature=0.0,
+        axis: Vector3f,
+        limited: bool = False,
+        range: Vector2f = np.zeros(2, dtype="float32"),
+        damping: float = 0.0,
+        armature: float = 0.0,
     ):
         super().__init__(limited, range, damping, armature)
         self.axis = axis
@@ -92,17 +104,11 @@ class PrismaticJointInfo(ControllableJointInfo, type="prismatic"):
 
     def __init__(
         self,
-        axis,
-        limited="false",
-        range=np.zeros(2, dtype="float32"),
-        damping=0.0,
-        armature=0.0,
+        axis: Vector3f,
+        limited: bool = False,
+        range: Vector2f = np.zeros(2, dtype="float32"),
+        damping: float = 0.0,
+        armature: float = 0.0,
     ):
         super().__init__(limited, range, damping, armature)
         self.axis = axis
-
-
-@dataclass
-class FreeJointInfo(JointInfo, type="free"):
-    def __init__(self):
-        super().__init__("false", np.zeros(2, dtype="float32"), 0, 0)

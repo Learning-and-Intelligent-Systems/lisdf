@@ -14,8 +14,6 @@ from typing import Any, List, Optional
 
 from lisdf.utils.printing import indent_text
 
-__all__ = ["XMLNode", "load_file", "load_string"]
-
 
 class _G(dict):
     def __getattr__(self, attr):

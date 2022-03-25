@@ -9,16 +9,19 @@
 # Distributed under terms of the MIT license.
 
 import lisdf.components as C
-
-from .string_utils import bool_string, vector2f, vector3f, vector4f, vector6f
-from .xml_j.visitor import XMLVisitor, check_done_decorator
-
-__all__ = ["SDFVisitor", "load_sdf"]
+from lisdf.parsing.string_utils import (
+    bool_string,
+    vector2f,
+    vector3f,
+    vector4f,
+    vector6f,
+)
+from lisdf.parsing.xml_j.visitor import XMLVisitor, check_done_decorator
 
 
 class SDFVisitor(XMLVisitor):
     def include(self, node):
-        # TODO: Fix
+        # TODO(Jiayuan Mao @ 03/24): implement sdf include.
         return None
 
     @check_done_decorator
@@ -56,36 +59,34 @@ class SDFVisitor(XMLVisitor):
     def contact(self, node):
         if self.node_stack[-1].tag == "surface":
             return node.set_data(
-                C.SurfaceContact(
-                    sdf_configs={
-                        "collide_bitmask": int(
-                            self._pop_children(
-                                node, "collide_bitmask", default="0xffff"
-                            ),
-                            0,
-                        ),
-                        "collide_without_contact": bool_string(
-                            self._pop_children(
-                                node, "collide_without_contact", default="false"
-                            )
-                        ),
-                    }
+                C.SDFSurfaceContact(
+                    collide_bitmask=int(
+                        self._pop_children(node, "collide_bitmask", default="0xffff"),
+                        0,
+                    ),
+                    collide_without_contact=bool_string(
+                        self._pop_children(
+                            node, "collide_without_contact", default="false"
+                        )
+                    ),
                 )
             )
         elif self.node_stack[-1].tag == "sensor":
-            # TODO: Fix
+            # TODO(Jiayuan Mao @ 03/24): implement sensor information.
             node.children = list()
         return node
 
     @check_done_decorator
     def friction(self, node):
-        configs = dict()
-
-        ode_node = self._pop_children(node, "ode", return_type="node")
+        # TODO(Jiayuan Mao @ 03/24: handle other types of friction notations.
+        ode_node = self._pop_children(node, "ode", required=True, return_type="node")
         if ode_node is not None:
-            configs["ode_mu"] = float(self._pop_children(ode_node, "mu", default=1))
-            configs["ode_mu2"] = float(self._pop_children(ode_node, "mu2", default=1))
-        return node.set_data(C.SurfaceFriction(sdf_configs=configs))
+            return node.set_data(
+                C.SDFSurfaceFriction(
+                    ode_mu=float(self._pop_children(ode_node, "mu", default=1)),
+                    ode_mu2=float(self._pop_children(ode_node, "mu2", default=1)),
+                )
+            )
 
     @check_done_decorator
     def surface(self, node):
@@ -112,7 +113,7 @@ class SDFVisitor(XMLVisitor):
         self_collide = bool_string(
             self._pop_children(node, "self_collide", default="true")
         )
-        link = C.Link(name, pose, inertial, sdf_configs=dict(self_collide=self_collide))
+        link = C.SDFLink(name, pose, inertial, self_collide=self_collide)
         for c in node.children:
             if c.tag == "collision":
                 link.collisions.append(c.data)
@@ -150,7 +151,7 @@ class SDFVisitor(XMLVisitor):
             self._pop_children(node, "cast_shadows", default="true")
         )
         return node.set_data(
-            C.Geom(
+            C.SDFGeom(
                 node.attributes.pop("name", None),
                 self._pop_children(
                     node, "pose", return_type="data", default=C.Pose.identity()
@@ -160,9 +161,9 @@ class SDFVisitor(XMLVisitor):
                     node,
                     "material",
                     return_type="data",
-                    default=C.PhongMaterial.default(),
+                    default=C.PhongMaterial(),
                 ),
-                sdf_configs=dict(cast_shadows=cast_shadows),
+                cast_shadows=cast_shadows,
             )
         )
 
@@ -213,7 +214,8 @@ class SDFVisitor(XMLVisitor):
 
     @check_done_decorator
     def material(self, node):
-        self._pop_children(node, "script")  # TODO: fix it.
+        # TODO(Jiayuan Mao @ 03/24: store the script somewhere.
+        self._pop_children(node, "script")
 
         return node.set_data(
             C.PhongMaterial(
@@ -231,7 +233,7 @@ class SDFVisitor(XMLVisitor):
         if type == "camera":
             return node.set_data(C.Sensor.from_type(type, name=name))
         else:
-            # TODO:: Fix.
+            # TODO(Jiayuan Mao @ 03/24: implement other types of sensors.
             node.children = list()
             return node
 
@@ -239,7 +241,7 @@ class SDFVisitor(XMLVisitor):
     def joint(self, node):
         type = node.attributes.pop("type", "continuous")
 
-        # TODO: add dynamics
+        # TODO(Jiayuan Mao @ 03/24: implement dynamics control information.
         if type == "fixed":
             joint_info = C.FixedJointInfo()
         elif type == "continuous":
@@ -256,7 +258,7 @@ class SDFVisitor(XMLVisitor):
                 )
             )
         elif type == "revolute":
-            # TODO: Handle limits
+            # TODO(Jiayuan Mao @ 03/24: store joint limits.
             joint_info = C.HingeJointInfo(
                 vector3f(
                     self._pop_children(
