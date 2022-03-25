@@ -197,7 +197,7 @@ class Link(StringConfigurable):
         visual_str = "\n".join([v.to_sdf() for v in self.visuals])
         return f"""<link name="{self.name}">
   {self.pose.to_sdf()}
-  {indent_text(self.inertial.to_sdf()).strip() if self.inertial else "<!--empty inertial-->"}
+  {indent_text(self.inertial.to_sdf()).strip() if self.inertial is not None else "<!--empty inertial-->"}
   <collision>
     {indent_text(collision_str, 2).strip()}
   </collision>
