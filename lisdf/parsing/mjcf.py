@@ -43,6 +43,11 @@ class MJCFVisitor(XMLVisitor):
     A minimal MJCF reader that handles a subset of all attributes.
     """
 
+    # TODO(Jiayuan Mao @ 03/24): think about a better way to unify
+    # the parsing of sdf and mjcf files.
+
+    # TODO(Jiayuan Mao @ 03/24): write better docs for self._check_done.
+
     """Defaults"""
 
     def default_init(self, node: XMLNode):
