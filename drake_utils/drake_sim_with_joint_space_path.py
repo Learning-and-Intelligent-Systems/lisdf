@@ -68,10 +68,6 @@ def main(joint_space_paths: JointSpacePaths):
     trajs = np.array([np.zeros((9,)), panda_home, panda_home])
 
     t_all = np.array([0, 5.0, 10.0])
-    q_traj = PiecewisePolynomial.CubicShapePreserving(t_all, trajs.T)
-
-    qs_for_controller = [q_traj.value(t) for t in np.linspace(0, 5.0, 100)]
-    print("num robot confs q in traj:", len(qs_for_controller))
 
     joint_controller = builder.AddSystem(RobotJointSpaceController(joint_space_paths))
 

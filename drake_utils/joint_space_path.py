@@ -11,10 +11,10 @@ class JointSpacePathWithTime:
         self.end_time = end_time  # in seconds. Robot expected to be at path[-1]
         self.validate()
 
-        # Create piecewise polynomial trajectory
+        # Create trajectory that linearly interpolates between given confs over times
         num_confs = self.confs.shape[0]
         t_all = np.linspace(self.start_time, self.end_time, num_confs)
-        self._traj = PiecewisePolynomial.CubicShapePreserving(t_all, self.confs.T)
+        self._traj = PiecewisePolynomial.FirstOrderHold(t_all, self.confs.T)
 
     def conf_at_time(self, t: float) -> np.ndarray:
         return self._traj.value(t)
