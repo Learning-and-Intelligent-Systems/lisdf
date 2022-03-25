@@ -1,4 +1,5 @@
 import os
+from typing import Union
 
 from lisdf.parsing.sdf import SDF, Collision, Link, Mesh, Visual
 from lisdf.parsing.urdf import Robot as URDF  # type: ignore
@@ -39,7 +40,7 @@ def load_urdf(model_name: str, models_dir: str = "models") -> URDF:
     return urdf
 
 
-def load_sdf(model_name: str, models_dir: str = "models") -> SDF:
+def load_sdf(model_name: str, models_dir: str = "models") -> Union[SDF, URDF]:
     sdf_path = os.path.join(models_dir, model_name)
     with open(sdf_path) as f:
         xml_str = f.read()

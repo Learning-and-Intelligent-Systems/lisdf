@@ -41,3 +41,6 @@ def test_partnet_urdf():
 
     assert len(world.includes) == 1
     assert len(world.models) == 3
+
+
+test_partnet_urdf()
