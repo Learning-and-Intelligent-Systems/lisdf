@@ -76,12 +76,12 @@ class XMLVisitor(object):
         finally:
             self.filename_stack.pop()
 
-    def _resolve_path(self, path) -> str:
+    def _resolve_path(self, path: str) -> str:
         return osp.normpath(osp.join(osp.dirname(self.filename_stack[-1]), path))
 
     def _pop_children(
         self, node: XMLNode, tag: str, required=False, return_type="text", default=None
-    ):
+    ) -> Any:
         assert return_type in ("node", "text", "data")
 
         rv = list()
@@ -104,7 +104,9 @@ class XMLVisitor(object):
             else:
                 raise ValueError("Unknown return type: {}.".format(return_type))
 
-    def _check_done(self, node: XMLNode, attr=True, children=True):
+    def _check_done(
+        self, node: XMLNode, attr: bool = True, children: bool = True
+    ) -> None:
         if attr:
             if len(node.attributes) != 0:
                 print("Unprocessed attributes.")

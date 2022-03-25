@@ -114,7 +114,13 @@ class SDFVisitor(XMLVisitor):
             self._pop_children(node, "self_collide", default="true")
         )
         # TODO(Jiayuan Mao @ 03/24: handle parent.
-        link = C.SDFLink(name, "", pose, inertial, self_collide=self_collide)
+        link = C.SDFLink(
+            name=name,
+            parent=None,
+            pose=pose,
+            inertial=inertial,
+            self_collide=self_collide,
+        )
         for c in node.children:
             if c.tag == "collision":
                 link.collisions.append(c.data)
@@ -132,11 +138,11 @@ class SDFVisitor(XMLVisitor):
         if self.node_stack[-1].tag == "link":
             return node.set_data(
                 C.Geom(
-                    node.attributes.pop("name", None),
-                    self._pop_children(
+                    name=node.attributes.pop("name", None),
+                    pose=self._pop_children(
                         node, "pose", return_type="data", default=C.Pose.identity()
                     ),
-                    self._pop_children(
+                    shape=self._pop_children(
                         node, "geometry", return_type="data", required=True
                     ),
                     surface=self._pop_children(
@@ -153,12 +159,14 @@ class SDFVisitor(XMLVisitor):
         )
         return node.set_data(
             C.SDFGeom(
-                node.attributes.pop("name", None),
-                self._pop_children(
+                name=node.attributes.pop("name", None),
+                pose=self._pop_children(
                     node, "pose", return_type="data", default=C.Pose.identity()
                 ),
-                self._pop_children(node, "geometry", return_type="data", required=True),
-                self._pop_children(
+                shape=self._pop_children(
+                    node, "geometry", return_type="data", required=True
+                ),
+                visual=self._pop_children(
                     node,
                     "material",
                     return_type="data",
