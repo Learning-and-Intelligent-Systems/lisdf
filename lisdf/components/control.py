@@ -97,6 +97,9 @@ class HingeJointInfo(ControllableJointInfo, type="hinge"):
         super().__init__(limited, range, damping, armature)
         self.axis = axis
 
+    def to_sdf(self) -> str:
+        return f"""<axis>{self.axis[0]} {self.axis[1]} {self.axis[2]}</axis>"""
+
 
 @dataclass
 class PrismaticJointInfo(ControllableJointInfo, type="prismatic"):
@@ -112,3 +115,6 @@ class PrismaticJointInfo(ControllableJointInfo, type="prismatic"):
     ):
         super().__init__(limited, range, damping, armature)
         self.axis = axis
+
+    def to_sdf(self) -> str:
+        return f"""<axis>{self.axis[0]} {self.axis[1]} {self.axis[2]}</axis>"""
