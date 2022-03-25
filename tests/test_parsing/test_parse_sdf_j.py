@@ -11,7 +11,7 @@ from lisdf.parsing.sdf_j import load_sdf
 
 
 @pytest.mark.parametrize(
-    "filename_base",
+    "test_dir",
     [
         "basic_test",
         "collision_test",
@@ -24,13 +24,9 @@ from lisdf.parsing.sdf_j import load_sdf
         "m0m_0_test",
     ],
 )
-def test_sdf_parsing_j(filename_base: str):
+def test_sdf_parsing_j(models_dir, test_dir: str):
     # TODO(Jiayuan Mao @ 03/24): add more assertions.
-    filename = osp.join(
-        osp.dirname(osp.dirname(osp.dirname(__file__))),
-        "models",
-        filename_base + "/model.sdf",
-    )
+    filename = osp.join(models_dir, test_dir, "model.sdf")
     _ = load_sdf(
         filename
     )  # the parser already asserts all attributes and nodes are parsed.
