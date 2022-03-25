@@ -21,7 +21,7 @@ from lisdf.parsing.xml_j.visitor import XMLVisitor, check_done_decorator
 
 class SDFVisitor(XMLVisitor):
     def include(self, node):
-        # TODO: Fix
+        # TODO(Jiayuan Mao @ 03/24): implement sdf include.
         return None
 
     @check_done_decorator
@@ -72,13 +72,13 @@ class SDFVisitor(XMLVisitor):
                 )
             )
         elif self.node_stack[-1].tag == "sensor":
-            # TODO: Fix
+            # TODO(Jiayuan Mao @ 03/24): implement sensor information.
             node.children = list()
         return node
 
     @check_done_decorator
     def friction(self, node):
-        # TODO: Handle other types.
+        # TODO(Jiayuan Mao @ 03/24: handle other types of friction notations.
         ode_node = self._pop_children(node, "ode", required=True, return_type="node")
         if ode_node is not None:
             return node.set_data(
@@ -214,7 +214,8 @@ class SDFVisitor(XMLVisitor):
 
     @check_done_decorator
     def material(self, node):
-        self._pop_children(node, "script")  # TODO: fix it.
+        # TODO(Jiayuan Mao @ 03/24: store the script somewhere.
+        self._pop_children(node, "script")
 
         return node.set_data(
             C.PhongMaterial(
@@ -232,7 +233,7 @@ class SDFVisitor(XMLVisitor):
         if type == "camera":
             return node.set_data(C.Sensor.from_type(type, name=name))
         else:
-            # TODO:: Fix.
+            # TODO(Jiayuan Mao @ 03/24: implement other types of sensors.
             node.children = list()
             return node
 
@@ -240,7 +241,7 @@ class SDFVisitor(XMLVisitor):
     def joint(self, node):
         type = node.attributes.pop("type", "continuous")
 
-        # TODO: add dynamics
+        # TODO(Jiayuan Mao @ 03/24: implement dynamics control information.
         if type == "fixed":
             joint_info = C.FixedJointInfo()
         elif type == "continuous":
@@ -257,7 +258,7 @@ class SDFVisitor(XMLVisitor):
                 )
             )
         elif type == "revolute":
-            # TODO: Handle limits
+            # TODO(Jiayuan Mao @ 03/24: store joint limits.
             joint_info = C.HingeJointInfo(
                 vector3f(
                     self._pop_children(
