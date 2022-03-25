@@ -10,14 +10,14 @@
 
 import argparse
 
-from lisdf.parsing_v2.mjcf import MJCFVisitorFlatten
+from lisdf.parsing.mjcf import MJCFVisitorFlatten
 
 parser = argparse.ArgumentParser()
 parser.add_argument("file")
 args = parser.parse_args()
 
 
-def main():
+def main() -> None:
     visitor = MJCFVisitorFlatten()
     node = visitor.load_file(args.file)
     print(node)

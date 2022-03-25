@@ -19,7 +19,7 @@ from .string_utils import vector2f, vector3f, vector4f, wxyz_from_euler
 from .xml_j.visitor import XMLVisitor
 from .xml_j.xml import XMLNode
 
-__all__ = ["MJCFVisitorFlatten", "MJCFVisitor"]
+__all__ = ["MJCFVisitorFlatten", "MJCFVisitor", "load_mjcf"]
 
 
 class MJCFVisitorFlatten(XMLVisitor):
@@ -407,3 +407,15 @@ class MJCFVisitor(XMLVisitor):
         limited = node.attributes.pop("ctrllimited", "false")
         range = node.attributes.pop("ctrlrange", "0 0")
         return C.ControlInfo(limited, range)
+
+
+def load_mjcf(filename: str, flatten_only: bool = False):
+    visitor: XMLVisitor
+
+    if flatten_only:
+        visitor = MJCFVisitorFlatten()
+        return visitor.load_file(filename)
+
+    visitor = MJCFVisitor()
+    visitor.load_file(filename)
+    return visitor

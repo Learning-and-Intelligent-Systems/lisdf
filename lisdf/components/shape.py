@@ -34,11 +34,11 @@ from .base import StringConfigurable
 
 @dataclass
 class ShapeInfo(StringConfigurable):
-    type_mapping = dict()
+    type_mapping = dict()  # type: ignore
 
-    def __init_subclass__(cls, type, **kwargs):
+    def __init_subclass__(cls, type: str, **kwargs):
         super().__init_subclass__(**kwargs)
-        cls.type = type
+        setattr(cls, "type", type)
         ShapeInfo.type_mapping[type] = cls
 
     @staticmethod
