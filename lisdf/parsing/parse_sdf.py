@@ -1,6 +1,7 @@
 import os
 
 from lisdf.parsing.sdf import SDF, Collision, Link, Mesh, Visual
+from lisdf.parsing.urdf import Robot as URDF
 
 
 def _handle_component(component, model_path: str) -> None:
@@ -30,6 +31,14 @@ def inject_absolute_path(sdf: SDF, model_path: str) -> SDF:
     return sdf
 
 
+def load_urdf(model_name: str, models_dir: str = "models") -> URDF:
+    urdf_path = os.path.join(models_dir, model_name)
+    with open(urdf_path) as f:
+        xml_str = f.read()
+        urdf = URDF.from_xml_string(xml_str)
+    return urdf
+
+
 def load_sdf(model_name: str, models_dir: str = "models") -> SDF:
     sdf_path = os.path.join(models_dir, model_name)
     with open(sdf_path) as f:
@@ -38,7 +47,11 @@ def load_sdf(model_name: str, models_dir: str = "models") -> SDF:
         for world in sdf.aggregate_order:
             # Load all the includes in the world
             for include in world.includes:
-                include_model = load_sdf(include.model_name)
+                if include.uri.endswith("urdf"):
+                    include_model = load_urdf(include.uri, models_dir=models_dir)
+                else:
+                    include_model = load_sdf(include.model_name, models_dir=models_dir)
+
                 world.models.append(include_model)
     model_path = os.path.join(models_dir, os.path.dirname(model_name))
     return inject_absolute_path(sdf, model_path)

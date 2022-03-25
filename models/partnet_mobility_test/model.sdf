@@ -1,0 +1,111 @@
+<?xml version="1.0" ?>
+<!-- Based on a M0M test run -->
+<sdf version="1.9">
+	<world name="M0M_problem_0">
+		<include>
+			<uri>partnet_mobility/48721/mobility.urdf</uri>
+			<name>cabinet</name>
+			<pose>0 0 1.0 0 0 0</pose>
+		</include>
+		<model name="floor#1_1">
+			<link name="table_top">
+				<pose>0.0 0.0 0 0 0 0</pose>
+				<collision name="table_top_collision">
+					<geometry>
+						<box>
+							<size>3 3 0.001</size>
+						</box>
+					</geometry>
+				</collision>
+				<visual name="floor_visual">
+					<geometry>
+						<box>
+							<size>3 3 0.001</size>
+						</box>
+					</geometry>
+					<material>
+						<ambient>0.4 0.4 0.4 1</ambient>
+						<diffuse>0.4 0.4 0.4 1</diffuse>
+						<specular>0.4 0.4 0.4 1</specular>
+						<emissive>0.4 0.4 0.4 1</emissive>
+					</material>
+				</visual>
+			</link>
+		</model>
+		<model name="table#1_1">
+			<static>true</static>
+			<pose>0 0 0 0 0 0</pose>
+                        <link name='world'> </link>
+			<joint name="fix_to_world_0" type="fixed">
+				<parent>world</parent>
+				<child>table_top</child>
+			</joint>
+			<joint name="fix_to_world_1" type="fixed">
+				<parent>world</parent>
+				<child>table_leg_1</child>
+			</joint>
+			<joint name="fix_to_world_2" type="fixed">
+				<parent>world</parent>
+				<child>table_leg_2</child>
+			</joint>
+			<joint name="fix_to_world_3" type="fixed">
+				<parent>world</parent>
+				<child>table_leg_3</child>
+			</joint>
+			<joint name="fix_to_world_4" type="fixed">
+				<parent>world</parent>
+				<child>table_leg_4</child>
+			</joint>
+			<link name="table_top">
+				<pose>0.0 0.0 0.715 0 0 0</pose>
+				<collision name="table_top_collision">
+					<geometry>
+						<box>
+							<size>0.6 1.2 0.03</size>
+						</box>
+					</geometry>
+				</collision>
+			</link>
+			<link name="table_leg_1">
+				<pose>-0.285 -0.585 0.35 0 0 0</pose>
+				<collision name="table_leg_1_collision">
+					<geometry>
+						<box>
+							<size>0.03 0.03 0.7</size>
+						</box>
+					</geometry>
+				</collision>
+			</link>
+			<link name="table_leg_2">
+				<pose>-0.285 0.585 0.35 0 0 0</pose>
+				<collision name="table_leg_2_collision">
+					<geometry>
+						<box>
+							<size>0.03 0.03 0.7</size>
+						</box>
+					</geometry>
+				</collision>
+			</link>
+			<link name="table_leg_3">
+				<pose>0.285 -0.585 0.35 0 0 0</pose>
+				<collision name="table_leg_3_collision">
+					<geometry>
+						<box>
+							<size>0.03 0.03 0.7</size>
+						</box>
+					</geometry>
+				</collision>
+			</link>
+			<link name="table_leg_4">
+				<pose>0.285 0.585 0.35 0 0 0</pose>
+				<collision name="table_leg_3_collision">
+					<geometry>
+						<box>
+							<size>0.03 0.03 0.7</size>
+						</box>
+					</geometry>
+				</collision>
+			</link>
+		</model>
+	</world>
+</sdf>

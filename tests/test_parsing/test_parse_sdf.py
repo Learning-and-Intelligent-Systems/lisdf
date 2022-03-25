@@ -21,3 +21,10 @@ def test_m0m():
     )
     assert len(world.includes) == 0
     assert len(world.models) == 6
+
+
+def test_partnet_urdf():
+    parsed_sdf = load_sdf("partnet_mobility_test/model.sdf")
+    world = parsed_sdf.aggregate_order[0]
+    assert len(world.includes) == 1
+    assert len(world.models) == 3
