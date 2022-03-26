@@ -37,6 +37,7 @@ def test_command_to_dict():
     [
         pytest.param([], 1.0, id="empty waypoints"),
         pytest.param({"joint_1": 0.0}, 1.0, id="waypoint is a float"),
+        pytest.param({"joint_1": []}, 2.5, id="waypoint is empty list"),
         pytest.param(
             {"joint_1": [0.0]},
             2.5,
@@ -223,26 +224,28 @@ def test_joint_space_path_waypoint_as_np_array(complex_path):
     expected_waypoint_at_idx_10 = list(
         _expected_waypoint_at_idx(complex_path.waypoints, 10).values()
     )
+    assert len(expected_waypoint_at_idx_0) == len(expected_waypoint_at_idx_10) == 7
 
-    assert np.array_equal(
+    assert np.isclose(
         complex_path.waypoint_as_np_array(0, joint_name_ordering),
         np.array(expected_waypoint_at_idx_0),
-    )
-    assert np.array_equal(
+    ).all()
+
+    assert np.isclose(
         complex_path.waypoint_as_np_array(10, joint_name_ordering),
         np.array(expected_waypoint_at_idx_10),
-    )
+    ).all()
 
     # Reverse ordering: joint_7, joint_6, ..., joint_1
     reversed_joint_name_ordering = list(reversed(joint_name_ordering))
-    assert np.array_equal(
+    assert np.isclose(
         complex_path.waypoint_as_np_array(0, reversed_joint_name_ordering),
         np.array(list(reversed(expected_waypoint_at_idx_0))),
-    )
-    assert np.array_equal(
+    ).all()
+    assert np.isclose(
         complex_path.waypoint_as_np_array(10, reversed_joint_name_ordering),
         np.array(list(reversed(expected_waypoint_at_idx_10))),
-    )
+    ).all()
 
     # Invalid joint name ordering 1_joint, 2_joint, etc.
     with pytest.raises(ValueError):
@@ -257,20 +260,20 @@ def test_joint_space_paths_waypoints_as_np_array(complex_path):
     joint_name_ordering = [f"joint_{num}" for num in range(1, 8)]
     expected_np_array = np.array(
         [complex_path.waypoints[joint_name] for joint_name in joint_name_ordering]
-    )
-    assert expected_np_array.shape == (7, 11)
+    ).T
+    assert expected_np_array.shape == (11, 7)
 
-    assert np.array_equal(
+    assert np.isclose(
         complex_path.waypoints_as_np_array(joint_name_ordering), expected_np_array
-    )
+    ).all()
 
     # Reverse ordering: joint_7, joint_6, ..., joint_1
     # Check matrix is flipped as well
     reversed_joint_name_ordering = list(reversed(joint_name_ordering))
-    assert np.array_equal(
+    assert np.isclose(
         complex_path.waypoints_as_np_array(reversed_joint_name_ordering),
-        np.flip(expected_np_array, axis=0),
-    )
+        np.flip(expected_np_array, axis=1),
+    ).all()
 
     # Invalid joint name ordering 1_joint, 2_joint, etc.
     with pytest.raises(ValueError):

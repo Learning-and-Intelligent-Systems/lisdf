@@ -28,7 +28,7 @@ If you are creating a virtual environment within the project directory, then you
 
 ### Dev Dependencies
 Run `pip install -r requirements-dev.txt` to install all dependencies for development/contribution. 
-You should also pull the `lisdf-models` submodule if you haven't already.
+You should also pull the `lisdf-models` submodule if you haven't already (see Installation section above).
 
 ### Pushing your Changes
 You can't directly push to the `main` branch.  All contributions will require review to ensure code is understandable 

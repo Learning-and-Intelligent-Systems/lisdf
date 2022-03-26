@@ -7,6 +7,8 @@ import yaml
 
 
 class _CustomJSONEncoder(json.JSONEncoder):
+    """CustomEncoder that will call to_dict for our OutputElements"""
+
     def default(self, o):
         if isinstance(o, OutputElement):
             return o.to_dict()
@@ -19,7 +21,7 @@ class _CustomJSONEncoder(json.JSONEncoder):
 
 class OutputElement(ABC):
     def __post_init__(self):
-        # Validate the object after it has been initialized
+        # IMPORTANT! Validate the object after it has been initialized
         self.validate()
 
     @abstractmethod
@@ -45,6 +47,7 @@ class OutputElement(ABC):
         raise NotImplementedError
 
     def to_json(self, **json_kwargs) -> str:
+        """Dump the current object as a JSON string"""
         return json.dumps(self.to_dict(), cls=_CustomJSONEncoder, **json_kwargs)
 
     @classmethod
@@ -56,6 +59,7 @@ class OutputElement(ABC):
         return cls.from_json_dict(json.loads(json_str))
 
     def to_yaml(self, **yaml_kwargs) -> str:
+        """Dump the current object as a YAML string"""
         # Convert JSON to YAML directly so we don't have to write another encoder
         json_as_dict = json.loads(self.to_json())
         return yaml.safe_dump(json_as_dict, **yaml_kwargs)

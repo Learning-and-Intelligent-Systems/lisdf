@@ -2,9 +2,12 @@ import os
 from dataclasses import dataclass
 from typing import Dict, List
 
+import numpy as np
+
 from lisdf.planner_output.command import ActuateGripper, Command, JointSpacePath
 from lisdf.planner_output.common import OutputElement
 from lisdf.planner_output.config import (
+    ENABLE_LISDF_PATH_CHECKING,
     ENFORCE_JOINT_DIMENSIONALITIES,
     SUPPORTED_COMMAND_TYPES,
     SUPPORTED_PLANNER_OUTPUT_VERSIONS,
@@ -62,19 +65,28 @@ class LISDFPlan(OutputElement):
         if len(joint_names) != 1:
             raise ValueError("Joint names are different across joint space paths")
 
+        joint_ordering = list(joint_names.pop())
+
         # Check that the initial joint positions for each JointSpacePath are consistent
         # i.e., the first joint position in a JointSpacePath is the same as the last
         # joint position in the previous JointSpacePath
         # TODO(willshen): load initial joint positions from robot model file
         # Use joint position in last waypoint in first path as initial joint position
-        current_joint_positions = joint_space_paths[0].waypoint(-1)
+        current_joint_positions = joint_space_paths[0].waypoint_as_np_array(
+            -1, joint_ordering
+        )
         for path in joint_space_paths[1:]:
-            if path.waypoint(0) != current_joint_positions:
+            # Check that the initial joint position in path is same as current
+            # Use np.isclose as equality and floats don't work well
+            if not np.isclose(
+                current_joint_positions,
+                path.waypoint_as_np_array(0, joint_ordering),
+            ).all():
                 raise ValueError(
                     "Joint positions between JointSpacePaths are inconsistent"
                 )
             # Set current joint position to last waypoint
-            current_joint_positions = path.waypoint(-1)
+            current_joint_positions = path.waypoint_as_np_array(-1, joint_ordering)
 
     def _validate_actuate_grippers(self):
         # Checks below enforce gripper commands have the same dims
@@ -117,7 +129,7 @@ class LISDFPlan(OutputElement):
 
     def validate(self):
         # Check path of LISDF exists
-        if not os.path.exists(self.lisdf_path):
+        if ENABLE_LISDF_PATH_CHECKING and not os.path.exists(self.lisdf_path):
             # TODO(willshen): validate models/lisdf/sdf exists within path?
             raise ValueError(f"LISDF path does not exist: {self.lisdf_path}")
 

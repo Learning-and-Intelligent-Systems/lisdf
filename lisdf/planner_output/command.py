@@ -54,6 +54,7 @@ class Command(OutputElement, ABC):
         return type_cls._from_json_dict(json_dict)
 
     def to_dict(self) -> Dict:
+        # Add the type to the output dict
         output = {"type": self.type}
         output = {**output, **super().to_dict()}
         return output
@@ -86,11 +87,15 @@ class JointSpacePath(Command, type="JointSpacePath"):
 
     @property
     def num_waypoints(self) -> int:
-        """Number of waypoints - i.e., how long is the list of joint positions"""
+        """
+        Number of waypoints - i.e., how long is the list of joint positions
+        """
         return len(next(iter(self.waypoints.values())))
 
     def waypoints_for_joint(self, joint_name: str) -> List[float]:
-        """Get all the waypoints for a given joint"""
+        """
+        Get all the waypoints for a given joint
+        """
         if joint_name not in self.waypoints:
             raise ValueError(
                 f"Joint {joint_name} not found in waypoints for {self.type}"
@@ -98,13 +103,14 @@ class JointSpacePath(Command, type="JointSpacePath"):
         return self.waypoints[joint_name]
 
     def waypoint(self, waypoint_index: int) -> Dict[str, float]:
-        """Get the joint positions at a given waypoint index"""
+        """
+        Get the joint positions at a given waypoint index
+        """
         if not -self.num_waypoints <= waypoint_index < self.num_waypoints:
             raise ValueError(
                 f"Waypoint index {waypoint_index} out of range in {self.type}"
             )
 
-        # Get the joint positions at a given waypoint
         return {
             joint_name: joint_positions[waypoint_index]
             for joint_name, joint_positions in self.waypoints.items()
@@ -133,11 +139,13 @@ class JointSpacePath(Command, type="JointSpacePath"):
                 for joint_name in joint_name_ordering
             ]
         )
+        assert joint_positions_array.shape == (len(joint_name_ordering),)
         return joint_positions_array
 
     def waypoints_as_np_array(self, joint_name_ordering: List[str]) -> np.ndarray:
         """
-        Return the joint positions as a numpy array
+        Return the joint positions as a numpy array. The shape of this array is
+        (num_waypoints, num_joints).
         """
         self._check_joint_name_ordering(joint_name_ordering)
 
@@ -151,6 +159,14 @@ class JointSpacePath(Command, type="JointSpacePath"):
             joint_name_to_waypoints[joint_name] for joint_name in joint_name_ordering
         ]
         joint_positions_array = np.array(joint_positions)
+
+        # Take transpose so we get array with shape (num_waypoints, num_joints)
+        joint_positions_array = joint_positions_array.T
+        assert joint_positions_array.shape == (
+            self.num_waypoints,
+            len(joint_name_ordering),
+        )
+
         return joint_positions_array
 
     def validate(self):

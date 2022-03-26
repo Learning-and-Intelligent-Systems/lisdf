@@ -2,6 +2,7 @@ import json
 import os
 
 import pytest
+import yaml
 
 from lisdf.planner_output.command import ActuateGripper, GripperPosition, JointSpacePath
 from lisdf.planner_output.plan import LISDFPlan
@@ -23,6 +24,8 @@ _VALID_COMMANDS = [_VALID_JOINT_SPACE_PATH]
             _VALID_VERSION,
             _VALID_COMMANDS,
             id="lisdf_path does not exist",
+            # We're not checking paths at the moment, remove this mark once we do
+            marks=pytest.mark.xfail,
         ),
         pytest.param(
             _CURRENT_DIR,
@@ -150,9 +153,15 @@ def test_lisdf_plan_with_complex_commands(
         lisdf_path=lisdf_path, version=version, commands=complex_commands
     )
 
-    # Check to_json() works as expected
-    json_as_dict = json.loads(lisdf_plan.to_json())
-    assert json_as_dict == expected_complex_lisdf_plan_dict
+    # Check to_json() and from_json() works as expected
+    json_str = lisdf_plan.to_json()
+    assert json.loads(json_str) == expected_complex_lisdf_plan_dict
+    assert LISDFPlan.from_json(json_str) == lisdf_plan
+
+    # Check to_yaml() and from_json() works as expected
+    yaml_str = lisdf_plan.to_yaml()
+    assert yaml.safe_load(yaml_str) == expected_complex_lisdf_plan_dict
+    assert LISDFPlan.from_yaml(yaml_str) == lisdf_plan
 
     # Check from_json_dict() works as expected
-    assert LISDFPlan.from_json_dict(json_as_dict) == lisdf_plan
+    assert LISDFPlan.from_json_dict(expected_complex_lisdf_plan_dict) == lisdf_plan
