@@ -36,7 +36,7 @@ class SDFVisitor(XMLVisitor):
             return node.set_data(
                 C.URDFInclude(
                     name=node.attributes.pop("name", None),
-                    uri=node.attributes.pop("uri", None),
+                    uri=uri,
                     scale=scale,
                     pose=node.pop(
                         "pose", return_type="data", default=C.Pose.identity()
