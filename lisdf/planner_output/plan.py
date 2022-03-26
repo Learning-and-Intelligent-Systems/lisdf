@@ -1,6 +1,6 @@
 import os
 from dataclasses import dataclass
-from typing import List
+from typing import Dict, List
 
 from lisdf.planner_output.command import ActuateGripper, Command, JointSpacePath
 from lisdf.planner_output.common import OutputElement
@@ -127,3 +127,14 @@ class LISDFPlan(OutputElement):
             raise ValueError(f"Unsupported version number: {self.version}")
 
         self._validate_commands()
+
+    @classmethod
+    def from_json_dict(cls, json_dict: Dict) -> "LISDFPlan":
+        # Convert the commands individually as they have their own types
+        commands = [
+            Command.from_json_dict(command_dict)
+            for command_dict in json_dict["commands"]
+        ]
+        json_dict["commands"] = commands
+
+        return cls(**json_dict)

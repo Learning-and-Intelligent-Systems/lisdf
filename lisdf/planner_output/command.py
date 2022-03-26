@@ -1,7 +1,7 @@
-from abc import ABC
+from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from enum import Enum
-from typing import ClassVar, Dict, List, Optional
+from typing import ClassVar, Dict, List, Optional, Type
 
 import numpy as np
 
@@ -12,16 +12,46 @@ class Command(OutputElement, ABC):
     """
     Hack based on Jiayuan's code for enforcing subclasses to define a type which is
     then used for serialization.
+
+    When inherit from this class, child classes should pass type="XXX"
+    as a keyword argument. This will register a new Command type
+    in this class which we use when deserializing from a JSON dict.
     """
+
+    # TODO: figure out a clean way to move the 'label' field here
 
     # The type of the command
     type: ClassVar[str]
 
-    # TODO: figure out a clean way to move the 'label' field here
+    type_mapping: ClassVar[Dict[str, Type["Command"]]] = dict()
 
     def __init_subclass__(cls, type: str, **kwargs):
         super().__init_subclass__(**kwargs)
         setattr(cls, "type", type)
+        Command.type_mapping[type] = cls
+
+    @classmethod
+    @abstractmethod
+    def _from_json_dict(cls, json_dict: Dict) -> "Command":
+        # Children of this class should implement this method
+        raise NotImplementedError
+
+    @classmethod
+    def from_json_dict(cls, json_dict: Dict) -> "Command":
+        """
+        Children of this class SHOULD NOT override this method and should
+        implement _from_json_dict instead. This is so we can use the right
+        implementation when loading in the main LISDFPlan class.
+        """
+        # Check type is in the mapping
+        if json_dict["type"] not in Command.type_mapping:
+            raise ValueError(f"Command type {json_dict['type']} not supported")
+
+        # Delete type as that is a classvar
+        type_cls = Command.type_mapping[json_dict["type"]]
+        del json_dict["type"]
+
+        return type_cls._from_json_dict(json_dict)
 
     def to_dict(self) -> Dict:
         output = {"type": self.type}
@@ -158,10 +188,14 @@ class JointSpacePath(Command, type="JointSpacePath"):
         if self.duration is not None and not self.duration > 0:
             raise ValueError(f"Duration must be positive in {self.type}")
 
+    @classmethod
+    def _from_json_dict(cls, json_dict: Dict) -> "JointSpacePath":
+        return cls(**json_dict)
+
 
 class GripperPosition(Enum):
-    OPEN = "open"
-    CLOSE = "close"
+    open = "open"
+    close = "close"
 
 
 @dataclass(frozen=True)
@@ -187,8 +221,18 @@ class ActuateGripper(Command, type="ActuateGripper"):
             raise ValueError(f"Empty configurations in {self.type}")
 
         for gripper_joint, gripper_position in self.configurations.items():
-            if gripper_position not in [GripperPosition.OPEN, GripperPosition.CLOSE]:
+            if gripper_position not in [GripperPosition.open, GripperPosition.close]:
                 raise ValueError(
                     f"Invalid gripper position {gripper_position} for "
                     f"gripper joint {gripper_joint}"
                 )
+
+    @classmethod
+    def _from_json_dict(cls, json_dict: Dict) -> "ActuateGripper":
+        # Overwrite the GripperPosition to their enum representations
+        new_configurations = {
+            joint_name: GripperPosition(gripper_position)
+            for joint_name, gripper_position in json_dict["configurations"].items()
+        }
+        json_dict["configurations"] = new_configurations
+        return cls(**json_dict)

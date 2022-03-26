@@ -20,6 +20,10 @@ class _ConcreteCommand(Command, type="_ConcreteCommand"):
     def validate(self):
         pass
 
+    @classmethod
+    def _from_json_dict(cls, json_dict: Dict) -> "_ConcreteCommand":
+        raise NotImplementedError
+
 
 def test_command_to_dict():
     assert _ConcreteCommand().to_dict() == {
@@ -96,6 +100,51 @@ def test_joint_space_path(
     assert path.joint_names == expected_joint_names
     assert path.dimensionality == expected_dimensionality
     assert path.num_waypoints == expected_num_waypoints
+
+
+@pytest.mark.parametrize(
+    "waypoints, duration, label, raises_error",
+    [
+        (
+            {
+                "joint_1": [0.0, 0.5, 1.0],
+                "joint_2": [0.0, 0.5, 1.0],
+            },
+            5.0,
+            "my_label",
+            False,
+        ),
+        (
+            {
+                "joint_1": [0.0, 0.5, 1.0],
+            },
+            2.0,
+            "wrong_type",
+            True,
+        ),
+    ],
+)
+def test_joint_space_path_from_json_dict(waypoints, duration, label, raises_error):
+    """Test that we can create a JointSpacePath from a JSON dict"""
+
+    def gen_json_dict():
+        # We need different dict objects as the JSON dicts are mutable
+        return {
+            "type": JointSpacePath.type if not raises_error else "wrong_type",
+            "waypoints": waypoints,
+            "duration": duration,
+            "label": label,
+        }
+
+    if raises_error:
+        with pytest.raises(ValueError):
+            JointSpacePath.from_json_dict(gen_json_dict())
+    else:
+        assert (
+            Command.from_json_dict(gen_json_dict())
+            == JointSpacePath.from_json_dict(gen_json_dict())
+            == JointSpacePath(waypoints, duration, label)
+        )
 
 
 @pytest.fixture
@@ -202,7 +251,7 @@ def test_joint_space_path_waypoint_as_np_array(complex_path):
         )
 
 
-def test_waypoints_as_np_array(complex_path):
+def test_joint_space_paths_waypoints_as_np_array(complex_path):
     """Test getting all the waypoints as a np.array"""
     # joint_1, joint_2, ..., joint_7
     joint_name_ordering = [f"joint_{num}" for num in range(1, 8)]
@@ -242,11 +291,11 @@ def test_actuate_gripper_raises_value_error(configurations):
 @pytest.mark.parametrize(
     "configurations, expected_joint_names",
     [
-        ({"gripper_1": GripperPosition.OPEN}, ["gripper_1"]),
+        ({"gripper_1": GripperPosition.open}, ["gripper_1"]),
         (
             {
-                "gripper_left": GripperPosition.CLOSE,
-                "gripper_right": GripperPosition.OPEN,
+                "gripper_left": GripperPosition.close,
+                "gripper_right": GripperPosition.open,
             },
             ["gripper_left", "gripper_right"],
         ),
@@ -271,3 +320,42 @@ def test_actuate_gripper(configurations, expected_joint_names):
     # Non-existent joint raises error
     with pytest.raises(ValueError):
         actuate_gripper.position_for_gripper_joint("non-existent-gripper-joint")
+
+
+@pytest.mark.parametrize(
+    "configurations, label, raise_error",
+    [
+        (
+            {
+                "gripper_left": "open",
+                "gripper_right": "close",
+            },
+            "two_grippers",
+            True,
+        ),
+        ({"gripper_0": "close"}, "one_gripper", False),
+    ],
+)
+def test_actuate_gripper_from_json_dict(configurations, label, raise_error):
+    def gen_json_dict():
+        # We need different dict objects as the JSON dicts are mutable
+        return {
+            "type": ActuateGripper.type if not raise_error else "wrong_type",
+            "configurations": configurations,
+            "label": label,
+        }
+
+    if raise_error:
+        with pytest.raises(ValueError):
+            ActuateGripper.from_json_dict(gen_json_dict())
+    else:
+        assert (
+            JointSpacePath.from_json_dict(gen_json_dict())
+            == Command.from_json_dict(gen_json_dict())
+            == ActuateGripper(
+                configurations={
+                    joint: GripperPosition[pos] for joint, pos in configurations.items()
+                },
+                label=label,
+            )
+        )

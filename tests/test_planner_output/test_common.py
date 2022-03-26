@@ -15,6 +15,10 @@ class _ConcreteOutputElement(OutputElement):
     def validate(self):
         self.validated = True
 
+    @classmethod
+    def from_json_dict(cls, json_dict: Dict) -> "_ConcreteOutputElement":
+        return cls(**json_dict)
+
 
 def test_output_element():
     element = _ConcreteOutputElement({"lis": "mit", "counter": 999})
@@ -22,8 +26,13 @@ def test_output_element():
     # Check that the element automatically validates itself after init
     assert element.validated
 
-    # Check to_json and to_yaml
+    # Check to_dict, to_json, to_yaml
     expected_dict_to_dump = {"my_dict": element.my_dict, "validated": True}
     assert element.to_dict() == expected_dict_to_dump
     assert element.to_json() == json.dumps(expected_dict_to_dump)
     assert element.to_yaml() == yaml.safe_dump(expected_dict_to_dump)
+
+    # Check from_json_dict, from_json, from_yaml
+    assert _ConcreteOutputElement.from_json_dict(element.to_dict()) == element
+    assert _ConcreteOutputElement.from_json(element.to_json()) == element
+    assert _ConcreteOutputElement.from_yaml(element.to_yaml()) == element

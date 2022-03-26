@@ -14,9 +14,20 @@ def main() -> None:
     print("=== JSON ===")
     print(lisdf_plan.to_json(indent=2))
 
-    # We can also conver the plan into YAML (which is a superset of JSON)
+    # We can also convert the plan into YAML (which is a superset of JSON)
     print("\n=== YAML ===")
     print(lisdf_plan.to_yaml())
+
+    # We can load a plan from JSON or YAML
+    print("\n=== Loading plans from JSON and YAML ===")
+    print(
+        "Deserialize from JSON is identical?",
+        LISDFPlan.from_json(lisdf_plan.to_json()) == lisdf_plan,
+    )
+    print(
+        "Deserialize from YAML is identical?",
+        LISDFPlan.from_yaml(lisdf_plan.to_yaml()) == lisdf_plan,
+    )
 
     # We can do cool things with a JointSpacePath
     joint_space_path: JointSpacePath = lisdf_plan.commands[0]  # type: ignore

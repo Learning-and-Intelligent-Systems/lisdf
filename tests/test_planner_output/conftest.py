@@ -22,7 +22,7 @@ def generate_complex_commands() -> List[Command]:
             label="move_to_pick",
         ),
         ActuateGripper(
-            configurations={"gripper_1": GripperPosition.CLOSE}, label="pick"
+            configurations={"gripper_1": GripperPosition.close}, label="pick"
         ),
         JointSpacePath(
             waypoints={
@@ -34,7 +34,7 @@ def generate_complex_commands() -> List[Command]:
             label="move_to_place",
         ),
         ActuateGripper(
-            configurations={"gripper_1": GripperPosition.OPEN}, label="place"
+            configurations={"gripper_1": GripperPosition.open}, label="place"
         ),
         JointSpacePath(
             waypoints={

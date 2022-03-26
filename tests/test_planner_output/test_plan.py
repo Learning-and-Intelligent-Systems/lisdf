@@ -83,11 +83,11 @@ _VALID_COMMANDS = [_VALID_JOINT_SPACE_PATH]
             _CURRENT_DIR,
             _VALID_VERSION,
             [
-                ActuateGripper({"gripper_1": GripperPosition.OPEN}),
+                ActuateGripper({"gripper_1": GripperPosition.open}),
                 ActuateGripper(
                     {
-                        "gripper_1": GripperPosition.CLOSE,
-                        "gripper_2": GripperPosition.OPEN,
+                        "gripper_1": GripperPosition.close,
+                        "gripper_2": GripperPosition.open,
                     }
                 ),
             ],
@@ -106,7 +106,7 @@ def test_lisdf_plan_raises_value_error(lisdf_path, version, commands):
         _VALID_COMMANDS,
         [
             JointSpacePath({"joint_1": [0.0, 1.0], "joint_2": [0.0, 2.0]}),
-            ActuateGripper({"gripper_1": GripperPosition.OPEN}),
+            ActuateGripper({"gripper_1": GripperPosition.open}),
             JointSpacePath(
                 {
                     "joint_1": [1.0, 0.25],
@@ -120,14 +120,14 @@ def test_lisdf_plan_raises_value_error(lisdf_path, version, commands):
         [
             ActuateGripper(
                 {
-                    "gripper_1": GripperPosition.OPEN,
-                    "gripper_2": GripperPosition.OPEN,
+                    "gripper_1": GripperPosition.open,
+                    "gripper_2": GripperPosition.open,
                 }
             ),
             ActuateGripper(
                 {
-                    "gripper_1": GripperPosition.CLOSE,
-                    "gripper_2": GripperPosition.CLOSE,
+                    "gripper_1": GripperPosition.close,
+                    "gripper_2": GripperPosition.close,
                 }
             ),
         ],
@@ -149,5 +149,9 @@ def test_lisdf_plan_with_complex_commands(
         lisdf_path=lisdf_path, version=version, commands=complex_commands
     )
 
+    # Check to_json() works as expected
     json_as_dict = json.loads(lisdf_plan.to_json())
     assert json_as_dict == expected_complex_lisdf_plan_dict
+
+    # Check from_json_dict() works as expected
+    assert LISDFPlan.from_json_dict(json_as_dict) == lisdf_plan

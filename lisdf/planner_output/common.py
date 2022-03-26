@@ -38,10 +38,33 @@ class OutputElement(ABC):
         """
         return self.__dict__
 
+    @classmethod
+    @abstractmethod
+    def from_json_dict(cls, json_dict: Dict) -> "OutputElement":
+        """Convert a JSON dict with plain Python objects to an OutputElement"""
+        raise NotImplementedError
+
     def to_json(self, **json_kwargs) -> str:
         return json.dumps(self.to_dict(), cls=_CustomJSONEncoder, **json_kwargs)
+
+    @classmethod
+    def from_json(cls, json_str: str) -> "OutputElement":
+        """
+        Load an OutputElement from a JSON string.
+        There isn't really a need for subclasses to override this method.
+        """
+        return cls.from_json_dict(json.loads(json_str))
 
     def to_yaml(self, **yaml_kwargs) -> str:
         # Convert JSON to YAML directly so we don't have to write another encoder
         json_as_dict = json.loads(self.to_json())
         return yaml.safe_dump(json_as_dict, **yaml_kwargs)
+
+    @classmethod
+    def from_yaml(cls, yaml_str: str) -> "OutputElement":
+        """
+        Load an OutputElement from a YAML string.
+        There isn't really a need for subclasses to override this method.
+        """
+        # YAML loads a plain old Python object dict, so we can use from_json_dict
+        return cls.from_json_dict(yaml.safe_load(yaml_str))
