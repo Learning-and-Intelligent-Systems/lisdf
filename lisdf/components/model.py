@@ -3,7 +3,7 @@ from typing import List, Optional
 
 import numpy as np
 
-from lisdf.components.base import StringConfigurable, Pose
+from lisdf.components.base import Pose, StringConfigurable
 from lisdf.components.control import ControlInfo, JointInfo
 from lisdf.components.sensor import Sensor
 from lisdf.components.shape import ShapeInfo

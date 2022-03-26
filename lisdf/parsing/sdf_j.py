@@ -372,17 +372,18 @@ class SDFVisitor(XMLVisitor):
         projection_type = node.pop("projection_type", default="perspective")
         kwargs = dict(name=name, projection_type=projection_type)
 
-        definition = node.attributes.pop("definition_type", 'pose')
-        if definition == 'pose':
+        definition = node.attributes.pop("definition_type", "pose")
+        if definition == "pose":
             pose = node.pop("pose", return_type="data", required=True)
             camera = C.GUICamera(pose=pose, **kwargs)
-        elif definition == 'lookat':
+        elif definition == "lookat":
             xyz = vector3f(node.pop("xyz", required=True))
             point_to = vector3f(node.pop("point_to", required=True))
-            camera = C.GUICamera.from_lookat(xyz=xyz, point_to=point_to,
-                                             **kwargs)
+            camera = C.GUICamera.from_lookat(xyz=xyz, point_to=point_to, **kwargs)
         else:
-            raise NotImplementedError('Unknown camera definition type: {}'.format(definition))
+            raise NotImplementedError(
+                "Unknown camera definition type: {}".format(definition)
+            )
 
         return node.set_data(camera)
 
@@ -409,7 +410,7 @@ class SDFVisitor(XMLVisitor):
                 world.models.append(c.data)
             elif c.tag == "state":
                 world.states.append(c.data)
-            elif c.tag == 'gui':
+            elif c.tag == "gui":
                 assert world.gui is None
                 world.gui = c.data
             else:

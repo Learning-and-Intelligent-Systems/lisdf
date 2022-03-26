@@ -1,7 +1,7 @@
 from dataclasses import dataclass, field
 from typing import List, Optional
 
-from lisdf.components.base import StringConfigurable, Pose
+from lisdf.components.base import Pose, StringConfigurable
 
 
 @dataclass

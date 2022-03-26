@@ -1,7 +1,9 @@
 import numpy as np
 import pytest
+
 from lisdf.utils.transformations import euler_matrix
 from lisdf.utils.transformations_more import lookat_rpy
+
 
 @pytest.mark.parametrize(
     "camera_pos, target_pos",
@@ -15,14 +17,16 @@ from lisdf.utils.transformations_more import lookat_rpy
     ],
 )
 def test_lookat_rpy(camera_pos, target_pos):
-    camera_pos = np.array(camera_pos, dtype='float32')
-    target_pos = np.array(target_pos, dtype='float32')
+    camera_pos = np.array(camera_pos, dtype="float32")
+    target_pos = np.array(target_pos, dtype="float32")
     delta = target_pos - camera_pos
     delta = delta / np.linalg.norm(delta)
 
     rpy = lookat_rpy(camera_pos, target_pos)
     mat = euler_matrix(*rpy)
-    z = np.array([0, 0, 1, 1], dtype='float32')
+    z = np.array([0, 0, 1, 1], dtype="float32")
     zz = (mat @ z)[:-1]
 
-    assert np.allclose(zz / np.linalg.norm(zz), delta / np.linalg.norm(delta), atol=1e-6)
+    assert np.allclose(
+        zz / np.linalg.norm(zz), delta / np.linalg.norm(delta), atol=1e-6
+    )
