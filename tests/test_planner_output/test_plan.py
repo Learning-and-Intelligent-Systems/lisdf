@@ -9,14 +9,14 @@ from lisdf.planner_output.command import (
     Command,
     GripperPosition,
     JointSpacePath,
-    Waypoint,
 )
 from lisdf.planner_output.plan import LISDFPlan
 
 _CURRENT_DIR = os.path.dirname(__file__)
+_VALID_VERSION = "0.1"
 
 _VALID_JOINT_SPACE_PATH = JointSpacePath(
-    waypoints=[Waypoint({"joint_1": 0.0}), Waypoint({"joint_1": 1.0})], duration=1.0
+    waypoints={"joint_1": [0.0, 1.0]}, duration=1.0
 )
 _VALID_COMMANDS = [_VALID_JOINT_SPACE_PATH]
 
@@ -26,7 +26,7 @@ _VALID_COMMANDS = [_VALID_JOINT_SPACE_PATH]
     [
         pytest.param(
             "lisdf-non-existent-path-i-hope",
-            "0.0",
+            _VALID_VERSION,
             _VALID_COMMANDS,
             id="lisdf_path does not exist",
         ),
@@ -44,8 +44,13 @@ _VALID_COMMANDS = [_VALID_JOINT_SPACE_PATH]
         ),
         pytest.param(
             _CURRENT_DIR,
-            "0.5",
-            ["abc", "its", "easy", "as", "123", _VALID_JOINT_SPACE_PATH],
+            _VALID_VERSION,
+            [
+                _VALID_JOINT_SPACE_PATH,
+                "abc",
+                "its",
+                "easy",
+            ],
             id="invalid commands",
         ),
     ],
@@ -56,7 +61,7 @@ def test_lisdf_plan_raises_value_error(lisdf_path, version, commands):
 
 
 @pytest.mark.parametrize(
-    "lisdf_path, version, commands", [(_CURRENT_DIR, "0.1", _VALID_COMMANDS)]
+    "lisdf_path, version, commands", [(_CURRENT_DIR, _VALID_VERSION, _VALID_COMMANDS)]
 )
 def test_lisdf_plan(lisdf_path, version, commands):
     lisdf_plan = LISDFPlan(lisdf_path, version, commands)
@@ -69,11 +74,11 @@ def test_lisdf_plan(lisdf_path, version, commands):
 def complex_commands() -> List[Command]:
     return [
         JointSpacePath(
-            [
-                Waypoint({"joint_1": 0.0, "joint_2": 0.0, "joint_3": 0.0}),
-                Waypoint({"joint_1": 0.25, "joint_2": 0.1, "joint_3": 0.15}),
-                Waypoint({"joint_1": 0.5, "joint_2": 0.2, "joint_3": 0.3}),
-            ],
+            waypoints={
+                "joint_1": [0.0, 0.25, 0.5],
+                "joint_2": [0.0, 0.1, 0.2],
+                "joint_3": [0.0, 0.15, 0.3],
+            },
             duration=5.0,
             label="move_to_pick",
         ),
@@ -81,10 +86,11 @@ def complex_commands() -> List[Command]:
             configurations={"gripper_1": GripperPosition.CLOSE}, label="pick"
         ),
         JointSpacePath(
-            [
-                Waypoint({"joint_1": 0.5, "joint_2": 0.2, "joint_3": 0.3}),
-                Waypoint({"joint_1": 0.2, "joint_2": 0.6, "joint_3": 0.15}),
-            ],
+            waypoints={
+                "joint_1": [0.5, 0.2],
+                "joint_2": [0.2, 0.6],
+                "joint_3": [0.3, 0.15],
+            },
             duration=3.0,
             label="move_to_place",
         ),
@@ -92,10 +98,11 @@ def complex_commands() -> List[Command]:
             configurations={"gripper_1": GripperPosition.OPEN}, label="place"
         ),
         JointSpacePath(
-            [
-                Waypoint({"joint_1": 0.2, "joint_2": 0.6, "joint_3": 0.15}),
-                Waypoint({"joint_1": 0.0, "joint_2": 0.0, "joint_3": 0.0}),
-            ],
+            waypoints={
+                "joint_1": [0.2, 0.0],
+                "joint_2": [0.6, 0.0],
+                "joint_3": [0.15, 0.0],
+            },
             duration=2.5,
             label="go_to_zero",
         ),
@@ -111,29 +118,11 @@ def expected_complex_lisdf_plan_dict() -> Dict:
                 "duration": 5.0,
                 "label": "move_to_pick",
                 "type": "JointSpacePath",
-                "waypoints": [
-                    {
-                        "configurations": {
-                            "joint_1": 0.0,
-                            "joint_2": 0.0,
-                            "joint_3": 0.0,
-                        }
-                    },
-                    {
-                        "configurations": {
-                            "joint_1": 0.25,
-                            "joint_2": 0.1,
-                            "joint_3": 0.15,
-                        }
-                    },
-                    {
-                        "configurations": {
-                            "joint_1": 0.5,
-                            "joint_2": 0.2,
-                            "joint_3": 0.3,
-                        }
-                    },
-                ],
+                "waypoints": {
+                    "joint_1": [0.0, 0.25, 0.5],
+                    "joint_2": [0.0, 0.1, 0.2],
+                    "joint_3": [0.0, 0.15, 0.3],
+                },
             },
             {
                 "configurations": {"gripper_1": "close"},
@@ -144,22 +133,11 @@ def expected_complex_lisdf_plan_dict() -> Dict:
                 "duration": 3.0,
                 "label": "move_to_place",
                 "type": "JointSpacePath",
-                "waypoints": [
-                    {
-                        "configurations": {
-                            "joint_1": 0.5,
-                            "joint_2": 0.2,
-                            "joint_3": 0.3,
-                        }
-                    },
-                    {
-                        "configurations": {
-                            "joint_1": 0.2,
-                            "joint_2": 0.6,
-                            "joint_3": 0.15,
-                        }
-                    },
-                ],
+                "waypoints": {
+                    "joint_1": [0.5, 0.2],
+                    "joint_2": [0.2, 0.6],
+                    "joint_3": [0.3, 0.15],
+                },
             },
             {
                 "configurations": {"gripper_1": "open"},
@@ -170,34 +148,27 @@ def expected_complex_lisdf_plan_dict() -> Dict:
                 "duration": 2.5,
                 "label": "go_to_zero",
                 "type": "JointSpacePath",
-                "waypoints": [
-                    {
-                        "configurations": {
-                            "joint_1": 0.2,
-                            "joint_2": 0.6,
-                            "joint_3": 0.15,
-                        }
-                    },
-                    {
-                        "configurations": {
-                            "joint_1": 0.0,
-                            "joint_2": 0.0,
-                            "joint_3": 0.0,
-                        }
-                    },
-                ],
+                "waypoints": {
+                    "joint_1": [0.2, 0.0],
+                    "joint_2": [0.6, 0.0],
+                    "joint_3": [0.15, 0.0],
+                },
             },
         ],
         "lisdf_path": _CURRENT_DIR,
-        "version": "0.1",
+        "version": _VALID_VERSION,
     }
 
 
-def test_complex_lisdf_plan(complex_commands, expected_complex_lisdf_plan_dict):
+def test_lisdf_plan_with_complex_commands(
+    complex_commands, expected_complex_lisdf_plan_dict
+):
     """Complex test case where we check entire functionality of LISDFPlan"""
     lisdf_plan = LISDFPlan(
-        lisdf_path=_CURRENT_DIR, version="0.1", commands=complex_commands
+        lisdf_path=_CURRENT_DIR, version=_VALID_VERSION, commands=complex_commands
     )
 
     json_as_dict = json.loads(lisdf_plan.to_json())
     assert json_as_dict == expected_complex_lisdf_plan_dict
+
+    print(lisdf_plan.to_json(indent=2))

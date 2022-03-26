@@ -30,7 +30,7 @@ class LISDFPlan(OutputElement):
         # Check commands are expected types
         for command in self.commands:
             if not isinstance(command, Command):
-                raise TypeError(f"Invalid command type: {type(command)}")
+                raise ValueError(f"Invalid command type: {type(command)}")
 
         # FIXME: validate commands are in sequence
         # FIXME: error check init joint position is valid across commands
