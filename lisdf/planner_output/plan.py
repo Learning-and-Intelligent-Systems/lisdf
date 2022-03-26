@@ -13,6 +13,18 @@ from lisdf.planner_output.config import (
 
 @dataclass(frozen=True)
 class LISDFPlan(OutputElement):
+    """
+    Overarching dataclass for a LISDF plan. Check
+    `tests/test_planner_output/test_plan.py` for examples on usage.
+
+    We automatically validate the parameters passed to __init__ for
+    a LISDFPlan and all the elements within it. This is to ensure they
+    are not malformed and match our specification.
+
+    You can also see `scripts/planner_output_demo.py` for a demo of how
+    to use the entire model structure.
+    """
+
     # Path of the LISDF folder where the world and model files are located
     lisdf_path: str
 
@@ -20,6 +32,12 @@ class LISDFPlan(OutputElement):
     version: str
 
     # List of Commands that need to be executed by the simulator
+    #   We run multiple validation checks on these commands:
+    #     1. All JointSpacePath commands have the same dimensionality
+    #     2. All ActuateGripper commands have the same dimensionality
+    #     3. The last waypoint of a JointSpacePath command is the same as the first
+    #        waypoint of the next JointSpaceCommand
+    #   These checks allow us to ensure we create valid robot commands.
     commands: List[Command]
 
     def _commands_for_type(self, command_type: str) -> List[Command]:
@@ -86,6 +104,8 @@ class LISDFPlan(OutputElement):
             if not isinstance(command, Command):
                 raise ValueError(f"Invalid command type: {type(command)}")
             elif not isinstance(command, SUPPORTED_COMMAND_TYPES):
+                # If a new Command type is added, there should be a new validation
+                # check for it.
                 raise ValueError(f"Unsupported command type: {command.type}")
 
         # Validate the individual commands
