@@ -36,6 +36,7 @@ _VALID_COMMANDS = [_VALID_JOINT_SPACE_PATH]
             _VALID_COMMANDS,
             id="unsupported version",
         ),
+        pytest.param(_CURRENT_DIR, _VALID_VERSION, [], id="empty commands"),
         pytest.param(
             _CURRENT_DIR,
             _VALID_VERSION,

@@ -99,6 +99,9 @@ class LISDFPlan(OutputElement):
             )
 
     def _validate_commands(self):
+        if not self.commands:
+            raise ValueError("Commands cannot be empty in LISDF plan")
+
         # Check that commands confirm to Command type
         for command in self.commands:
             if not isinstance(command, Command):
