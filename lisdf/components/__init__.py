@@ -1,4 +1,4 @@
-from lisdf.components.base import StringConfigurable  # noqa: F401
+from lisdf.components.base import StringConfigurable, Pose  # noqa: F401
 from lisdf.components.control import (  # noqa: F401
     ControlInfo,
     FixedJointInfo,
@@ -13,13 +13,13 @@ from lisdf.components.model import (  # noqa: F401
     Joint,
     Link,
     Model,
-    Pose,
     SDFInclude,
     Surface,
     SurfaceContact,
     SurfaceFriction,
     URDFInclude,
 )
+from .gui import GUICamera, GUI  # noqa: F401
 
 from .model_mjcf import MJCFGeom  # noqa: F401
 from .model_sdf import (  # noqa: F401

@@ -367,6 +367,37 @@ class SDFVisitor(XMLVisitor):
         return node.set_data(state)
 
     @check_done_decorator
+    def gui_camera(self, node):
+        name = node.attributes.pop("name", None)
+        projection_type = node.pop("projection_type", default="perspective")
+        kwargs = dict(name=name, projection_type=projection_type)
+
+        definition = node.attributes.pop("definition_type", 'pose')
+        if definition == 'pose':
+            pose = node.pop("pose", return_type="data", required=True)
+            camera = C.GUICamera(pose=pose, **kwargs)
+        elif definition == 'lookat':
+            xyz = vector3f(node.pop("xyz", required=True))
+            point_to = vector3f(node.pop("point_to", required=True))
+            camera = C.GUICamera.from_lookat(xyz=xyz, point_to=point_to,
+                                             **kwargs)
+        else:
+            raise NotImplementedError('Unknown camera definition type: {}'.format(definition))
+
+        return node.set_data(camera)
+
+    def gui_init(self, node):
+        self.enter_scope("gui")
+
+    @check_done_decorator
+    def gui(self, node):
+        self.exit_scope("gui")
+        gui = C.GUI(
+            camera=node.pop("camera", return_type="data", required=True),
+        )
+        return node.set_data(gui)
+
+    @check_done_decorator
     def world(self, node):
         name = node.attributes.pop("name", None)
         static = bool_string(node.pop("static", default="false"))
@@ -378,6 +409,9 @@ class SDFVisitor(XMLVisitor):
                 world.models.append(c.data)
             elif c.tag == "state":
                 world.states.append(c.data)
+            elif c.tag == 'gui':
+                assert world.gui is None
+                world.gui = c.data
             else:
                 raise NotImplementedError("Unknown tag for world: {}.".format(c.tag))
         return node.set_data(world)

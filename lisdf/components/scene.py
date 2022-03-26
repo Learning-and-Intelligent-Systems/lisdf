@@ -2,6 +2,7 @@ from dataclasses import dataclass, field
 from typing import List, Optional
 
 from lisdf.components.base import StringConfigurable
+from lisdf.components.gui import GUI
 from lisdf.components.model import Model
 from lisdf.components.state import WorldState
 
@@ -12,6 +13,7 @@ class World(StringConfigurable):
     static: bool = False
     models: List[Model] = field(default_factory=list)
     states: List[WorldState] = field(default_factory=list)
+    gui: Optional[GUI] = None
 
 
 class LISDF:
