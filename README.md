@@ -1,4 +1,7 @@
 # LISdf
+![Build Status](https://github.com/Learning-and-Intelligent-Systems/lisdf/actions/workflows/ci_checks.yml/badge.svg)
+![License](https://img.shields.io/badge/license-MIT-blue.svg)
+
 A repository for a universal I/O spec for Task and Motion Planning (TAMP), along with scripts to convert from 
 popular specs to our spec.
 
@@ -24,7 +27,8 @@ If you are creating a virtual environment within the project directory, then you
 ## Instructions For Contributing
 
 ### Dev Dependencies
-Run `pip install -r requirements-dev.txt` to install all dependencies for development/contribution.
+Run `pip install -r requirements-dev.txt` to install all dependencies for development/contribution. 
+You should also pull the `lisdf-models` submodule if you haven't already (see Installation section above).
 
 ### Pushing your Changes
 You can't directly push to the `main` branch.  All contributions will require review to ensure code is understandable 
