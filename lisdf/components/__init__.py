@@ -14,11 +14,11 @@ from lisdf.components.model import (  # noqa: F401
     Link,
     Model,
     Pose,
+    SDFInclude,
     Surface,
     SurfaceContact,
     SurfaceFriction,
-    URDFModel,
-    World,
+    URDFInclude,
 )
 
 from .model_mjcf import MJCFGeom  # noqa: F401
@@ -28,7 +28,7 @@ from .model_sdf import (  # noqa: F401
     SDFSurfaceContact,
     SDFSurfaceFriction,
 )
-from .scene import LISDF  # noqa: F401
+from .scene import LISDF, World  # noqa: F401
 from .sensor import CameraSensor, Sensor  # noqa: F401
 from .shape import (  # noqa: F401
     BoxShapeInfo,

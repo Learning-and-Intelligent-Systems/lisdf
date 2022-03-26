@@ -131,7 +131,7 @@ class Surface(StringConfigurable):
 @dataclass
 class Geom(StringConfigurable):
     name: str
-    pose: Pose
+    pose: Optional[Pose]
     shape: ShapeInfo
     visual: Optional[VisualInfo] = None
     surface: Optional[Surface] = None
@@ -142,7 +142,7 @@ class Geom(StringConfigurable):
 
     def to_sdf(self) -> str:
         return f"""<geometry>
-  {self.pose.to_sdf()}
+  {self.pose.to_sdf() if self.pose is not None else ""}
   {indent_text(self.shape.to_sdf()).strip()}
 </geometry>"""
 
@@ -184,17 +184,25 @@ class Link(StringConfigurable):
     sensors: List[Sensor] = field(default_factory=list)
 
     def to_sdf(self) -> str:
-        collision_str = "\n".join([c.to_sdf() for c in self.collisions])
-        visual_str = "\n".join([v.to_sdf() for v in self.visuals])
+        if len(self.collisions) > 0:
+            collision_str = "\n".join([c.to_sdf() for c in self.collisions])
+            collision_str = f"""<collision>
+  {collision_str}
+</collision>"""
+        else:
+            collision_str = ""
+        if len(self.visuals) > 0:
+            visual_str = "\n".join([v.to_sdf() for v in self.visuals])
+            visual_str = f"""<visual>
+  {visual_str}
+</visual>"""
+        else:
+            visual_str = ""
         return f"""<link name="{self.name}">
   {self.pose.to_sdf()}
   {indent_text(self.inertial.to_sdf()).strip() if self.inertial is not None else ""}
-  <collision>
-    {indent_text(collision_str, 2).strip()}
-  </collision>
-  <visual>
-    {indent_text(visual_str, 2).strip()}
-  </visual>
+  {indent_text(collision_str).strip()}
+  {indent_text(visual_str).strip()}
 </link>
 """
 
@@ -222,17 +230,46 @@ class Model(StringConfigurable):
 
 
 @dataclass
-class URDFModel(StringConfigurable):
-    name: str
+class SDFInclude(StringConfigurable):
+    name: Optional[str]
     uri: str
-    size: Vector3f
+    scale: Vector3f
+    pose: Optional[Pose]
+    parent: Optional[str] = None
+    static: bool = False
+
+    _scale1d: Optional[float] = None
+    _content: Optional[StringConfigurable] = None
+
+    @property
+    def scale_1d(self):
+        assert self._scale1d is not None, "scale_1d is not allowed. Use scale instead."
+        return self._scale1d
+
+    @property
+    def content(self):
+        assert self._content is not None, "content has not been parsed."
+        return self._content
+
+
+@dataclass
+class URDFInclude(StringConfigurable):
+    name: Optional[str]
+    uri: str
+    scale: Vector3f
     pose: Pose
     parent: Optional[str] = None
     static: bool = False
 
+    _scale1d: Optional[float] = None
+    _content: Optional[StringConfigurable] = None
 
-@dataclass
-class World(StringConfigurable):
-    name: Optional[str] = None
-    static: bool = False
-    models: List[Model] = field(default_factory=list)
+    @property
+    def scale_1d(self):
+        assert self._scale1d is not None, "scale_1d is not allowed. Use scale instead."
+        return self._scale1d
+
+    @property
+    def content(self):
+        assert self._content is not None, "content has not been parsed."
+        return self._content

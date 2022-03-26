@@ -1,6 +1,17 @@
+from dataclasses import dataclass, field
 from typing import List, Optional
 
-from lisdf.components.model import Model, World
+from lisdf.components.base import StringConfigurable
+from lisdf.components.model import Model
+from lisdf.components.state import WorldState
+
+
+@dataclass
+class World(StringConfigurable):
+    name: Optional[str] = None
+    static: bool = False
+    models: List[Model] = field(default_factory=list)
+    states: List[WorldState] = field(default_factory=list)
 
 
 class LISDF:

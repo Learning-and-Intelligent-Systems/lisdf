@@ -7,7 +7,7 @@ from lisdf.components.model import Pose
 
 @dataclass
 class JointAxisState(StringConfigurable):
-    index: int
+    axis: int
     value: float
 
 
@@ -34,4 +34,5 @@ class ModelState(StringConfigurable):
 
 @dataclass
 class WorldState(StringConfigurable):
+    name: str
     model_states: List[ModelState] = field(default_factory=list)

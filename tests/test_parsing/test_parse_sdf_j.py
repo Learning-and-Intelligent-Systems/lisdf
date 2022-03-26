@@ -19,7 +19,6 @@ from lisdf.parsing.sdf_j import load_sdf
         "joint_test",
         "link_test",
         "visual_test",
-        "mud_test",
         "m0m_0",
         "m0m_0_test",
     ],
