@@ -14,8 +14,10 @@ class Command(OutputElement, ABC):
     then used for serialization.
     """
 
-    # TODO: figure out a clean way to move the 'label' field here
+    # The type of the command
     type: ClassVar[str]
+
+    # TODO: figure out a clean way to move the 'label' field here
 
     def __init_subclass__(cls, type: str, **kwargs):
         super().__init_subclass__(**kwargs)
@@ -32,10 +34,20 @@ JointName = str
 
 @dataclass(frozen=True)
 class JointSpacePath(Command, type="JointSpacePath"):
-    # Mapping of Joint Names to Position waypoints
+    # Mapping of joint name to a list of joint positions.
+    #   The length of the list of joint positions must be the same for each joint,
+    #   as each element indicates a single waypoint.
     waypoints: Dict[JointName, List[float]]
+
+    # Duration of the path in seconds, if specified must be > 0
     duration: Optional[float] = None
+
+    # Label to denote this path by
     label: Optional[str] = None
+
+    @property
+    def joint_names(self) -> List[JointName]:
+        return list(self.waypoints.keys())
 
     @property
     def dimensionality(self) -> int:
@@ -57,7 +69,7 @@ class JointSpacePath(Command, type="JointSpacePath"):
 
     def waypoint(self, waypoint_index: int) -> Dict[str, float]:
         """Get the joint positions at a given waypoint index"""
-        if not 0 <= waypoint_index < self.num_waypoints:
+        if not -self.num_waypoints <= waypoint_index < self.num_waypoints:
             raise ValueError(
                 f"Waypoint index {waypoint_index} out of range in {self.type}"
             )
@@ -156,7 +168,13 @@ class GripperPosition(Enum):
 class ActuateGripper(Command, type="ActuateGripper"):
     # Mapping of Gripper Joint Name to GripperPosition (i.e., open or close)
     configurations: Dict[JointName, GripperPosition]
+
+    # Label to denote this gripper actuation by
     label: Optional[str] = None
+
+    @property
+    def joint_names(self) -> List[JointName]:
+        return list(self.configurations.keys())
 
     def position_for_gripper_joint(self, gripper_joint: str) -> GripperPosition:
         if gripper_joint not in self.configurations:

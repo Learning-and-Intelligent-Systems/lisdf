@@ -53,6 +53,52 @@ _VALID_COMMANDS = [_VALID_JOINT_SPACE_PATH]
             ],
             id="invalid commands",
         ),
+        pytest.param(
+            _CURRENT_DIR,
+            _VALID_VERSION,
+            [
+                JointSpacePath({"joint_1": [0.0, 1.0], "joint_2": [0.0, 2.0]}),
+                JointSpacePath(
+                    {
+                        "joint_1": [0.0, 1.0],
+                        "joint_2": [0.0, 2.0],
+                        "joint_3": [0.2, 0.3],
+                    }
+                ),
+            ],
+            id="joint space paths different joint dims",
+        ),
+        pytest.param(
+            _CURRENT_DIR,
+            _VALID_VERSION,
+            [
+                JointSpacePath({"joint_1": [0.0, 1.0], "joint_2": [0.0, 2.0]}),
+                JointSpacePath(
+                    {
+                        "joint_1": [1.0, 0.25],
+                        "joint_2": [
+                            1.99,
+                            1.0,
+                        ],  # first element should be 2.0 to match previous position
+                    }
+                ),
+            ],
+            id="joint space paths different inconsistent joint states",
+        ),
+        pytest.param(
+            _CURRENT_DIR,
+            _VALID_VERSION,
+            [
+                ActuateGripper({"gripper_1": GripperPosition.OPEN}),
+                ActuateGripper(
+                    {
+                        "gripper_1": GripperPosition.CLOSE,
+                        "gripper_2": GripperPosition.OPEN,
+                    }
+                ),
+            ],
+            id="actuate gripper commands different joint dims",
+        ),
     ],
 )
 def test_lisdf_plan_raises_value_error(lisdf_path, version, commands):
@@ -61,12 +107,42 @@ def test_lisdf_plan_raises_value_error(lisdf_path, version, commands):
 
 
 @pytest.mark.parametrize(
-    "lisdf_path, version, commands", [(_CURRENT_DIR, _VALID_VERSION, _VALID_COMMANDS)]
+    "commands",
+    [
+        _VALID_COMMANDS,
+        [
+            JointSpacePath({"joint_1": [0.0, 1.0], "joint_2": [0.0, 2.0]}),
+            ActuateGripper({"gripper_1": GripperPosition.OPEN}),
+            JointSpacePath(
+                {
+                    "joint_1": [1.0, 0.25],
+                    "joint_2": [
+                        2.0,
+                        1.0,
+                    ],
+                }
+            ),
+        ],
+        [
+            ActuateGripper(
+                {
+                    "gripper_1": GripperPosition.OPEN,
+                    "gripper_2": GripperPosition.OPEN,
+                }
+            ),
+            ActuateGripper(
+                {
+                    "gripper_1": GripperPosition.CLOSE,
+                    "gripper_2": GripperPosition.CLOSE,
+                }
+            ),
+        ],
+    ],
 )
-def test_lisdf_plan(lisdf_path, version, commands):
-    lisdf_plan = LISDFPlan(lisdf_path, version, commands)
-    assert lisdf_plan.lisdf_path == lisdf_path
-    assert lisdf_plan.version == version
+def test_lisdf_plan(commands):
+    lisdf_plan = LISDFPlan(_CURRENT_DIR, _VALID_VERSION, commands)
+    assert lisdf_plan.lisdf_path == _CURRENT_DIR
+    assert lisdf_plan.version == _VALID_VERSION
     assert lisdf_plan.commands == commands
 
 
@@ -170,5 +246,3 @@ def test_lisdf_plan_with_complex_commands(
 
     json_as_dict = json.loads(lisdf_plan.to_json())
     assert json_as_dict == expected_complex_lisdf_plan_dict
-
-    print(lisdf_plan.to_json(indent=2))

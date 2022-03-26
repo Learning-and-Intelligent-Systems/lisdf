@@ -66,19 +66,25 @@ def test_joint_space_path_raises_value_error(waypoints, duration):
 
 
 @pytest.mark.parametrize(
-    "waypoints, duration, expected_dimensionality, expected_num_waypoints",
+    "waypoints, duration, expected_joint_names, expected_dimensionality, "
+    "expected_num_waypoints",
     [
-        ({"joint_1": [0.0, 0.5, 1.0]}, 5.0, 1, 3),
+        ({"joint_1": [0.0, 0.5, 1.0]}, 5.0, ["joint_1"], 1, 3),
         (
             {"joint_1": list(range(10)), "joint_2": list(reversed(range(10)))},
             3.0,
+            ["joint_1", "joint_2"],
             2,
             10,
         ),
     ],
 )
 def test_joint_space_path(
-    waypoints, duration, expected_dimensionality, expected_num_waypoints
+    waypoints,
+    duration,
+    expected_joint_names,
+    expected_dimensionality,
+    expected_num_waypoints,
 ):
     path = JointSpacePath(waypoints, duration, label="my_label")
     assert path.waypoints == waypoints
@@ -87,6 +93,7 @@ def test_joint_space_path(
     assert path.label == "my_label"
 
     # Other properties
+    assert path.joint_names == expected_joint_names
     assert path.dimensionality == expected_dimensionality
     assert path.num_waypoints == expected_num_waypoints
 
@@ -127,6 +134,7 @@ def _expected_waypoint_at_idx(
 
 
 def test_joint_space_path_waypoints_derived_properties(complex_path):
+    assert complex_path.joint_names == [f"joint_{num}" for num in range(1, 8)]
     assert complex_path.dimensionality == 7
     assert complex_path.num_waypoints == 11
 
@@ -148,6 +156,10 @@ def test_joint_space_path_waypoint(complex_path):
     assert complex_path.waypoint(10) == _expected_waypoint_at_idx(
         complex_path.waypoints, 10
     )
+    # Check we can do negative indexing
+    assert complex_path.waypoint(10) == complex_path.waypoint(-1)
+    assert complex_path.waypoint(-11) == complex_path.waypoint(0)
+
     with pytest.raises(ValueError):
         complex_path.waypoint(999)
 
@@ -228,16 +240,25 @@ def test_actuate_gripper_raises_value_error(configurations):
 
 
 @pytest.mark.parametrize(
-    "configurations",
+    "configurations, expected_joint_names",
     [
-        {"gripper_1": GripperPosition.OPEN},
-        {"gripper_left": GripperPosition.CLOSE, "gripper_right": GripperPosition.OPEN},
+        ({"gripper_1": GripperPosition.OPEN}, ["gripper_1"]),
+        (
+            {
+                "gripper_left": GripperPosition.CLOSE,
+                "gripper_right": GripperPosition.OPEN,
+            },
+            ["gripper_left", "gripper_right"],
+        ),
     ],
 )
-def test_actuate_gripper(configurations):
+def test_actuate_gripper(configurations, expected_joint_names):
     actuate_gripper = ActuateGripper(configurations)
     assert actuate_gripper.configurations == configurations
     assert actuate_gripper.type == "ActuateGripper"
+
+    # Derived properties
+    assert actuate_gripper.joint_names == expected_joint_names
 
     # Check we can get position via gripper joint name
     test_gripper_joint = next(iter(configurations.keys()))
