@@ -68,7 +68,7 @@ def main(joint_space_paths: JointSpacePaths):
     trajs = np.array([np.zeros((9,)), panda_home, panda_home])
 
     t_all = np.array([0, 5.0, 10.0])
-    simulate_physics = False
+    simulate_physics = True
 
     if simulate_physics:
         joint_controller = builder.AddSystem(RobotJointSpaceController(joint_space_paths))
@@ -125,6 +125,10 @@ def main(joint_space_paths: JointSpacePaths):
 
 
 if __name__ == "__main__":
+    closed_gripper = np.array([0, 0.0])
+    open_gripper = np.array([0.03, 0.03])
+    pose_06 = np.concatenate([0.6*np.ones((7,)), open_gripper])
+    pose_01 = np.concatenate([0.1*np.ones((7,)), open_gripper])
 
     paths = JointSpacePaths(
         paths=[
@@ -133,9 +137,8 @@ if __name__ == "__main__":
                 start_time=0.0,
                 end_time=10.0,
             ),
-            # FIXME: grippers are messed up as they are last 2 dimensionalities
             JointSpacePathWithTime(
-                confs=np.array([_PANDA_HOME, 0.6 * np.ones((9,)), 0.1 * np.ones((9,))]),
+                confs=np.array([_PANDA_HOME, pose_06, pose_01]),
                 start_time=10.0,
                 end_time=20.0,
             ),
