@@ -68,24 +68,27 @@ def main(joint_space_paths: JointSpacePaths):
     trajs = np.array([np.zeros((9,)), panda_home, panda_home])
 
     t_all = np.array([0, 5.0, 10.0])
+    simulate_physics = False
 
-    joint_controller = builder.AddSystem(RobotJointSpaceController(joint_space_paths))
+    if simulate_physics:
+        joint_controller = builder.AddSystem(RobotJointSpaceController(joint_space_paths))
 
-    torque_controller = builder.AddSystem(
-        make_robot_controller("assets/panda_arm_hand.urdf")
-    )
-    builder.Connect(
-        joint_controller.get_output_port(),
-        torque_controller.get_input_port_desired_state(),
-    )
-    builder.Connect(
-        plant.get_state_output_port(robot),
-        torque_controller.get_input_port_estimated_state(),
-    )
-    builder.Connect(
-        torque_controller.get_output_port_control(),
-        plant.get_actuation_input_port(robot),
-    )
+        torque_controller = builder.AddSystem(
+            make_robot_controller("assets/panda_arm_hand.urdf")
+        )
+        builder.Connect(
+            joint_controller.get_output_port(),
+            torque_controller.get_input_port_desired_state(),
+        )
+        builder.Connect(
+            plant.get_state_output_port(robot),
+            torque_controller.get_input_port_estimated_state(),
+        )
+        builder.Connect(
+            torque_controller.get_output_port_control(),
+            plant.get_actuation_input_port(robot),
+        )
+
     diagram = builder.Build()
 
     simulator = Simulator(diagram)
@@ -95,10 +98,27 @@ def main(joint_space_paths: JointSpacePaths):
         simulator.get_mutable_context()
     )
 
+    if not simulate_physics:
+        plant.get_actuation_input_port().FixValue(plant_context, np.zeros(9));
+        plant.mutable_gravity_field().set_gravity_vector(np.array([0, 0, 0.0]))
+
     # Set initial state
     meshcat_vis.reset_recording()
     meshcat_vis.start_recording()
-    simulator.AdvanceTo(joint_space_paths.simulation_end_time() + 1.0)
+
+    if simulate_physics:
+        simulator.AdvanceTo(joint_space_paths.simulation_end_time() + 1.0)
+    else:
+        t = 0.0
+        while t < joint_space_paths.simulation_end_time() - 0.1:
+            t += 0.01
+            q = joint_space_paths.path_at_time(t).conf_at_time(t)
+            v = np.zeros_like(q)
+            qv = np.concatenate([q, v])
+            plant.SetPositionsAndVelocities(plant_context, robot, qv)
+            simulator.AdvanceTo(t)
+
+
     meshcat_vis.publish_recording()
     meshcat_vis.vis.render_static()
     input("press enter to end\n")
