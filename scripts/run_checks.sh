@@ -23,7 +23,8 @@ fi
 #fi
 
 echo "Running unit tests."
-pytest -s tests/ --cov-config=.coveragerc --cov=lisdf/ --cov=tests/ --cov-fail-under=100 --cov-report=term-missing:skip-covered --durations=10
+# Note: tests/ directory is not included in coverage
+pytest -s tests/ --cov-config=.coveragerc --cov=lisdf/ --cov-fail-under=75 --cov-report=term-missing:skip-covered --durations=10
 if [ $? -eq 0 ]; then
     echo "Unit tests passed."
 else

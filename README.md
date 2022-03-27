@@ -1,8 +1,18 @@
 # LISdf
-A repository for a universal I/O spec for TAMP, along with scripts to convert from popular specs to our spec
+![Build Status](https://github.com/Learning-and-Intelligent-Systems/lisdf/actions/workflows/ci_checks.yml/badge.svg)
+![License](https://img.shields.io/badge/license-MIT-blue.svg)
 
+A repository for a universal I/O spec for Task and Motion Planning (TAMP), along with scripts to convert from 
+popular specs to our spec.
 
 ## Installation
+1. Clone the repository using `git clone`. 
+2. If you wish to use the `lisdf-models` repository which includes our model files then run 
+   `git submodule update --init`
+   - **WARNING!** The models in this repo are ~600MB as of 2022-03-25.
+3. Follow the instructions below to install dependencies. If you plan on contributing or running the tests, then 
+   additionally follow the "Instructions for Contributing" section.
+
 ### Dependencies
 This repository requires Python 3.8+. We recommend you create a 
 [conda env](https://docs.conda.io/projects/conda/en/latest/user-guide/tasks/manage-environments.html) or 
@@ -17,7 +27,8 @@ If you are creating a virtual environment within the project directory, then you
 ## Instructions For Contributing
 
 ### Dev Dependencies
-Run `pip install -r requirements-dev.txt` to install all dependencies for development/contribution.
+Run `pip install -r requirements-dev.txt` to install all dependencies for development/contribution. 
+You should also pull the `lisdf-models` submodule if you haven't already (see Installation section above).
 
 ### Pushing your Changes
 You can't directly push to the `main` branch.  All contributions will require review to ensure code is understandable 
@@ -39,10 +50,10 @@ If you wish to run these commands individually, you can run these commands from 
 1. `isort . && black .`
 2. `flake8 .`
 3. `mypy . --config-file mypy.ini`
-4. `pytest -s tests/ --cov-config=.coveragerc --cov=lisdf/ --cov=tests/ --cov-fail-under=100 --cov-report=term-missing:skip-covered --durations=10`
+4. `pytest -s tests/ --cov-config=.coveragerc --cov=lisdf/ --cov-fail-under=75 --cov-report=term-missing:skip-covered --durations=10`
 
 * The 1st command is the autoformatting check, which runs `black` and `isort`.
 * The 2nd command is the linter check, which runs `flake8`
 * The 3rd command is the static typing check, which uses `mypy` to verify type annotations. 
 * The 4th command is the unit testing check, which verifies that unit tests pass and that code is adequately covered. 
-  * The "100" means that all lines in every file must be covered.
+  * The "75" means that 75% of all lines in every file in `lisdf/` must be covered (excludes `tests/`).
