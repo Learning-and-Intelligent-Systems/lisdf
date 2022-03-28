@@ -10,7 +10,7 @@ from lisdf.planner_output.config import (
     CURRENT_LISDF_PLAN_VERSION,
     ENABLE_LISDF_PATH_CHECKING,
     ENFORCE_JOINT_DIMENSIONALITIES,
-    SUPPORTED_PLANNER_OUTPUT_VERSIONS,
+    SUPPORTED_PLAN_OUTPUT_VERSIONS,
 )
 
 _SUPPORTED_COMMAND_TYPES: Tuple[Type[Command], ...] = (ActuateGripper, JointSpacePath)
@@ -140,7 +140,7 @@ class LISDFPlan(OutputElement):
         if not major.isdigit() or not minor.isdigit():
             raise ValueError(f"Invalid version number: {self.version}")
 
-        if self.version not in SUPPORTED_PLANNER_OUTPUT_VERSIONS:
+        if self.version not in SUPPORTED_PLAN_OUTPUT_VERSIONS:
             raise ValueError(f"Unsupported version number: {self.version}")
 
         self._validate_commands()
