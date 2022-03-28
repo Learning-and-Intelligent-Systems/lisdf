@@ -17,13 +17,13 @@ _VALID_COMMANDS = [_VALID_JOINT_SPACE_PATH]
 
 
 @pytest.mark.parametrize(
-    "lisdf_path, version, commands",
+    "lisdf_problem, version, commands",
     [
         pytest.param(
             "lisdf-non-existent-path-i-hope",
             _VALID_VERSION,
             _VALID_COMMANDS,
-            id="lisdf_path does not exist",
+            id="lisdf_problem does not exist",
             # We're not checking paths at the moment, remove this mark once we do
             marks=pytest.mark.xfail,
         ),
@@ -99,9 +99,9 @@ _VALID_COMMANDS = [_VALID_JOINT_SPACE_PATH]
         ),
     ],
 )
-def test_lisdf_plan_raises_value_error(lisdf_path, version, commands):
+def test_lisdf_plan_raises_value_error(lisdf_problem, version, commands):
     with pytest.raises(ValueError):
-        LISDFPlan(lisdf_path, version, commands)
+        LISDFPlan(lisdf_problem=lisdf_problem, commands=commands, version=version)
 
 
 @pytest.mark.parametrize(
@@ -138,19 +138,21 @@ def test_lisdf_plan_raises_value_error(lisdf_path, version, commands):
     ],
 )
 def test_lisdf_plan(commands):
-    lisdf_plan = LISDFPlan(_CURRENT_DIR, _VALID_VERSION, commands)
-    assert lisdf_plan.lisdf_path == _CURRENT_DIR
+    lisdf_plan = LISDFPlan(
+        lisdf_problem=_CURRENT_DIR, commands=commands, version=_VALID_VERSION
+    )
+    assert lisdf_plan.lisdf_problem == _CURRENT_DIR
     assert lisdf_plan.version == _VALID_VERSION
     assert lisdf_plan.commands == commands
 
 
-@pytest.mark.parametrize("lisdf_path, version", [(_CURRENT_DIR, _VALID_VERSION)])
+@pytest.mark.parametrize("lisdf_problem, version", [(_CURRENT_DIR, _VALID_VERSION)])
 def test_lisdf_plan_with_complex_commands(
-    lisdf_path, version, complex_commands, expected_complex_lisdf_plan_dict
+    lisdf_problem, version, complex_commands, expected_complex_lisdf_plan_dict
 ):
     """Complex test case where we check entire functionality of LISDFPlan"""
     lisdf_plan = LISDFPlan(
-        lisdf_path=lisdf_path, version=version, commands=complex_commands
+        lisdf_problem=lisdf_problem, version=version, commands=complex_commands
     )
 
     # Check to_json() and from_json() works as expected

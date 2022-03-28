@@ -7,12 +7,10 @@ from tests.test_planner_output.conftest import generate_complex_commands
 def main() -> None:
     # Check the generate_complex_commands() method for examples on how to
     # generate commands
-    lisdf_plan = LISDFPlan(
-        lisdf_path=".", version="0.1", commands=generate_complex_commands()
-    )
+    lisdf_plan = LISDFPlan(lisdf_problem=".", commands=generate_complex_commands())
     # We can convert the plan into json, the indent just makes it human-readable
     print("=== JSON ===")
-    print(lisdf_plan.to_json(indent=2))
+    print(lisdf_plan.to_json())
 
     # We can also convert the plan into YAML (which is a superset of JSON)
     print("\n=== YAML ===")

@@ -7,9 +7,9 @@ import numpy as np
 from lisdf.planner_output.command import ActuateGripper, Command, JointSpacePath
 from lisdf.planner_output.common import OutputElement
 from lisdf.planner_output.config import (
+    CURRENT_VERSION,
     ENABLE_LISDF_PATH_CHECKING,
     ENFORCE_JOINT_DIMENSIONALITIES,
-    SUPPORTED_COMMAND_TYPES,
     SUPPORTED_PLANNER_OUTPUT_VERSIONS,
 )
 
@@ -29,10 +29,7 @@ class LISDFPlan(OutputElement):
     """
 
     # Path of the LISDF folder where the world and model files are located
-    lisdf_path: str
-
-    # Version of the LISDF plan output specification
-    version: str
+    lisdf_problem: str
 
     # List of Commands that need to be executed by the simulator
     #   We run multiple validation checks on these commands:
@@ -42,6 +39,9 @@ class LISDFPlan(OutputElement):
     #        waypoint of the next JointSpaceCommand
     #   These checks allow us to ensure we create valid robot commands.
     commands: List[Command]
+
+    # Version of the LISDF plan output specification
+    version: str = CURRENT_VERSION
 
     def _commands_for_type(self, command_type: str) -> List[Command]:
         return [command for command in self.commands if command.type == command_type]
@@ -118,10 +118,12 @@ class LISDFPlan(OutputElement):
         for command in self.commands:
             if not isinstance(command, Command):
                 raise ValueError(f"Invalid command type: {type(command)}")
-            elif not isinstance(command, SUPPORTED_COMMAND_TYPES):
+            elif not isinstance(command, Command.get_supported_types()):
                 # If a new Command type is added, there should be a new validation
                 # check for it.
                 raise ValueError(f"Unsupported command type: {command.type}")
+
+        # TODO check the type of commands
 
         # Validate the individual commands
         self._validate_joint_space_paths()
@@ -129,9 +131,9 @@ class LISDFPlan(OutputElement):
 
     def validate(self):
         # Check path of LISDF exists
-        if ENABLE_LISDF_PATH_CHECKING and not os.path.exists(self.lisdf_path):
+        if ENABLE_LISDF_PATH_CHECKING and not os.path.exists(self.lisdf_problem):
             # TODO(willshen): validate models/lisdf/sdf exists within path?
-            raise ValueError(f"LISDF path does not exist: {self.lisdf_path}")
+            raise ValueError(f"LISDF path does not exist: {self.lisdf_problem}")
 
         # Check version number is valid and supported
         major, minor = self.version.split(".")
