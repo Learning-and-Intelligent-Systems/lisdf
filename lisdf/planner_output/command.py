@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from enum import Enum
-from typing import ClassVar, Dict, List, Optional, Tuple, Type
+from typing import ClassVar, Dict, List, Optional, Type
 
 import numpy as np
 
@@ -29,10 +29,6 @@ class Command(OutputElement, ABC):
         super().__init_subclass__(**kwargs)
         setattr(cls, "type", type)
         Command.type_mapping[type] = cls
-
-    @classmethod
-    def get_supported_types(cls) -> Tuple[Type["Command"], ...]:
-        return tuple(cls.type_mapping.values())
 
     @classmethod
     @abstractmethod

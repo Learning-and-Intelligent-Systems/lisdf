@@ -1,17 +1,19 @@
 import os
 from dataclasses import dataclass
-from typing import Dict, List
+from typing import Dict, List, Tuple, Type
 
 import numpy as np
 
 from lisdf.planner_output.command import ActuateGripper, Command, JointSpacePath
 from lisdf.planner_output.common import OutputElement
 from lisdf.planner_output.config import (
-    CURRENT_VERSION,
+    CURRENT_LISDF_PLAN_VERSION,
     ENABLE_LISDF_PATH_CHECKING,
     ENFORCE_JOINT_DIMENSIONALITIES,
     SUPPORTED_PLANNER_OUTPUT_VERSIONS,
 )
+
+_SUPPORTED_COMMAND_TYPES: Tuple[Type[Command], ...] = (ActuateGripper, JointSpacePath)
 
 
 @dataclass(frozen=True)
@@ -41,7 +43,7 @@ class LISDFPlan(OutputElement):
     commands: List[Command]
 
     # Version of the LISDF plan output specification
-    version: str = CURRENT_VERSION
+    version: str = CURRENT_LISDF_PLAN_VERSION
 
     def _commands_for_type(self, command_type: str) -> List[Command]:
         return [command for command in self.commands if command.type == command_type]
@@ -118,12 +120,10 @@ class LISDFPlan(OutputElement):
         for command in self.commands:
             if not isinstance(command, Command):
                 raise ValueError(f"Invalid command type: {type(command)}")
-            elif not isinstance(command, Command.get_supported_types()):
+            elif not isinstance(command, _SUPPORTED_COMMAND_TYPES):
                 # If a new Command type is added, there should be a new validation
                 # check for it.
                 raise ValueError(f"Unsupported command type: {command.type}")
-
-        # TODO check the type of commands
 
         # Validate the individual commands
         self._validate_joint_space_paths()

@@ -1,19 +1,35 @@
 import json
 import os
+from typing import Dict
 
 import pytest
 import yaml
 
-from lisdf.planner_output.command import ActuateGripper, GripperPosition, JointSpacePath
+from lisdf.planner_output.command import (
+    ActuateGripper,
+    Command,
+    GripperPosition,
+    JointSpacePath,
+)
+from lisdf.planner_output.config import CURRENT_LISDF_PLAN_VERSION
 from lisdf.planner_output.plan import LISDFPlan
 
 _CURRENT_DIR = os.path.dirname(__file__)
-_VALID_VERSION = "0.1"
+_VALID_VERSION = CURRENT_LISDF_PLAN_VERSION
 
 _VALID_JOINT_SPACE_PATH = JointSpacePath(
     waypoints={"joint_1": [0.0, 1.0]}, duration=1.0
 )
 _VALID_COMMANDS = [_VALID_JOINT_SPACE_PATH]
+
+
+class _UnvalidatedCommand(Command, type="unvalidated_command_for_tests"):
+    @classmethod
+    def _from_json_dict(cls, json_dict: Dict) -> "Command":
+        pass
+
+    def validate(self):
+        pass
 
 
 @pytest.mark.parametrize(
@@ -97,6 +113,15 @@ _VALID_COMMANDS = [_VALID_JOINT_SPACE_PATH]
             ],
             id="actuate gripper commands different joint dims",
         ),
+        pytest.param(
+            _CURRENT_DIR,
+            _VALID_VERSION,
+            [
+                ActuateGripper({"gripper_1": GripperPosition.open}),
+                _UnvalidatedCommand(),
+            ],
+            id="unvalidated command in plan",
+        ),
     ],
 )
 def test_lisdf_plan_raises_value_error(lisdf_problem, version, commands):
@@ -144,6 +169,13 @@ def test_lisdf_plan(commands):
     assert lisdf_plan.lisdf_problem == _CURRENT_DIR
     assert lisdf_plan.version == _VALID_VERSION
     assert lisdf_plan.commands == commands
+
+
+def test_lisdf_plan_with_default_version():
+    lisdf_plan = LISDFPlan(lisdf_problem=_CURRENT_DIR, commands=_VALID_COMMANDS)
+    assert lisdf_plan.lisdf_problem == _CURRENT_DIR
+    assert lisdf_plan.version == CURRENT_LISDF_PLAN_VERSION
+    assert lisdf_plan.commands == _VALID_COMMANDS
 
 
 @pytest.mark.parametrize("lisdf_problem, version", [(_CURRENT_DIR, _VALID_VERSION)])
