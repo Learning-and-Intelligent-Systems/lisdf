@@ -1,5 +1,5 @@
 from drake_utils.lisdf_executor.executor import CommandExecutor
-from drake_utils.lisdf_executor.robot import RobotWithGripper
+from drake_utils.robot import RobotWithGripper
 from lisdf.planner_output.command import ActuateGripper, GripperPosition
 
 

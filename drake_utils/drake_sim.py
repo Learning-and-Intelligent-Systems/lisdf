@@ -15,9 +15,9 @@ from pydrake.systems.framework import DiagramBuilder
 from pydrake.systems.meshcat_visualizer import ConnectMeshcatVisualizer
 from pydrake.systems.sensors import CameraInfo, RgbdSensor
 
+from drake_utils.lisdf_controller import LISDFPlanController
+from drake_utils.robot.panda import Panda
 from drake_utils.utils import make_robot_controller, xyz_rpy_deg
-from drake_utils.lisdf_executor import LISDFPlanExecutor
-
 from lisdf.planner_output.plan import LISDFPlan
 
 
@@ -63,8 +63,16 @@ def main(plan: LISDFPlan):
     simulate_physics = True
 
     if simulate_physics:
-        joint_controller = builder.AddSystem(LISDFPlanExecutor(plan, 9))
+        # FIXME: init can be read from LISDF
+        # if last_q_des is None and the first command is ActuateGripper, we crash)
+        # gripper open initially
+        panda_init_conf = np.concatenate([np.zeros((7,)), np.array([0.03, 0.03])])
+        lisdf_controller = LISDFPlanController(
+            robot=Panda(configuration=panda_init_conf), plan=plan
+        )
+        joint_controller = builder.AddSystem(lisdf_controller)
 
+        # Connect the robot controller to the plant
         torque_controller = builder.AddSystem(
             make_robot_controller("assets/panda_arm_hand.urdf")
         )

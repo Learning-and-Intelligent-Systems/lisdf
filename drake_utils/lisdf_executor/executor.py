@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 from typing import Generic, TypeVar
 
-from drake_utils.lisdf_executor.robot import DrakeRobot
+from drake_utils.robot import DrakeRobot
 from lisdf.planner_output.command import Command
 
 # Use TypeVar so we can infer types in subclasses
@@ -10,6 +10,11 @@ CommandType = TypeVar("CommandType", bound=Command)
 
 
 class CommandExecutor(ABC):
+    """
+    A CommandExecutor takes a LISDF Plan Command, and executes it on a robot by
+    updating the robot's configuration for given times in the `execute` method.
+    """
+
     def __init__(
         self,
         robot: Generic[RobotType],

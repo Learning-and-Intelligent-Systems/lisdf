@@ -2,7 +2,7 @@ from typing import List
 
 import numpy as np
 
-from drake_utils.robot.robot import RobotWithGripper
+from drake_utils.robot import RobotWithGripper
 from lisdf.planner_output.command import GripperPosition
 
 
@@ -12,8 +12,8 @@ class Panda(RobotWithGripper):
         return self.configuration[:7]
 
     def set_joint_configuration(self, joint_configuration: np.array) -> None:
-        self.configuration = np.concat(
-            (joint_configuration, self.gripper_configuration)
+        self.configuration = np.concatenate(
+            [joint_configuration, self.gripper_configuration]
         )
 
     @property
@@ -21,8 +21,8 @@ class Panda(RobotWithGripper):
         return self.configuration[7:]
 
     def set_gripper_configuration(self, gripper_configuration: np.array) -> None:
-        self.configuration = np.concat(
-            (self.joint_configuration, gripper_configuration)
+        self.configuration = np.concatenate(
+            [self.joint_configuration, gripper_configuration]
         )
 
     def gripper_configuration_for_position(self, position: GripperPosition) -> np.array:
@@ -38,6 +38,7 @@ class Panda(RobotWithGripper):
         # 7 arm joints + 2 gripper joints
         return 9
 
+    @property
     def joint_ordering(self) -> List[str]:
         return [
             "panda_joint1",
