@@ -1,5 +1,4 @@
 import numpy as np
-from position_controller import RobotPositionController
 from pydrake.geometry.render import (
     ClippingRange,
     DepthRange,
@@ -15,27 +14,27 @@ from pydrake.systems.analysis import Simulator
 from pydrake.systems.framework import DiagramBuilder
 from pydrake.systems.meshcat_visualizer import ConnectMeshcatVisualizer
 from pydrake.systems.sensors import CameraInfo, RgbdSensor
-from pydrake.trajectories import PiecewisePolynomial
 
 from drake_utils.utils import make_robot_controller, xyz_rpy_deg
+from drake_utils.lisdf_executor import LISDFPlanExecutor
+
+from lisdf.planner_output.plan import LISDFPlan
 
 
-def main():
+def main(plan: LISDFPlan):
     builder = DiagramBuilder()
-    plant, scene_graph = AddMultibodyPlantSceneGraph(builder, 0.001)
+    plant, scene_graph = AddMultibodyPlantSceneGraph(builder, 0.01)
 
     parser = Parser(plant)
     parser.package_map().Add("assets", "assets/")
-    world = parser.AddAllModelsFromFile("assets/world.sdf")  # noqa: F841
-    # robot_path = "assets/panda_arm_hand.urdf"
-    robot_path = "assets/pr2_description/urdf/pr2_simplified.urdf"
-    robot = parser.AddModelFromFile(robot_path, model_name="robot")
+    parser.AddAllModelsFromFile("lisdf-models/models/m0m_panda/model.sdf")
+    robot = parser.AddModelFromFile("assets/panda_arm_hand.urdf", model_name="robot")
 
     # Weld robot to the world
     plant.WeldFrames(
         frame_on_parent_P=plant.world_frame(),
-        frame_on_child_C=plant.GetFrameByName("world_link", robot),
-        X_PC=xyz_rpy_deg([0, 0, 0], [0, 0, 0]),
+        frame_on_child_C=plant.GetFrameByName("panda_link0", robot),
+        X_PC=xyz_rpy_deg([0.0, 0, 0], [0, 0, 0]),
     )
 
     renderer_name = "renderer"
@@ -61,41 +60,27 @@ def main():
     )
 
     plant.Finalize()
+    simulate_physics = True
 
-    # Make a traj that goes from 0 to home
-    simulation_time = 7.0
-    panda_home = np.array([-0.19, 0.08, 0.23, -2.43, 0.03, 2.52, 0.86, 0.0, 0.0])
-    # trajs = np.array([np.zeros((9,)), panda_home, panda_home])
-    trajs = np.array([np.zeros(28,), np.zeros(28,), np.zeros(28,)])
+    if simulate_physics:
+        joint_controller = builder.AddSystem(LISDFPlanExecutor(plan, 9))
 
-    t_all = np.array([0, simulation_time/2.0, simulation_time])
-    q_traj = PiecewisePolynomial.CubicShapePreserving(t_all, trajs.T)
+        torque_controller = builder.AddSystem(
+            make_robot_controller("assets/panda_arm_hand.urdf")
+        )
+        builder.Connect(
+            joint_controller.get_output_port(),
+            torque_controller.get_input_port_desired_state(),
+        )
+        builder.Connect(
+            plant.get_state_output_port(robot),
+            torque_controller.get_input_port_estimated_state(),
+        )
+        builder.Connect(
+            torque_controller.get_output_port_control(),
+            plant.get_actuation_input_port(robot),
+        )
 
-    qs_for_controller = [q_traj.value(t) for t in np.linspace(0, 5.0, 100)]
-    print("num robot confs q in traj:", len(qs_for_controller))
-
-    time_step = simulation_time / len(qs_for_controller)
-
-    joint_controller = builder.AddSystem(
-        RobotPositionController(qs_for_controller, time_step=time_step)
-    )
-
-    torque_controller = builder.AddSystem(
-        make_robot_controller(robot_path)
-    )
-
-    builder.Connect(
-        joint_controller.get_output_port(),
-        torque_controller.get_input_port_desired_state(),
-    )
-    builder.Connect(
-        plant.get_state_output_port(robot),
-        torque_controller.get_input_port_estimated_state(),
-    )
-    builder.Connect(
-        torque_controller.get_output_port_control(),
-        plant.get_actuation_input_port(robot),
-    )
     diagram = builder.Build()
 
     simulator = Simulator(diagram)
@@ -104,16 +89,31 @@ def main():
     plant_context = plant.GetMyContextFromRoot(  # noqa: F841
         simulator.get_mutable_context()
     )
-    #plant.get_actuation_input_port(robot).FixValue(plant_context, np.zeros((28,1)))
+
+    if not simulate_physics:
+        plant.get_actuation_input_port().FixValue(plant_context, np.zeros(9))
+        plant.mutable_gravity_field().set_gravity_vector(np.array([0, 0, 0.0]))
 
     # Set initial state
     meshcat_vis.reset_recording()
     meshcat_vis.start_recording()
-    simulator.AdvanceTo(simulation_time)
+    total_time = 60.0
+
+    if simulate_physics:
+        simulator.AdvanceTo(total_time)
+    else:
+        t = 0.0
+        while t < total_time:
+            # See commit dc919111d on the sdrake branch for and example of how
+            # this used to be implemented before the outputspec was formalized
+            raise NotImplementedError
+
     meshcat_vis.publish_recording()
     meshcat_vis.vis.render_static()
     input("press enter to end\n")
 
 
 if __name__ == "__main__":
-    main()
+    plan_json = open("lisdf_plan.json").read()
+    plan = LISDFPlan.from_json(plan_json)
+    main(plan)

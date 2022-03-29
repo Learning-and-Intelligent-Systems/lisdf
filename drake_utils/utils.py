@@ -14,7 +14,7 @@ def xyz_rpy_deg(xyz, rpy_deg):
 
 def make_robot_controller(robot_model):
     cbuilder = DiagramBuilder()
-    cplant, _ = AddMultibodyPlantSceneGraph(cbuilder, 0.001)
+    cplant, _ = AddMultibodyPlantSceneGraph(cbuilder, 0.01)
     cparser = Parser(cplant)
     cparser.package_map().Add("assets", "assets/")
     robot = cparser.AddModelFromFile(robot_model)
