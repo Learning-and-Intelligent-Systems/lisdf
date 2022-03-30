@@ -1,9 +1,12 @@
 import json
+import warnings
 from abc import ABC, abstractmethod
 from enum import Enum
 from typing import Dict
 
 import yaml
+
+from lisdf.planner_output.config import DEFAULT_JSON_INDENT
 
 
 class _CustomJSONEncoder(json.JSONEncoder):
@@ -46,9 +49,21 @@ class OutputElement(ABC):
         """Convert a JSON dict with plain Python objects to an OutputElement"""
         raise NotImplementedError
 
-    def to_json(self, **json_kwargs) -> str:
+    def to_json(self, indent=DEFAULT_JSON_INDENT, **json_kwargs) -> str:
         """Dump the current object as a JSON string"""
-        return json.dumps(self.to_dict(), cls=_CustomJSONEncoder, **json_kwargs)
+        return json.dumps(
+            self.to_dict(), cls=_CustomJSONEncoder, indent=indent, **json_kwargs
+        )
+
+    def write_json(
+        self, json_fname: str, indent=DEFAULT_JSON_INDENT, **json_kwargs
+    ) -> None:
+        """Write the current object to a file as a JSON"""
+        if not json_fname.endswith(".json"):
+            warnings.warn(f"Warning! {json_fname} does not end with .json")
+
+        with open(json_fname, "w") as f:
+            f.write(self.to_json(indent, **json_kwargs))
 
     @classmethod
     def from_json(cls, json_str: str) -> "OutputElement":
@@ -63,6 +78,14 @@ class OutputElement(ABC):
         # Convert JSON to YAML directly so we don't have to write another encoder
         json_as_dict = json.loads(self.to_json())
         return yaml.safe_dump(json_as_dict, **yaml_kwargs)
+
+    def write_yaml(self, yaml_fname: str, **yaml_kwargs) -> None:
+        """Write the current object to a file as a YAML"""
+        if not yaml_fname.endswith(".yaml"):
+            warnings.warn(f"Warning! {yaml_fname} does not end with .yaml")
+
+        with open(yaml_fname, "w") as f:
+            f.write(self.to_yaml(**yaml_kwargs))
 
     @classmethod
     def from_yaml(cls, yaml_str: str) -> "OutputElement":
