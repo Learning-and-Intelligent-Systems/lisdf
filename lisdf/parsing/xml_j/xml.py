@@ -1,3 +1,4 @@
+import re
 import xml.etree.ElementTree as et
 from typing import Any, List, Optional
 
@@ -132,9 +133,11 @@ def _xml2obj(element) -> XMLNode:
 
 
 def load_string(value: str) -> XMLNode:
+    # TODO:: temporary fix for some drake files.
+    value = re.sub(' xmlns="[^"]+"', "", value, count=1)
     return _xml2obj(et.fromstring(value))
 
 
 def load_file(filename: str) -> XMLNode:
     with open(filename) as f:
-        return _xml2obj(et.fromstring(f.read()))
+        return load_string(f.read())

@@ -46,11 +46,10 @@ class XMLVisitor(object):
         # optional data.
         self._data: Dict[str, Dict[str, Any]] = defaultdict(dict)
         self._indent: int = 0
-
-        self.verbose = False
+        self._verbose = False
 
     def set_verbose(self, flag: bool = True) -> None:
-        self.verbose = flag
+        self._verbose = flag
 
     def _get_processor(self, tag: str) -> Optional[Callable[[XMLNode], Any]]:
         if len(self.scope_stack) == 0:
@@ -102,11 +101,11 @@ class XMLVisitor(object):
             The return value of user's function applied to the root node.
         """
         self.filename_stack.append(filename)
-        if self.verbose:
+        if self._verbose:
             print(indent_text(filename, self._indent))
 
         def _inner(node: XMLNode):
-            if self.verbose:
+            if self._verbose:
                 print(indent_text(node.open_tag(), self._indent))
                 if node.text:
                     print(indent_text(node.text, self._indent + 1))
@@ -126,10 +125,10 @@ class XMLVisitor(object):
                 proc = self._get_processor(node.tag)
 
                 if proc is not None:
-                    if self.verbose:
+                    if self._verbose:
                         print(indent_text(node.close_tag(), self._indent - 1))
                     return proc(node)
-                if self.verbose:
+                if self._verbose:
                     print(indent_text(node.close_tag(), self._indent - 1))
                 return node
             finally:

@@ -112,7 +112,7 @@ class SDFVisitor(XMLVisitor):
     def surface(self, node):
         self.exit_scope("surface")
         return node.set_data(
-            C.Surface(
+            C.SurfaceInfo(
                 node.pop("contact", return_type="data", default=C.SurfaceContact()),
                 node.pop("friction", return_type="data", default=C.SurfaceFriction()),
             )
@@ -164,7 +164,7 @@ class SDFVisitor(XMLVisitor):
     @check_done_decorator
     def collision(self, node):
         return node.set_data(
-            C.Geom(
+            C.Collision(
                 name=node.attributes.pop("name", None),
                 pose=node.pop("pose", return_type="data", default=None),
                 shape=node.pop("geometry", return_type="data", required=True),
@@ -190,11 +190,11 @@ class SDFVisitor(XMLVisitor):
     def visual(self, node):
         cast_shadows = bool_string(node.pop("cast_shadows", default="true"))
         return node.set_data(
-            C.SDFGeom(
+            C.SDFVisual(
                 name=node.attributes.pop("name", None),
                 pose=node.pop("pose", return_type="data", default=None),
                 shape=node.pop("geometry", return_type="data", required=True),
-                visual=node.pop(
+                material=node.pop(
                     "material",
                     return_type="data",
                     default=C.PhongMaterial(),

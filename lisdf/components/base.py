@@ -75,6 +75,12 @@ class Pose(StringConfigurable):
 
     def to_sdf(self) -> str:
         return (
-            f"<pose>{self.pos[0]}, {self.pos[1]}, {self.pos[2]}, "
-            f"{self.rpy[0]}, {self.rpy[1]}, {self.rpy[2]}</pose>"
+            f"<pose>{self.pos[0]} {self.pos[1]} {self.pos[2]} "
+            f"{self.rpy[0]} {self.rpy[1]} {self.rpy[2]}</pose>"
+        )
+
+    def to_urdf(self) -> str:
+        return (
+            f'<origin xyz="{self.pos[0]} {self.pos[1]} {self.pos[2]}" '
+            f'rpy="{self.rpy[0]} {self.rpy[1]} {self.rpy[2]}"/>'
         )

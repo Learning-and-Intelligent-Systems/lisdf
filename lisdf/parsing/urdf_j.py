@@ -56,9 +56,16 @@ class URDFVisitor(XMLVisitor):
 
     @check_done_decorator
     def collision(self, node):
+        node.attributes.pop("group")  # TODO: Figure out what this is.
+        link_collision_name = self._st["link_collision"][-1]
+        default_name = f"{link_collision_name[0]}_collision_{link_collision_name[1]}"
+        self._st["link_collision"][-1] = (
+            [link_collision_name],
+            link_collision_name[1] + 1,
+        )
         return node.set_data(
-            C.Geom(
-                name=node.attributes.pop("name", None),
+            C.Collision(
+                name=node.attributes.pop("name", default_name),
                 pose=node.pop("origin", return_type="data", default=None),
                 shape=node.pop("geometry", return_type="data", required=True),
             )
@@ -97,12 +104,16 @@ class URDFVisitor(XMLVisitor):
     @check_done_decorator
     def visual(self, node):
         self.exit_scope("visual")
+
+        link_visual_name = self._st["link_visual"][-1]
+        default_name = f"{link_visual_name[0]}_visual_{link_visual_name[1]}"
+        self._st["link_visual"][-1] = (link_visual_name[0], link_visual_name[1] + 1)
         return node.set_data(
-            C.Geom(
-                name=node.attributes.pop("name", None),
+            C.Visual(
+                name=node.attributes.pop("name", default_name),
                 pose=node.pop("origin", return_type="data", default=None),
                 shape=node.pop("geometry", return_type="data", required=True),
-                visual=node.pop("material", return_type="data", default=None),
+                material=node.pop("material", return_type="data", default=None),
             )
         )
 
@@ -137,30 +148,35 @@ class URDFVisitor(XMLVisitor):
     def material(self, node):
         assert len(node.children) == 1
         children = list(node.pop_all_children())
-        self._data["materials"][node.attributes.pop("name")] = children[0]
+        self._data["materials"][node.attributes.pop("name")] = children[0].data
         return None
+
+    def link_init(self, node):
+        self._st["link_visual"].append((node.attributes["name"], 0))
+        self._st["link_collision"].append((node.attributes["name"], 0))
 
     @check_done_decorator
     def link(self, node):
+        self._st["link_visual"].pop()
+        self._st["link_collision"].pop()
         node.attributes.pop("type", None)  # TODO: warning unused type.
         link = C.Link(
-            name=node.attributes.pop("name", None),
+            name=node.attributes.pop("name"),
             parent=None,
-            pose=node.pop("origin", return_type="data", default=None),
             inertial=node.pop("inertial", return_type="data", default=None),
         )
         for c in node.pop_all_children():
             if c.tag == "collision":
                 link.collisions.append(c.data)
             elif c.tag == "visual":
-                link.collisions.append(c.data)
+                link.visuals.append(c.data)
             else:
                 raise TypeError("Unknown tag: {}.".format(c.tag))
         return node.set_data(link)
 
     @check_done_decorator
     def joint(self, node):
-        name = node.attributes.pop("name", None)
+        name = node.attributes.pop("name")
         type = node.attributes.pop("type")
         pose = node.pop("origin", return_type="data", default=C.Pose.identity())
         parent = node.pop("parent", return_type="node", required=True).attributes.pop(
@@ -172,6 +188,8 @@ class URDFVisitor(XMLVisitor):
 
         if type == "fixed":
             node.pop("axis")  # TODO: check the axis parameter in fixed joints.
+            for c in ["limit", "dynamics", "calibration", "mimic", "safety_controller"]:
+                node.pop(c)
             return node.set_data(
                 C.Joint(
                     name=name,
@@ -263,7 +281,9 @@ class URDFVisitor(XMLVisitor):
     def gazebo_init(self, node):
         return "skip"
 
-    @check_done_decorator
+    def verbose_init(self, node):
+        return "skip"
+
     def robot(self, node):
         node.attributes.pop("version", None)
         model = C.URDFModel(
@@ -277,9 +297,11 @@ class URDFVisitor(XMLVisitor):
                 model.joints.append(c.data)
             else:
                 raise TypeError("Unknown tag: {}.".format(c.tag))
+
         return node.set_data(model)
 
 
-def load_urdf(filename: str) -> C.URDFModel:
+def load_urdf(filename: str, verbose: bool = False) -> C.URDFModel:
     visitor = URDFVisitor()
+    visitor.set_verbose(verbose)
     return visitor.load_file(filename).data

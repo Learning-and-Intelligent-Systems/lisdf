@@ -36,6 +36,9 @@ class BoxShapeInfo(ShapeInfo, type="box"):
 </box>
 """
 
+    def to_urdf(self) -> str:
+        return f"""<box size="{self.size[0]} {self.size[1]} {self.size[2]}"/>"""
+
 
 @dataclass
 class SphereShapeInfo(ShapeInfo, type="sphere"):
@@ -46,6 +49,9 @@ class SphereShapeInfo(ShapeInfo, type="sphere"):
   <radius>{self.radius}</radius>
 </sphere>
 """
+
+    def to_urdf(self) -> str:
+        return f"""<sphere radius="{self.radius}"/>"""
 
 
 @dataclass
@@ -64,6 +70,9 @@ class CylinderShapeInfo(ShapeInfo, type="cylinder"):
 </cylinder>
 """
 
+    def to_urdf(self) -> str:
+        return f"""<cylinder radius="{self.radius}" length="{self.length}"/>"""
+
 
 @dataclass
 class CapsuleShapeInfo(ShapeInfo, type="capsule"):
@@ -81,6 +90,9 @@ class CapsuleShapeInfo(ShapeInfo, type="capsule"):
 </capsule>
 """
 
+    def to_urdf(self) -> str:
+        return f"""<capsule radius="{self.radius}" length="{self.length}"/>"""
+
 
 @dataclass
 class MeshShapeInfo(ShapeInfo, type="mesh"):
@@ -93,6 +105,14 @@ class MeshShapeInfo(ShapeInfo, type="mesh"):
   <scale>{self.size[0]} {self.size[1]} {self.size[2]}</scale>
 </mesh>
 """
+
+    def to_urdf(self) -> str:
+        return (
+            "<mesh"
+            f' filename="{self.filename}"'
+            f' scale="{self.size[0]} {self.size[1]} {self.size[2]}"'
+            " />"
+        )
 
 
 @dataclass
@@ -114,3 +134,6 @@ class PlaneShapeInfo(ShapeInfo, type="plane"):
   <size>{self.width} {self.height}</size>
 </plane>
 """
+
+    def to_urdf(self) -> str:
+        return f"""<plane size="{self.width} {self.height}"/>"""

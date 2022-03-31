@@ -5,11 +5,11 @@ import numpy as np
 
 from lisdf.components.base import Pose, StringConfigurable
 from lisdf.components.control import JointControlInfo, JointInfo
+from lisdf.components.material import RGBA, Material
 from lisdf.components.sensor import Sensor
 from lisdf.components.shape import ShapeInfo
-from lisdf.components.visual import VisualInfo
 from lisdf.utils.printing import indent_text
-from lisdf.utils.typing import Vector3f
+from lisdf.utils.typing import Vector3f, Vector4f
 
 
 @dataclass
@@ -50,6 +50,14 @@ class Inertia(StringConfigurable):
   <izz>{self.izz}</izz>
 </inertia>"""
 
+    def to_urdf(self) -> str:
+        return (
+            f'<inertia ixx="{self.ixx}"'
+            f' ixy="{self.ixy}" ixz="{self.ixz}"'
+            f' iyy="{self.iyy}" iyz="{self.iyz}"'
+            f' izz="{self.izz}" />'
+        )
+
 
 @dataclass
 class Inertial(StringConfigurable):
@@ -68,6 +76,13 @@ class Inertial(StringConfigurable):
   {indent_text(self.inertia.to_sdf()).strip()}
 </inertial>"""
 
+    def to_urdf(self) -> str:
+        return f"""<inertial>
+  <mass>{self.mass}</mass>
+  {self.pose.to_urdf()}
+  {indent_text(self.inertia.to_urdf()).strip()}
+</inertial>"""
+
 
 @dataclass
 class SurfaceContact(StringConfigurable):
@@ -80,62 +95,159 @@ class SurfaceFriction(StringConfigurable):
 
 
 @dataclass
-class Surface(StringConfigurable):
+class SurfaceInfo(StringConfigurable):
     contact: Optional[SurfaceContact] = None
     friction: Optional[SurfaceFriction] = None
 
+    def to_sdf(self) -> str:
+        return f"""<surface>
+  {indent_text(self.contact.to_sdf()).strip() if self.contact else ""}
+  {indent_text(self.friction.to_sdf()).strip() if self.friction else ""}
+</surface>"""
+
+    def to_urdf(self) -> str:
+        return ""
+
 
 @dataclass
-class Geom(StringConfigurable):
+class _Geom(StringConfigurable):
+    """Shared base class for collision and visual."""
+
     name: str
     pose: Optional[Pose]
     shape: ShapeInfo
-    visual: Optional[VisualInfo] = None
-    surface: Optional[Surface] = None
+
+
+@dataclass
+class Collision(_Geom):
+    surface: Optional[SurfaceInfo] = None
 
     @property
     def type(self):
         return self.shape.type
 
     def to_sdf(self) -> str:
-        return f"""<geometry>
+        return f"""<collision name="{self.name}">>
   {self.pose.to_sdf() if self.pose is not None else ""}
-  {indent_text(self.shape.to_sdf()).strip()}
-</geometry>"""
+  <geometry>
+    {indent_text(self.shape.to_sdf(), 2).strip()}
+  </geometry>
+  {indent_text(self.surface.to_sdf()).strip() if self.surface is not None else ""}
+</collision>"""
+
+    def to_urdf(self) -> str:
+        return f"""<collision name="{self.name}">
+  {self.pose.to_urdf() if self.pose is not None else ""}
+  <geometry>
+    {indent_text(self.shape.to_urdf(), 2).strip()}
+  </geometry>
+  {indent_text(self.surface.to_urdf()).strip() if self.surface is not None else ""}
+</collision>"""
+
+
+@dataclass
+class Visual(_Geom):
+    material: Optional[Material] = None
+
+    @property
+    def type(self):
+        return self.shape.type
+
+    def to_sdf(self) -> str:
+        return f"""<visual name="{self.name}">
+  {self.pose.to_sdf() if self.pose is not None else ""}
+  <geometry>
+    {indent_text(self.shape.to_sdf(), 2).strip()}
+  </geometry>
+  {indent_text(self.material.to_sdf()).strip() if self.material is not None else ""}
+</visual>"""
+
+    def to_material_urdf(self) -> str:
+        if self.material is not None:
+            return f"""<material name="{self.name}_material">
+  {indent_text(self.material.to_urdf()).strip() if self.material is not None else ""}
+</material>"""
+        return ""
+
+    def to_urdf(self) -> str:
+        material_str = ""
+        if self.material is not None:
+            material_str = f"""<material name="{self.name}_material">"""
+
+        return f"""<visual name="{self.name}">
+  {self.pose.to_urdf() if self.pose is not None else ""}
+  <geometry>
+    {indent_text(self.shape.to_urdf(), 2).strip()}
+  </geometry>
+  {material_str}
+</visual>"""
 
 
 @dataclass
 class Link(StringConfigurable):
     name: str
     parent: Optional[str]
-    pose: Pose
+    pose: Optional[Pose] = None
     inertial: Optional[Inertial] = None
-    collisions: List[Geom] = field(default_factory=list)
-    visuals: List[Geom] = field(default_factory=list)
+    collisions: List[Collision] = field(default_factory=list)
+    visuals: List[Visual] = field(default_factory=list)
     sensors: List[Sensor] = field(default_factory=list)
 
+    @classmethod
+    def from_simple_geom(
+        cls,
+        name: str,
+        pose: Pose,
+        shape_type: str,
+        rgba: Vector4f,
+        inertial: Optional[Inertial] = None,
+        **kwargs,
+    ):
+        if inertial is None:
+            inertial = Inertial.zeros()
+        shape = ShapeInfo.from_type(shape_type, **kwargs)
+        material = RGBA(*rgba)
+        return cls(
+            name,
+            None,
+            pose,
+            inertial,
+            [Collision(name + "_collision", Pose.identity(), shape)],
+            [Visual(name + "_visual", Pose.identity(), shape, material)],
+        )
+
     def to_sdf(self) -> str:
-        if len(self.collisions) > 0:
-            collision_str = "\n".join([c.to_sdf() for c in self.collisions])
-            collision_str = f"""<collision>
-  {collision_str}
-</collision>"""
-        else:
-            collision_str = ""
-        if len(self.visuals) > 0:
-            visual_str = "\n".join([v.to_sdf() for v in self.visuals])
-            visual_str = f"""<visual>
-  {visual_str}
-</visual>"""
-        else:
-            visual_str = ""
+        collision_str = "\n".join([c.to_sdf() for c in self.collisions])
+        visual_str = "\n".join([v.to_sdf() for v in self.visuals])
         return f"""<link name="{self.name}">
-  {self.pose.to_sdf()}
+  {self.pose.to_sdf() if self.pose is not None else ""}
   {indent_text(self.inertial.to_sdf()).strip() if self.inertial is not None else ""}
   {indent_text(collision_str).strip()}
   {indent_text(visual_str).strip()}
 </link>
 """
+
+    def to_urdf(self) -> str:
+        assert self.pose is None, "URDF does not support link pose."
+        material_str = "\n".join([v.to_material_urdf() for v in self.visuals])
+        collision_str = "\n".join([c.to_urdf() for c in self.collisions])
+        visual_str = "\n".join([v.to_urdf() for v in self.visuals])
+        return f"""{material_str}
+<link name="{self.name}">
+  {indent_text(self.inertial.to_urdf()).strip() if self.inertial is not None else ""}
+  {indent_text(collision_str).strip()}
+  {indent_text(visual_str).strip()}
+</link>"""
+
+    def to_sdf_xml(self) -> str:
+        model = Model(self.name)
+        model.links.append(self)
+        return model.to_sdf_xml()
+
+    def to_urdf_xml(self) -> str:
+        model = Model(self.name)
+        model.links.append(self)
+        return model.to_urdf_xml()
 
 
 @dataclass
@@ -161,6 +273,18 @@ class Joint(StringConfigurable):
   <child>{self.child}</child>
   {self.pose.to_sdf()}
   {indent_text(self.joint_info.to_sdf()).strip()}
+  {indent_text(self.control_info.to_sdf()).strip()
+  if self.control_info is not None else ""}
+</joint>"""
+
+    def to_urdf(self) -> str:
+        return f"""<joint name="{self.name}" type="{self.type}">
+  <parent link="{self.parent}"/>
+  <child link="{self.child}"/>
+  {self.pose.to_urdf()}
+  {indent_text(self.joint_info.to_urdf()).strip()}
+  {indent_text(self.control_info.to_urdf()).strip()
+  if self.control_info is not None else ""}
 </joint>"""
 
 
@@ -192,6 +316,21 @@ class Model(StringConfigurable):
 </sdf>
 """
 
+    def to_urdf(self) -> str:
+        link_str = "\n".join([link.to_urdf() for link in self.links])
+        joint_str = "\n".join([joint.to_urdf() for joint in self.joints])
+        return f"""
+<robot name="{self.name}">
+  {indent_text(link_str).strip()}
+  {indent_text(joint_str).strip()}
+</robot>"""
+
+    def to_urdf_xml(self) -> str:
+        return f"""<?xml version="1.0"?>
+{self.to_urdf()}
+</robot>
+"""
+
 
 @dataclass
 class SDFInclude(StringConfigurable):
@@ -215,25 +354,21 @@ class SDFInclude(StringConfigurable):
         assert self._content is not None, "content has not been parsed."
         return self._content
 
+    def to_sdf(self) -> str:
+        if self._scale1d is not None:
+            scale_str = f"<scale>{self._scale1d}</scale>"
+        else:
+            scale_str = (
+                f"<scale>{self.scale[0]} {self.scale[1]} {self.scale[2]}</scale>"
+            )
+        return f"""<include name="{self.name}">
+  <uri>{self.uri}</uri>
+  <static>{self.static}</static>
+  {scale_str}
+  {self.pose.to_sdf() if self.pose is not None else ""}
+</include>"""
+
 
 @dataclass
-class URDFInclude(StringConfigurable):
-    name: Optional[str]
-    uri: str
-    scale: Vector3f
-    pose: Pose
-    parent: Optional[str] = None
-    static: bool = False
-
-    _scale1d: Optional[float] = None
-    _content: Optional[StringConfigurable] = None
-
-    @property
-    def scale_1d(self):
-        assert self._scale1d is not None, "scale_1d is not allowed. Use scale instead."
-        return self._scale1d
-
-    @property
-    def content(self):
-        assert self._content is not None, "content has not been parsed."
-        return self._content
+class URDFInclude(SDFInclude):
+    pass

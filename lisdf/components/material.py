@@ -7,12 +7,12 @@ from lisdf.utils.typing import Vector4f
 
 
 @dataclass(frozen=True)
-class VisualInfo(StringConfigurable):
+class Material(StringConfigurable):
     pass
 
 
 @dataclass(frozen=True)
-class RGBA(VisualInfo):
+class RGBA(Material):
     r: float
     g: float
     b: float
@@ -25,9 +25,14 @@ class RGBA(VisualInfo):
         assert a.shape == (4,)
         return cls(a[0], a[1], a[2], a[3])
 
+    def to_urdf(self) -> str:
+        return (
+            f"""<color rgba="{self.r:.3f} {self.g:.3f} {self.b:.3f} {self.a:.3f}" />"""
+        )
+
 
 @dataclass(frozen=True)
-class PhongMaterial(VisualInfo):
+class PhongMaterial(Material):
     ambient: Vector4f = field(
         default_factory=lambda: np.array([1, 1, 1, 1], dtype="float32")
     )
@@ -43,10 +48,13 @@ class PhongMaterial(VisualInfo):
 
 
 @dataclass(frozen=True)
-class Texture(VisualInfo):
+class Texture(Material):
     filename: str
+
+    def to_urdf(self) -> str:
+        return f"""<texture filename="{self.filename}" />"""
 
 
 @dataclass(frozen=True)
-class MJCFMaterial(VisualInfo):
-    identifier: str
+class MJCFMaterial(Material):
+    identifier: str  # TODO

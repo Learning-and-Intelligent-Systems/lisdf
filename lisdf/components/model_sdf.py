@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from lisdf.components.model import Geom, Link, SurfaceContact, SurfaceFriction
+from lisdf.components.model import Link, SurfaceContact, SurfaceFriction, Visual
 
 
 @dataclass
@@ -16,7 +16,7 @@ class SDFSurfaceFriction(SurfaceFriction):
 
 
 @dataclass
-class SDFGeom(Geom):
+class SDFVisual(Visual):
     cast_shadows: bool = True
 
 

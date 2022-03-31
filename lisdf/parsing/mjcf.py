@@ -173,7 +173,7 @@ class MJCFVisitor(XMLVisitor):
 
         data = self._data["site"]
         assert name not in data
-        data[name] = C.Geom(name, pose, shape, C.RGBA(*vector4f(rgba)))
+        data[name] = C.MJCFGeom(name, pose, shape, material=C.RGBA(*vector4f(rgba)))
         body.visuals.append(data[name])
 
         return check_done(node)
@@ -236,7 +236,7 @@ class MJCFVisitor(XMLVisitor):
         material = node.attributes.pop("material", None)
         rgba = node.attributes.pop("rgba", "0.5 0.5 0.5 1")
 
-        visual: C.VisualInfo
+        visual: C.Material
         if material is not None:
             visual = C.MJCFMaterial(material)
         else:
@@ -261,7 +261,7 @@ class MJCFVisitor(XMLVisitor):
             name,
             pose,
             shape=shape,
-            visual=visual,
+            material=visual,
             inertial_group=inertial_group,
             contact_type=contact_type,
             contact_affinity=contact_affinity,

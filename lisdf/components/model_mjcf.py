@@ -1,10 +1,10 @@
 from dataclasses import dataclass
 
-from lisdf.components.model import Geom, Model
+from lisdf.components.model import Collision, Model, Visual
 
 
 @dataclass
-class MJCFGeom(Geom):
+class MJCFGeom(Visual, Collision):
     inertial_group: int = 3
     contact_type: int = 0
     contact_affinity: int = 0
