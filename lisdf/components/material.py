@@ -25,6 +25,12 @@ class RGBA(Material):
         assert a.shape == (4,)
         return cls(a[0], a[1], a[2], a[3])
 
+    def to_sdf(self) -> str:
+        return f"""<material>
+  <ambient>{self.r:.3f} {self.g:.3f} {self.b:.3f} {self.a:.3f}</ambient>
+  <diffuse>{self.r:.3f} {self.g:.3f} {self.b:.3f} {self.a:.3f}</diffuse>
+</material>"""
+
     def to_urdf(self) -> str:
         return (
             f"""<color rgba="{self.r:.3f} {self.g:.3f} {self.b:.3f} {self.a:.3f}" />"""
@@ -45,6 +51,14 @@ class PhongMaterial(Material):
     emissive: Vector4f = field(
         default_factory=lambda: np.array([0, 0, 0, 1], dtype="float32")
     )
+
+    def to_sdf(self) -> str:
+        return f"""<material>
+  <ambient>{self.ambient[0]} {self.ambient[1]} {self.ambient[2]} {self.ambient[3]}</ambient>
+  <diffuse>{self.diffuse[0]} {self.diffuse[1]} {self.diffuse[2]} {self.diffuse[3]}</diffuse>
+  <specular>{self.specular[0]} {self.specular[1]} {self.specular[2]} {self.specular[3]}</specular>
+  <emissive>{self.emissive[0]} {self.emissive[1]} {self.emissive[2]} {self.emissive[3]}</emissive>
+</material>"""
 
 
 @dataclass(frozen=True)
