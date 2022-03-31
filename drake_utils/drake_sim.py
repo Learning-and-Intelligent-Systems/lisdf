@@ -36,6 +36,11 @@ def main(plan: LISDFPlan):
         frame_on_child_C=plant.GetFrameByName("panda_link0", robot),
         X_PC=xyz_rpy_deg([0.0, 0, 0], [0, 0, 0]),
     )
+    in_hand_joint = plant.WeldFrames(
+        frame_on_parent_P=plant.GetFrameByName("panda_hand", robot),
+        frame_on_child_C=plant.GetFrameByName("potted_meat_can"),
+        X_PC=xyz_rpy_deg([0, 0, 0.17], [-180, 0, 0]))
+    breakpoint()
 
     renderer_name = "renderer"
     scene_graph.AddRenderer(renderer_name, MakeRenderEngineVtk(RenderEngineVtkParams()))
@@ -66,7 +71,7 @@ def main(plan: LISDFPlan):
         # FIXME: init can be read from LISDF
         # if last_q_des is None and the first command is ActuateGripper, we crash)
         # gripper open initially
-        panda_init_conf = np.concatenate([np.zeros((7,)), np.array([0.03, 0.03])])
+        panda_init_conf = np.concatenate([np.zeros((7,)), np.array([0.05, 0.05])])
         lisdf_controller = LISDFPlanController(
             robot=Panda(configuration=panda_init_conf), plan=plan
         )
@@ -97,6 +102,7 @@ def main(plan: LISDFPlan):
     plant_context = plant.GetMyContextFromRoot(  # noqa: F841
         simulator.get_mutable_context()
     )
+    in_hand_joint.Unlock(plant_context)
 
     if not simulate_physics:
         plant.get_actuation_input_port().FixValue(plant_context, np.zeros(9))

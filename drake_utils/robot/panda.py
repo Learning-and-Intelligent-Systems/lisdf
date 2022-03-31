@@ -27,7 +27,7 @@ class Panda(RobotWithGripper):
 
     def gripper_configuration_for_position(self, position: GripperPosition) -> np.array:
         if position == GripperPosition.open:
-            return np.array([0.03, 0.03])
+            return np.array([0.05, 0.05])
         elif position == GripperPosition.close:
             return np.array([0.0, 0.0])
         else:
