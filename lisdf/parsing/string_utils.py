@@ -6,6 +6,12 @@ from lisdf.utils.transformations import quaternion_from_euler as _quaternion_fro
 from lisdf.utils.typing import Vector2f, Vector3f, Vector4f, Vector6f
 
 
+def safe_float(string: Optional[str]) -> Optional[float]:
+    if string is None:
+        return None
+    return float(string)
+
+
 def vector2f(string: str) -> Vector2f:
     rv = np.fromstring(string, sep=" ", dtype="float32")
     assert rv.shape == (2,)

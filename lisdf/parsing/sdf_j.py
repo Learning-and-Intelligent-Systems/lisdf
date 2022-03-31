@@ -1,12 +1,14 @@
 import lisdf.components as C
 from lisdf.parsing.string_utils import (
     bool_string,
+    safe_float,
     vector2f,
     vector3f,
     vector3f_or_float,
     vector4f,
     vector6f,
 )
+from lisdf.parsing.urdf_j import load_urdf
 from lisdf.parsing.xml_j.visitor import XMLVisitor, check_done_decorator
 
 
@@ -17,7 +19,8 @@ class SDFVisitor(XMLVisitor):
         if uri.endswith(".sdf"):
             content = self.load_file(self._resolve_path(uri))
             scale_f, scale = vector3f_or_float(node.pop("scale", default="1"))
-            assert content.model is not None  # does not allow worlds definitions.
+            # does not allow worlds definitions.
+            assert content.model is not None and len(content.worlds) == 0
             return node.set_data(
                 C.SDFInclude(
                     name=node.attributes.pop("name", None),
@@ -32,6 +35,7 @@ class SDFVisitor(XMLVisitor):
                 )
             )
         elif uri.endswith(".urdf"):
+            content = load_urdf(self._resolve_path(uri))
             scale_f, scale = vector3f_or_float(node.pop("scale", default="1"))
             return node.set_data(
                 C.URDFInclude(
@@ -231,37 +235,34 @@ class SDFVisitor(XMLVisitor):
         # TODO(Jiayuan Mao @ 03/24: implement dynamics control information.
         if type == "fixed":
             joint_info = C.FixedJointInfo()
-        elif type == "continuous":
-            joint_info = C.HingeJointInfo(
-                vector3f(
-                    node.pop("axis", required=True, return_type="node").pop(
-                        "xyz",
-                        required=True,
-                        return_type="text",
-                    )
+        elif type in ("continuous", "revolute", "prismatic"):
+            axis_node = node.pop("axis", return_type="node", required=True)
+
+            axis = axis_node.pop("xyz", default="0 0 1")
+            limit = None
+            limit_node = axis_node.pop("limit", return_type="node", default=None)
+            if limit_node is not None:
+                limit = C.JointLimit(
+                    lower=safe_float(limit_node.pop("lower", default=None)),
+                    upper=safe_float(limit_node.pop("upper", default=None)),
+                    effort=safe_float(limit_node.pop("effort", default=None)),
+                    velocity=safe_float(limit_node.pop("velocity", default=None)),
                 )
-            )
-        elif type == "revolute":
-            # TODO(Jiayuan Mao @ 03/24: store joint limits.
-            joint_info = C.HingeJointInfo(
-                vector3f(
-                    node.pop("axis", required=True, return_type="node").pop(
-                        "xyz",
-                        required=True,
-                        return_type="text",
-                    )
+
+            dynamics = None
+            dynamics_node = axis_node.pop("dynamics", return_type="node", default=None)
+            if dynamics_node is not None:
+                dynamics = C.JointDynamics(
+                    damping=float(dynamics_node.pop("damping", default="0")),
+                    friction=float(dynamics_node.pop("friction", default="0")),
                 )
-            )
-        elif type == "prismatic":
-            joint_info = C.PrismaticJointInfo(
-                vector3f(
-                    node.pop("axis", required=True, return_type="node").pop(
-                        "xyz",
-                        required=True,
-                        return_type="text",
-                    )
-                )
-            )
+
+            if type == "continuous":
+                joint_info = C.ContinuousJointInfo(axis, limit=limit, dynamics=dynamics)
+            elif type == "revolute":
+                joint_info = C.RevoluteJointInfo(axis, limit=limit, dynamics=dynamics)
+            elif type == "prismatic":
+                joint_info = C.PrismaticJointInfo(axis, limit=limit, dynamics=dynamics)
         else:
             raise NotImplementedError("Unknown joint type: {}.".format(type))
 

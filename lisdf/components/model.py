@@ -4,7 +4,7 @@ from typing import List, Optional
 import numpy as np
 
 from lisdf.components.base import Pose, StringConfigurable
-from lisdf.components.control import ControlInfo, JointInfo
+from lisdf.components.control import JointControlInfo, JointInfo
 from lisdf.components.sensor import Sensor
 from lisdf.components.shape import ShapeInfo
 from lisdf.components.visual import VisualInfo
@@ -105,32 +105,6 @@ class Geom(StringConfigurable):
 
 
 @dataclass
-class Joint(StringConfigurable):
-    name: str
-    parent: str
-    child: str
-    pose: Pose
-    joint_info: JointInfo
-    control_info: Optional[ControlInfo] = None
-
-    @property
-    def type(self):
-        return self.joint_info.type
-
-    # TODO(Jiayuan Mao @ 03/24): add a link to the corresponding `model`,
-    # so we can use joint.parent_link to access the corresponding link
-    # object.
-
-    def to_sdf(self) -> str:
-        return f"""<joint name="{self.name}" type="{self.type}">
-  <parent>{self.parent}</parent>
-  <child>{self.child}</child>
-  {self.pose.to_sdf()}
-  {indent_text(self.joint_info.to_sdf()).strip()}
-</joint>"""
-
-
-@dataclass
 class Link(StringConfigurable):
     name: str
     parent: Optional[str]
@@ -165,9 +139,35 @@ class Link(StringConfigurable):
 
 
 @dataclass
+class Joint(StringConfigurable):
+    name: str
+    parent: str
+    child: str
+    pose: Pose
+    joint_info: JointInfo
+    control_info: Optional[JointControlInfo] = None
+
+    @property
+    def type(self):
+        return self.joint_info.type
+
+    # TODO(Jiayuan Mao @ 03/24): add a link to the corresponding `model`,
+    # so we can use joint.parent_link to access the corresponding link
+    # object.
+
+    def to_sdf(self) -> str:
+        return f"""<joint name="{self.name}" type="{self.type}">
+  <parent>{self.parent}</parent>
+  <child>{self.child}</child>
+  {self.pose.to_sdf()}
+  {indent_text(self.joint_info.to_sdf()).strip()}
+</joint>"""
+
+
+@dataclass
 class Model(StringConfigurable):
     name: str
-    pose: Pose
+    pose: Optional[Pose] = None
     parent: Optional[str] = None
     static: bool = False
 
@@ -179,7 +179,7 @@ class Model(StringConfigurable):
         joint_str = "\n".join([joint.to_sdf() for joint in self.joints])
         return f"""<model name="{self.name}">
   <static>{self.static}</static>
-  {self.pose.to_sdf()}
+  {self.pose.to_sdf() if self.pose is not None else ""}
   {indent_text(link_str).strip()}
   {indent_text(joint_str).strip()}
 </model>

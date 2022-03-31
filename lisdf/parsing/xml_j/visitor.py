@@ -114,7 +114,10 @@ class XMLVisitor(object):
             try:
                 proc = self._get_processor(node.tag + "_init")
                 if proc is not None:
-                    proc(node)
+                    rv = proc(node)
+                    if rv == "skip":
+                        return None
+
                 self.node_stack.append(node)
                 for i, c in enumerate(node.children):
                     node.children[i] = _inner(c)
@@ -162,7 +165,8 @@ def check_done_decorator(func, attr=True, children=True):
     @functools.wraps(func)
     def wrapped(*args, **kwargs):
         rv = func(*args, **kwargs)
-        check_done(rv, attr, children)
+        if rv is not None:
+            check_done(rv, attr, children)
         return rv
 
     return wrapped

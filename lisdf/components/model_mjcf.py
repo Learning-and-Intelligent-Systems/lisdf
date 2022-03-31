@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from lisdf.components.model import Geom
+from lisdf.components.model import Geom, Model
 
 
 @dataclass
@@ -9,3 +9,8 @@ class MJCFGeom(Geom):
     contact_type: int = 0
     contact_affinity: int = 0
     contact_dim: int = 3
+
+
+@dataclass
+class MJCFModel(Model):
+    pass

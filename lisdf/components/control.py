@@ -1,16 +1,36 @@
 from dataclasses import dataclass
-from typing import ClassVar, Dict, Type
-
-import numpy as np
+from typing import ClassVar, Dict, Optional, Type
 
 from lisdf.components.base import StringConfigurable
-from lisdf.utils.typing import Vector2f, Vector3f
+from lisdf.utils.typing import Vector3f
 
 
 @dataclass
-class ControlInfo(object):
-    limited: bool
-    range: Vector2f
+class JointDynamics(object):
+    damping: float = 0
+    friction: float = 0
+    armature: float = 0
+
+
+@dataclass
+class JointLimit(object):
+    lower: Optional[float] = None
+    upper: Optional[float] = None
+    effort: Optional[float] = None
+    velocity: Optional[float] = None
+
+
+@dataclass
+class JointCalibration(object):
+    falling: float = 0
+    rising: float = 0
+
+
+@dataclass
+class JointMimic(object):
+    joint: str
+    multiplier: float = 1
+    offset: float = 0
 
 
 @dataclass
@@ -44,67 +64,35 @@ class FixedJointInfo(JointInfo, type="fixed"):
 
 
 @dataclass
-class ControllableJointInfo(JointInfo, type="controllable"):
-    # NB(Jiayuan Mao @ 03/24): intentionally wrote a explicit constructor.
-    # Otherwise inheritance will be a disaster.
-    # TODO(Jiayuan Mao @ 03/24): seems that the kw_only feature in Python 3.10 may help.
-    # But that's a too new release.
-    limited: bool
-    range: Vector2f
-    damping: float
-    armatrue: float
+class SingleAxisJointInfo(JointInfo, type="controllable"):
+    axis: Vector3f
+    limit: Optional[JointLimit] = None
+    dynamics: Optional[JointDynamics] = None
+    calibration: Optional[JointCalibration] = None
+    mimic: Optional[JointMimic] = None
 
-    def __init__(
-        self,
-        limited: bool = False,
-        range: Vector2f = np.zeros(2, dtype="float32"),
-        damping: float = 0.0,
-        armature: float = 0.0,
-    ):
-        self.limited = limited
-        self.range = range
-        self.damping = damping
-        self.armatrue = armature
+    def to_sdf(self) -> str:
+        return f"<axis>{self.axis[0]} {self.axis[1]} {self.axis[2]}</axis>"
 
 
 @dataclass
-class FreeJointInfo(ControllableJointInfo, type="free"):
+class ContinuousJointInfo(SingleAxisJointInfo, type="continuous"):
     pass
 
 
 @dataclass
-class HingeJointInfo(ControllableJointInfo, type="hinge"):
-    axis: Vector3f
-
-    def __init__(
-        self,
-        axis: Vector3f,
-        limited: bool = False,
-        range: Vector2f = np.zeros(2, dtype="float32"),
-        damping: float = 0.0,
-        armature: float = 0.0,
-    ):
-        super().__init__(limited, range, damping, armature)
-        self.axis = axis
-
-    def to_sdf(self) -> str:
-        return f"<axis>{self.axis[0]} {self.axis[1]} {self.axis[2]}</axis>"
+class RevoluteJointInfo(SingleAxisJointInfo, type="revolute"):
+    pass
 
 
 @dataclass
-class PrismaticJointInfo(ControllableJointInfo, type="prismatic"):
-    axis: Vector3f
+class PrismaticJointInfo(SingleAxisJointInfo, type="prismatic"):
+    pass
 
-    def __init__(
-        self,
-        axis: Vector3f,
-        limited: bool = False,
-        range: Vector2f = np.zeros(2, dtype="float32"),
-        damping: float = 0.0,
-        armature: float = 0.0,
-    ):
-        super().__init__(limited, range, damping, armature)
-        self.axis = axis
 
-    def to_sdf(self) -> str:
-        return f"<axis>{self.axis[0]} {self.axis[1]} {self.axis[2]}</axis>"
+@dataclass
+class JointControlInfo(object):
+    lower: Optional[float] = None
+    upper: Optional[float] = None
+    velocity: Optional[float] = None
+    position: Optional[float] = None

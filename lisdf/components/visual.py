@@ -43,5 +43,10 @@ class PhongMaterial(VisualInfo):
 
 
 @dataclass(frozen=True)
+class Texture(VisualInfo):
+    filename: str
+
+
+@dataclass(frozen=True)
 class MJCFMaterial(VisualInfo):
     identifier: str

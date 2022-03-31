@@ -292,15 +292,23 @@ class MJCFVisitor(XMLVisitor):
         type = node.attributes.pop("type", "hinge")
         pose = self._find_pose(node)
 
-        if type == "slide":
-            type = "prismatic"
-
         axis = node.attributes.pop("axis", "0 0 1")
         limited = bool_string(node.attributes.pop("limited", "false"))
-        range = node.attributes.pop("range", "0 0")
+        range = vector2f(node.attributes.pop("range", "0 0"))
         damping = node.attributes.pop("damping", 0)
         armature = node.attributes.pop("armature", 0)
+
+        dynamics = C.JointDynamics(damping=damping, armature=armature)
+        limit = C.JointLimit(lower=range[0], upper=range[1])
         control = self._find_control(node)
+
+        if type == "slide":
+            type = "prismatic"
+        elif type == "hinge":
+            if limited:
+                type = "revolute"
+            else:
+                type = "continuous"
 
         joint = C.Joint(
             name,
@@ -310,10 +318,8 @@ class MJCFVisitor(XMLVisitor):
             C.JointInfo.from_type(
                 type,
                 axis=vector3f(axis),
-                limited=limited,
-                range=vector2f(range),
-                damping=float(damping),
-                armature=float(armature),
+                limit=limit,
+                dynamics=dynamics,
             ),
             control,
         )
@@ -402,10 +408,20 @@ class MJCFVisitor(XMLVisitor):
     def _find_control(self, node: XMLNode):
         limited = bool_string(node.attributes.pop("ctrllimited", "false"))
         range = node.attributes.pop("ctrlrange", "0 0")
-        return C.ControlInfo(limited, range)
+        if limited:
+            return C.JointControlInfo(lower=range[0], upper=range[1])
+        return None
+
+    def as_model(self):
+        model = C.MJCFModel("mjcf_model")
+        for link in self._data["body"].values():
+            model.links.append(link)
+        for joint in self._data["joint"].values():
+            model.joints.append(joint)
+        return model
 
 
-def load_mjcf(filename: str, flatten_only: bool = False):
+def load_mjcf(filename: str, flatten_only: bool = False) -> C.MJCFModel:
     visitor: XMLVisitor
 
     if flatten_only:
@@ -414,4 +430,4 @@ def load_mjcf(filename: str, flatten_only: bool = False):
 
     visitor = MJCFVisitor()
     visitor.load_file(filename)
-    return visitor
+    return visitor.as_model()

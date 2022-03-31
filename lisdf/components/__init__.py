@@ -1,10 +1,15 @@
 from lisdf.components.base import Pose, StringConfigurable  # noqa: F401
 from lisdf.components.control import (  # noqa: F401
-    ControlInfo,
+    ContinuousJointInfo,
     FixedJointInfo,
-    HingeJointInfo,
+    JointCalibration,
+    JointControlInfo,
+    JointDynamics,
     JointInfo,
+    JointLimit,
+    JointMimic,
     PrismaticJointInfo,
+    RevoluteJointInfo,
 )
 from lisdf.components.model import (  # noqa: F401
     Geom,
@@ -21,13 +26,14 @@ from lisdf.components.model import (  # noqa: F401
 )
 
 from .gui import GUI, GUICamera  # noqa: F401
-from .model_mjcf import MJCFGeom  # noqa: F401
+from .model_mjcf import MJCFGeom, MJCFModel  # noqa: F401
 from .model_sdf import (  # noqa: F401
     SDFGeom,
     SDFLink,
     SDFSurfaceContact,
     SDFSurfaceFriction,
 )
+from .model_urdf import URDFModel  # noqa: F401
 from .scene import LISDF, World  # noqa: F401
 from .sensor import CameraSensor, Sensor  # noqa: F401
 from .shape import (  # noqa: F401
@@ -46,4 +52,4 @@ from .state import (  # noqa: F401
     ModelState,
     WorldState,
 )
-from .visual import RGBA, MJCFMaterial, PhongMaterial, VisualInfo  # noqa: F401
+from .visual import RGBA, MJCFMaterial, PhongMaterial, Texture, VisualInfo  # noqa: F401
