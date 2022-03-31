@@ -209,11 +209,11 @@ class Link(StringConfigurable):
         material = RGBA(*rgba)
         return cls(
             name,
-            None,
-            pose,
-            inertial,
-            [Collision(name + "_collision", Pose.identity(), shape)],
-            [Visual(name + "_visual", Pose.identity(), shape, material)],
+            pose=None,
+            parent=None,
+            inertial=inertial,
+            collisions=[Collision(name + "_collision", pose, shape)],
+            visuals=[Visual(name + "_visual", pose, shape, material)],
         )
 
     def to_sdf(self) -> str:
