@@ -38,4 +38,10 @@ def parse_pddl(
 
 
 if __name__ == "__main__":
-    parse_pddl("examples/pddl/clutter.pddl", "examples/pddl/clutter_prob01.pddl")
+    entry_names = ("init_atoms_strs", "goal_atoms_strs", "type_to_object_dict")
+    for entry_name, entry in zip(
+        entry_names,
+        parse_pddl("examples/pddl/clutter.pddl", "examples/pddl/clutter_prob01.pddl"),
+    ):
+        print(entry_name)
+        print(entry)
