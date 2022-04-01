@@ -10,20 +10,26 @@ from pydrake.geometry.render import (
 from pydrake.math import RigidTransform
 from pydrake.multibody.parsing import Parser
 from pydrake.multibody.plant import AddMultibodyPlantSceneGraph
+from pydrake.multibody.tree import Joint
 from pydrake.systems.analysis import Simulator
 from pydrake.systems.framework import DiagramBuilder
 from pydrake.systems.meshcat_visualizer import ConnectMeshcatVisualizer
 from pydrake.systems.sensors import CameraInfo, RgbdSensor
 
 from drake_utils.lisdf_controller import LISDFPlanController
+from drake_utils.lisdf_animator import LISDFPlanAnimator
 from drake_utils.robot.panda import Panda
 from drake_utils.utils import make_robot_controller, xyz_rpy_deg
 from lisdf.planner_output.plan import LISDFPlan
 
-
 def main(plan: LISDFPlan):
     builder = DiagramBuilder()
-    plant, scene_graph = AddMultibodyPlantSceneGraph(builder, 0.01)
+    # if simulate_physics=False then 1 min of sim time = ~5 min of realtime
+    simulate_physics = True
+    if simulate_physics:
+        plant, scene_graph = AddMultibodyPlantSceneGraph(builder, 0.001)
+    else:
+        plant, scene_graph = AddMultibodyPlantSceneGraph(builder, 0)
 
     parser = Parser(plant)
     parser.package_map().Add("assets", "assets/")
@@ -36,11 +42,6 @@ def main(plan: LISDFPlan):
         frame_on_child_C=plant.GetFrameByName("panda_link0", robot),
         X_PC=xyz_rpy_deg([0.0, 0, 0], [0, 0, 0]),
     )
-    in_hand_joint = plant.WeldFrames(
-        frame_on_parent_P=plant.GetFrameByName("panda_hand", robot),
-        frame_on_child_C=plant.GetFrameByName("potted_meat_can"),
-        X_PC=xyz_rpy_deg([0, 0, 0.17], [-180, 0, 0]))
-    breakpoint()
 
     renderer_name = "renderer"
     scene_graph.AddRenderer(renderer_name, MakeRenderEngineVtk(RenderEngineVtkParams()))
@@ -65,7 +66,6 @@ def main(plan: LISDFPlan):
     )
 
     plant.Finalize()
-    simulate_physics = True
 
     if simulate_physics:
         # FIXME: init can be read from LISDF
@@ -73,7 +73,7 @@ def main(plan: LISDFPlan):
         # gripper open initially
         panda_init_conf = np.concatenate([np.zeros((7,)), np.array([0.05, 0.05])])
         lisdf_controller = LISDFPlanController(
-            robot=Panda(configuration=panda_init_conf), plan=plan
+            robot=Panda(configuration=panda_init_conf), plan=plan,
         )
         joint_controller = builder.AddSystem(lisdf_controller)
 
@@ -93,6 +93,22 @@ def main(plan: LISDFPlan):
             torque_controller.get_output_port_control(),
             plant.get_actuation_input_port(robot),
         )
+    else:
+        panda_init_conf = np.concatenate([np.zeros((7,)), np.array([0.05, 0.05])])
+        lisdf_controller = LISDFPlanController(
+            robot=Panda(configuration=panda_init_conf), plan=plan,
+        )
+        joint_controller = builder.AddSystem(lisdf_controller)
+
+        robot_animator = builder.AddSystem(LISDFPlanAnimator(
+            robot=Panda(configuration=panda_init_conf), plant=plant, sim_context=None))
+        builder.Connect(
+                joint_controller.get_output_port(),
+                robot_animator.get_input_port())
+        builder.Connect(
+                robot_animator.get_output_port(),
+                plant.get_actuation_input_port(robot))
+
 
     diagram = builder.Build()
 
@@ -102,25 +118,18 @@ def main(plan: LISDFPlan):
     plant_context = plant.GetMyContextFromRoot(  # noqa: F841
         simulator.get_mutable_context()
     )
-    in_hand_joint.Unlock(plant_context)
 
     if not simulate_physics:
-        plant.get_actuation_input_port().FixValue(plant_context, np.zeros(9))
         plant.mutable_gravity_field().set_gravity_vector(np.array([0, 0, 0.0]))
+        robot_animator.sim_context = plant_context
+        #plant.get_actuation_input_port().FixValue(plant_context, np.zeros(9))
 
     # Set initial state
     meshcat_vis.reset_recording()
     meshcat_vis.start_recording()
     total_time = 60.0
 
-    if simulate_physics:
-        simulator.AdvanceTo(total_time)
-    else:
-        t = 0.0
-        while t < total_time:
-            # See commit dc919111d on the sdrake branch for and example of how
-            # this used to be implemented before the outputspec was formalized
-            raise NotImplementedError
+    simulator.AdvanceTo(total_time)
 
     meshcat_vis.publish_recording()
     meshcat_vis.vis.render_static()
