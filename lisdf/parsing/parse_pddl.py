@@ -1,11 +1,18 @@
-from typing import Dict, List, Set, Tuple
+from typing import Dict, List, Set, Tuple, Union
 
 import pddlpy
 
+Predicate = str
+Type = str
+Object = str
+
+# First element in an atom is the predicate name, the rest are argument objects
+Atom = List[Union[Predicate, Object]]
+State = List[Atom]
 
 def parse_pddl(
     domain_file_path: str, problem_file_path: str
-) -> Tuple[List[List[str]], List[List[str]], Dict[str, Set[str]]]:
+) -> Tuple[State, State, Dict[Type, Set[Object]]]:
     """
     Parses the domain and problem PDDL files provided string paths
     to each of these.
@@ -34,7 +41,7 @@ def parse_pddl(
         else:
             type_to_object_dict[obj_to_type_dict[obj]].add(obj)
 
-    return (init_atoms_strs, goal_atoms_strs, type_to_object_dict)
+    return init_atoms_strs, goal_atoms_strs, type_to_object_dict
 
 
 if __name__ == "__main__":
