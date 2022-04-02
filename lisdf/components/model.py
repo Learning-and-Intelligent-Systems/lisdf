@@ -124,7 +124,7 @@ class _Geom(StringConfigurable, ABC):
     """Shared base class for collision and visual."""
 
     name: str
-    pose: Optional[Pose]
+    pose: Pose
     shape: ShapeInfo
 
 
@@ -148,7 +148,7 @@ class Collision(_Geom):
     def _to_urdf(self, ctx: StringifyContext) -> str:
         name = ctx.get_scoped_name(self.name)
         return f"""<collision name="{name}">
-  {self.pose.to_urdf(ctx) if self.pose is not None else ""}
+  {self.pose.to_urdf(ctx)}
   <geometry>
     {indent_text(self.shape.to_urdf(ctx), 2).strip()}
   </geometry>
@@ -188,7 +188,7 @@ class Visual(_Geom):
             material_str = self._to_material_urdf(ctx)
 
         return f"""<visual name="{name}">
-  {self.pose.to_urdf(ctx) if self.pose is not None else ""}
+  {self.pose.to_urdf(ctx)}
   <geometry>
     {indent_text(self.shape.to_urdf(ctx), 2).strip()}
   </geometry>
@@ -200,7 +200,7 @@ class Visual(_Geom):
 class Link(StringConfigurable):
     name: str
     parent: Optional[str]
-    pose: Optional[Pose] = None
+    pose: Optional[Pose]
     inertial: Optional[Inertial] = None
     collisions: List[Collision] = field(default_factory=list)
     visuals: List[Visual] = field(default_factory=list)
@@ -269,7 +269,7 @@ class Link(StringConfigurable):
 
 @dataclass
 class Joint(StringConfigurable):
-    name: str
+    name: Optional[str]
     parent: str
     child: str
     pose: Pose
@@ -285,7 +285,8 @@ class Joint(StringConfigurable):
     # object.
 
     def _to_sdf(self, ctx: StringifyContext) -> str:
-        return f"""<joint name="{self.name}" type="{self.type}">
+        name_str = f' name="{self.name}"' if self.name is not None else ""
+        return f"""<joint{name_str} type="{self.type}">
   <parent>{self.parent}</parent>
   <child>{self.child}</child>
   {self.pose.to_sdf(ctx)}

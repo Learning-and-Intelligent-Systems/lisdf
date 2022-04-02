@@ -166,10 +166,15 @@ class SDFVisitor(XMLVisitor):
 
     @check_done_decorator
     def collision(self, node):
+        node.attributes.pop("group", None)  # TODO: Figure out what this is.
+        link_collision_name = self._st["link_collision"][-1]
+        default_name = f"{link_collision_name[0]}_collision_{link_collision_name[1]}"
         return node.set_data(
             C.Collision(
-                name=node.attributes.pop("name", None),
-                pose=node.pop("pose", return_type="data", default=None),
+                name=node.attributes.pop("name", default_name),
+                pose=node.pop(
+                    "pose", return_type="data", default=C.Pose.identity()
+                ),
                 shape=node.pop("geometry", return_type="data", required=True),
                 surface=node.pop("surface", return_type="data", default=None),
             )
@@ -191,11 +196,16 @@ class SDFVisitor(XMLVisitor):
 
     @check_done_decorator
     def visual(self, node):
+        link_visual_name = self._st["link_visual"][-1]
+        default_name = f"{link_visual_name[0]}_visual_{link_visual_name[1]}"
+        self._st["link_visual"][-1] = (link_visual_name[0], link_visual_name[1] + 1)
         cast_shadows = bool_string(node.pop("cast_shadows", default="true"))
         return node.set_data(
             C.SDFVisual(
-                name=node.attributes.pop("name", None),
-                pose=node.pop("pose", return_type="data", default=None),
+                name=node.attributes.pop("name", default_name),
+                pose=node.pop(
+                    "pose", return_type="data", default=C.Pose.identity()
+                ),
                 shape=node.pop("geometry", return_type="data", required=True),
                 material=node.pop(
                     "material",
@@ -206,8 +216,14 @@ class SDFVisitor(XMLVisitor):
             )
         )
 
+    def link_init(self, node):
+        self._st["link_visual"].append((node.attributes["name"], 0))
+        self._st["link_collision"].append((node.attributes["name"], 0))
+
     @check_done_decorator
     def link(self, node):
+        self._st["link_visual"].pop()
+        self._st["link_collision"].pop()
         name = node.attributes.pop("name")
         pose = node.pop("pose", return_type="data", default=None)
         inertial = node.pop("inertial", return_type="data", default=C.Inertial.zeros())
