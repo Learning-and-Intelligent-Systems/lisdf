@@ -4,6 +4,14 @@ from lisdf.parsing.xml_j.visitor import XMLVisitor, check_done_decorator
 
 
 class URDFVisitor(XMLVisitor):
+    def _parse_filename(self, filename: str) -> str:
+        if filename.startswith("package://"):
+            return filename
+        elif filename.startswith("file://"):
+            return self._resolve_path(filename[len("file://") :])
+        else:
+            return self._resolve_path(filename)
+
     @check_done_decorator
     def origin(self, node):
         return node.set_data(
@@ -74,7 +82,7 @@ class URDFVisitor(XMLVisitor):
         elif c.tag == "mesh":
             return node.set_data(
                 C.MeshShapeInfo(
-                    self._resolve_path(c.attributes.pop("filename")),
+                    self._parse_filename(c.attributes.pop("filename")),
                     vector3f(c.attributes.pop("scale", "1 1 1")),
                 )
             )
@@ -129,7 +137,7 @@ class URDFVisitor(XMLVisitor):
     def texture(self, node):
         return node.set_data(
             C.Texture(
-                filename=self._resolve_path(node.attributes.pop("filename")),
+                filename=self._parse_filename(node.attributes.pop("filename")),
             )
         )
 

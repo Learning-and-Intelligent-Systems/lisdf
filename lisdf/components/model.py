@@ -174,18 +174,20 @@ class Visual(_Geom):
 </visual>"""
 
     def _to_material_urdf(self, ctx: StringifyContext) -> str:
+        name = ctx.get_scoped_name(self.name)
         if self.material is not None:
-            return f"""<material name="{self.name}_material">
+            return f"""<material name="{name}_material">
   {indent_text(self.material.to_urdf(ctx)).strip() if self.material is not None else ""}
 </material>"""
         return ""
 
     def _to_urdf(self, ctx: StringifyContext) -> str:
+        name = ctx.get_scoped_name(self.name)
         material_str = ""
         if self.material is not None:
             material_str = self._to_material_urdf(ctx)
 
-        return f"""<visual name="{self.name}">
+        return f"""<visual name="{name}">
   {self.pose.to_urdf(ctx) if self.pose is not None else ""}
   <geometry>
     {indent_text(self.shape.to_urdf(ctx), 2).strip()}
@@ -293,9 +295,12 @@ class Joint(StringConfigurable):
 </joint>"""
 
     def _to_urdf(self, ctx: StringifyContext) -> str:
-        return f"""<joint name="{self.name}" type="{self.type}">
-  <parent link="{self.parent}"/>
-  <child link="{self.child}"/>
+        name = ctx.get_scoped_name(self.name)
+        parent = ctx.get_scoped_name(self.parent)
+        child = ctx.get_scoped_name(self.child)
+        return f"""<joint name="{name}" type="{self.type}">
+  <parent link="{parent}"/>
+  <child link="{child}"/>
   {self.pose.to_urdf(ctx)}
   {indent_text(self.joint_info.to_urdf(ctx)).strip()}
   {indent_text(self.control_info.to_urdf(ctx)).strip()
@@ -341,8 +346,7 @@ class Model(StringConfigurable):
         try:
             link_str = "\n".join([link.to_urdf(ctx) for link in self.links])
             joint_str = "\n".join([joint.to_urdf(ctx) for joint in self.joints])
-            return f"""<?xml version="1.0"?>
-<robot name="{self.name}">
+            return f"""<robot name="{self.name}">
   {indent_text(link_str).strip()}
   {indent_text(joint_str).strip()}
 </robot>"""
@@ -351,8 +355,7 @@ class Model(StringConfigurable):
 
     def to_urdf_xml(self) -> str:
         return f"""<?xml version="1.0"?>
-{self.to_urdf()}
-</robot>"""
+{self.to_urdf()}"""
 
 
 @dataclass

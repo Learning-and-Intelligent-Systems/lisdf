@@ -14,6 +14,13 @@ from lisdf.utils.transformations import (
 from lisdf.utils.transformations_more import lookat_rpy
 from lisdf.utils.typing import Vector3f, Vector4f, Vector6f
 
+NAME_SCOPE_SEP = None
+
+
+def set_name_scope_sep(sep: Optional[str]) -> None:
+    global NAME_SCOPE_SEP
+    NAME_SCOPE_SEP = sep
+
 
 class StringifyContext(object):
     def __init__(self) -> None:
@@ -36,7 +43,9 @@ class StringifyContext(object):
         parent_name = self.st_top("model_name", None)
         if parent_name is None:
             return name
-        return f"{parent_name}::{name}"
+        if NAME_SCOPE_SEP is None:
+            return name
+        return f"{parent_name}{NAME_SCOPE_SEP}{name}"
 
     def push_scoped_name(self, name: str) -> None:
         self.st_push("model_name", self.get_scoped_name(name))

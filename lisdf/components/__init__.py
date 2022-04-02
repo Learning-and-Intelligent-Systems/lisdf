@@ -1,4 +1,8 @@
-from lisdf.components.base import Pose, StringConfigurable  # noqa: F401
+from lisdf.components.base import (  # noqa: F401
+    Pose,
+    StringConfigurable,
+    set_name_scope_sep,
+)
 from lisdf.components.control import (  # noqa: F401
     ContinuousJointInfo,
     FixedJointInfo,
