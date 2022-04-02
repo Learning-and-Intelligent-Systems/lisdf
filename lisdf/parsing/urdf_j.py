@@ -1,5 +1,5 @@
 import lisdf.components as C
-from lisdf.parsing.string_utils import vector2f, vector3f, vector4f
+from lisdf.parsing.string_utils import safe_float, vector2f, vector3f, vector4f
 from lisdf.parsing.xml_j.visitor import XMLVisitor, check_done_decorator
 
 
@@ -10,6 +10,33 @@ class URDFVisitor(XMLVisitor):
             C.Pose.from_rpy(
                 vector3f(node.attributes.pop("xyz", "0 0 0")),
                 vector3f(node.attributes.pop("rpy", "0 0 0")),
+            )
+        )
+
+    @check_done_decorator
+    def inertia(self, node):
+        return node.set_data(
+            C.Inertia(
+                float(node.attributes.pop("ixx", 0)),
+                float(node.attributes.pop("ixy", 0)),
+                float(node.attributes.pop("ixz", 0)),
+                float(node.attributes.pop("iyy", 0)),
+                float(node.attributes.pop("iyz", 0)),
+                float(node.attributes.pop("izz", 0)),
+            )
+        )
+
+    @check_done_decorator
+    def inertial(self, node):
+        return node.set_data(
+            C.Inertial(
+                float(
+                    node.pop("mass", default=0, return_type="node").attributes.pop(
+                        "value"
+                    )
+                ),
+                node.pop("origin", return_type="data", default=C.Pose.identity()),
+                node.pop("inertia", return_type="data", default=C.Inertia.zeros()),
             )
         )
 
@@ -56,11 +83,11 @@ class URDFVisitor(XMLVisitor):
 
     @check_done_decorator
     def collision(self, node):
-        node.attributes.pop("group")  # TODO: Figure out what this is.
+        node.attributes.pop("group", None)  # TODO: Figure out what this is.
         link_collision_name = self._st["link_collision"][-1]
         default_name = f"{link_collision_name[0]}_collision_{link_collision_name[1]}"
         self._st["link_collision"][-1] = (
-            [link_collision_name],
+            link_collision_name[0],
             link_collision_name[1] + 1,
         )
         return node.set_data(
@@ -72,39 +99,7 @@ class URDFVisitor(XMLVisitor):
         )
 
     @check_done_decorator
-    def inertia(self, node):
-        return node.set_data(
-            C.Inertia(
-                float(node.attributes.pop("ixx", 0)),
-                float(node.attributes.pop("ixy", 0)),
-                float(node.attributes.pop("ixz", 0)),
-                float(node.attributes.pop("iyy", 0)),
-                float(node.attributes.pop("iyz", 0)),
-                float(node.attributes.pop("izz", 0)),
-            )
-        )
-
-    @check_done_decorator
-    def inertial(self, node):
-        return node.set_data(
-            C.Inertial(
-                float(
-                    node.pop("mass", default=0, return_type="node").attributes.pop(
-                        "value"
-                    )
-                ),
-                node.pop("origin", return_type="data", default=C.Pose.identity()),
-                node.pop("inertia", return_type="data", default=C.Inertia.zeros()),
-            )
-        )
-
-    def visual_init(self, node):
-        self.enter_scope("visual")
-
-    @check_done_decorator
     def visual(self, node):
-        self.exit_scope("visual")
-
         link_visual_name = self._st["link_visual"][-1]
         default_name = f"{link_visual_name[0]}_visual_{link_visual_name[1]}"
         self._st["link_visual"][-1] = (link_visual_name[0], link_visual_name[1] + 1)
@@ -138,14 +133,14 @@ class URDFVisitor(XMLVisitor):
             )
         )
 
-    def visual_material(self, node):
-        material_name = node.attributes.pop("name")
-        assert material_name in self._data["materials"]
-        material = self._data["materials"][material_name]
-        return node.set_data(material)
-
     @check_done_decorator
     def material(self, node):
+        if len(node.children) == 0:
+            material_name = node.attributes.pop("name")
+            assert material_name in self._data["materials"]
+            material = self._data["materials"][material_name]
+            return node.set_data(material)
+
         assert len(node.children) == 1
         children = list(node.pop_all_children())
         self._data["materials"][node.attributes.pop("name")] = children[0].data
@@ -208,14 +203,10 @@ class URDFVisitor(XMLVisitor):
         limit_node = node.pop("limit", return_type="node", default=None)
         if limit_node is not None:
             limit = C.JointLimit(
-                lower=float(limit_node.attributes.pop("lower"))
-                if "lower" in limit_node.attributes
-                else None,
-                upper=float(limit_node.attributes.pop("upper"))
-                if "upper" in limit_node.attributes
-                else None,
-                effort=float(limit_node.attributes.pop("effort")),
-                velocity=float(limit_node.attributes.pop("velocity")),
+                lower=safe_float(limit_node.attributes.pop("lower", None)),
+                upper=safe_float(limit_node.attributes.pop("upper", None)),
+                effort=safe_float(limit_node.attributes.pop("effort", None)),
+                velocity=safe_float(limit_node.attributes.pop("velocity", None)),
             )
         dynamics = None
         dynamics_node = node.pop("dynamics", return_type="node", default=None)
@@ -235,18 +226,10 @@ class URDFVisitor(XMLVisitor):
         control_node = node.pop("safety_controller", return_type="node", default=None)
         if control_node is not None:
             control_info = C.JointControlInfo(
-                lower=float(control_node.attributes.pop("soft_lower_limit"))
-                if "soft_lower_limit" in control_node.attributes
-                else None,
-                upper=float(control_node.attributes.pop("soft_upper_limit"))
-                if "soft_upper_limit" in control_node.attributes
-                else None,
-                position=float(control_node.attributes.pop("k_position"))
-                if "k_position" in control_node.attributes
-                else None,
-                velocity=float(control_node.attributes.pop("k_velocity"))
-                if "k_velocity" in control_node.attributes
-                else None,
+                lower=safe_float(control_node.attributes.pop("soft_lower_limit", None)),
+                upper=safe_float(control_node.attributes.pop("soft_upper_limit", None)),
+                position=safe_float(control_node.attributes.pop("k_position", None)),
+                velocity=safe_float(control_node.attributes.pop("k_velocity", None)),
             )
         mimic_info = None
         mimic_node = node.pop("mimic", return_type="node", default=None)
@@ -305,3 +288,9 @@ def load_urdf(filename: str, verbose: bool = False) -> C.URDFModel:
     visitor = URDFVisitor()
     visitor.set_verbose(verbose)
     return visitor.load_file(filename).data
+
+
+def load_urdf_string(string: str, verbose: bool = False) -> C.URDFModel:
+    visitor = URDFVisitor()
+    visitor.set_verbose(verbose)
+    return visitor.load_string(string).data

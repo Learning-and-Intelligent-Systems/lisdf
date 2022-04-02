@@ -1,11 +1,12 @@
+from abc import ABC
 from dataclasses import dataclass
 from typing import ClassVar, Dict, Type
 
-from lisdf.components.base import StringConfigurable
+from lisdf.components.base import StringConfigurable, StringifyContext
 
 
 @dataclass
-class Sensor(StringConfigurable):
+class Sensor(StringConfigurable, ABC):
     name: str
 
     type: ClassVar[str] = "Sensor"
@@ -23,4 +24,10 @@ class Sensor(StringConfigurable):
 
 @dataclass
 class CameraSensor(Sensor, type="camera"):
-    pass
+    def _to_sdf(self, ctx: StringifyContext) -> str:
+        return f"""<sensor name="{self.name}" type="{self.type}">
+</sensor>"""
+
+    def _to_urdf(self, ctx: StringifyContext) -> str:
+        ctx.warning(self, "CameraSensor is not supported in URDF.")
+        return ""

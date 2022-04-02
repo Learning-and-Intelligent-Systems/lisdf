@@ -4,15 +4,16 @@ This file defines the basic structures for shapes, including built-in shapes and
 TODO(Jiayuan Mao @ 03/23): consider object and material mapping?
 """
 
+from abc import ABC
 from dataclasses import dataclass
 from typing import ClassVar, Dict, Optional, Type
 
-from lisdf.components.base import StringConfigurable
+from lisdf.components.base import StringConfigurable, StringifyContext
 from lisdf.utils.typing import Vector3f
 
 
 @dataclass
-class ShapeInfo(StringConfigurable):
+class ShapeInfo(StringConfigurable, ABC):
     type: ClassVar[str] = "ShapeInfo"
     type_mapping: ClassVar[Dict[str, Type["ShapeInfo"]]] = dict()
 
@@ -30,13 +31,13 @@ class ShapeInfo(StringConfigurable):
 class BoxShapeInfo(ShapeInfo, type="box"):
     size: Vector3f
 
-    def to_sdf(self) -> str:
+    def _to_sdf(self, ctx: StringifyContext) -> str:
         return f"""<box>
   <size>{self.size[0]} {self.size[1]} {self.size[2]}</size>
 </box>
 """
 
-    def to_urdf(self) -> str:
+    def _to_urdf(self, ctx: StringifyContext) -> str:
         return f"""<box size="{self.size[0]} {self.size[1]} {self.size[2]}"/>"""
 
 
@@ -44,13 +45,13 @@ class BoxShapeInfo(ShapeInfo, type="box"):
 class SphereShapeInfo(ShapeInfo, type="sphere"):
     radius: float
 
-    def to_sdf(self) -> str:
+    def _to_sdf(self, ctx: StringifyContext) -> str:
         return f"""<sphere>
   <radius>{self.radius}</radius>
 </sphere>
 """
 
-    def to_urdf(self) -> str:
+    def _to_urdf(self, ctx: StringifyContext) -> str:
         return f"""<sphere radius="{self.radius}"/>"""
 
 
@@ -63,14 +64,14 @@ class CylinderShapeInfo(ShapeInfo, type="cylinder"):
     def length(self) -> float:
         return self.half_height * 2
 
-    def to_sdf(self) -> str:
+    def _to_sdf(self, ctx: StringifyContext) -> str:
         return f"""<cylinder>
   <radius>{self.radius}</radius>
   <length>{self.length}</length>
 </cylinder>
 """
 
-    def to_urdf(self) -> str:
+    def _to_urdf(self, ctx: StringifyContext) -> str:
         return f"""<cylinder radius="{self.radius}" length="{self.length}"/>"""
 
 
@@ -83,14 +84,14 @@ class CapsuleShapeInfo(ShapeInfo, type="capsule"):
     def length(self) -> float:
         return self.half_height * 2
 
-    def to_sdf(self) -> str:
+    def _to_sdf(self, ctx: StringifyContext) -> str:
         return f"""<capsule>
   <radius>{self.radius}</radius>
   <length>{self.length}</length>
 </capsule>
 """
 
-    def to_urdf(self) -> str:
+    def _to_urdf(self, ctx: StringifyContext) -> str:
         return f"""<capsule radius="{self.radius}" length="{self.length}"/>"""
 
 
@@ -99,14 +100,14 @@ class MeshShapeInfo(ShapeInfo, type="mesh"):
     filename: str
     size: Vector3f
 
-    def to_sdf(self) -> str:
+    def _to_sdf(self, ctx: StringifyContext) -> str:
         return f"""<mesh>
   <uri>{self.filename}</uri>
   <scale>{self.size[0]} {self.size[1]} {self.size[2]}</scale>
 </mesh>
 """
 
-    def to_urdf(self) -> str:
+    def _to_urdf(self, ctx: StringifyContext) -> str:
         return (
             "<mesh"
             f' filename="{self.filename}"'
@@ -129,11 +130,11 @@ class PlaneShapeInfo(ShapeInfo, type="plane"):
     def height(self) -> float:
         return self.half_height * 2
 
-    def to_sdf(self) -> str:
+    def _to_sdf(self, ctx: StringifyContext) -> str:
         return f"""<plane>
   <size>{self.width} {self.height}</size>
 </plane>
 """
 
-    def to_urdf(self) -> str:
+    def _to_urdf(self, ctx: StringifyContext) -> str:
         return f"""<plane size="{self.width} {self.height}"/>"""

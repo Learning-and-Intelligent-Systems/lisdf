@@ -28,7 +28,7 @@ from lisdf.components.model import (  # noqa: F401
 
 from .gui import GUI, GUICamera  # noqa: F401
 from .material import RGBA, Material, MJCFMaterial, PhongMaterial, Texture  # noqa: F401
-from .model_mjcf import MJCFGeom, MJCFModel  # noqa: F401
+from .model_mjcf import MJCFCollision, MJCFModel, MJCFVisual  # noqa: F401
 from .model_sdf import (  # noqa: F401
     SDFLink,
     SDFSurfaceContact,

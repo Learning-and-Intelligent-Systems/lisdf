@@ -173,7 +173,7 @@ class MJCFVisitor(XMLVisitor):
 
         data = self._data["site"]
         assert name not in data
-        data[name] = C.MJCFGeom(name, pose, shape, material=C.RGBA(*vector4f(rgba)))
+        data[name] = C.MJCFVisual(name, pose, shape, material=C.RGBA(*vector4f(rgba)))
         body.visuals.append(data[name])
 
         return check_done(node)
@@ -257,20 +257,26 @@ class MJCFVisitor(XMLVisitor):
         contact_affinity = node.attributes.pop("conaffinity", 0)
         contact_dim = node.attributes.pop("condim", 3)  # frictional
 
-        geom = C.MJCFGeom(
+        visual_geom = C.MJCFVisual(
             name,
             pose,
             shape=shape,
             material=visual,
+        )
+        body.visuals.append(visual_geom)
+        collision_geom = C.MJCFCollision(
+            name,
+            pose,
+            shape=shape,
             inertial_group=inertial_group,
             contact_type=contact_type,
             contact_affinity=contact_affinity,
             contact_dim=contact_dim,
         )
-        body.collisions.append(geom)
-        body.visuals.append(geom)
+        body.collisions.append(collision_geom)
         if name is not None:
-            self._data["geom"][name] = geom
+            self._data["visual"][name] = visual_geom
+            self._data["collision"][name] = collision_geom
 
         return check_done(node)
 

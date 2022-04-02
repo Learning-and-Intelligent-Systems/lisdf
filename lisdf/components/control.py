@@ -1,9 +1,12 @@
+from abc import ABC
 from dataclasses import dataclass
 from typing import ClassVar, Dict, Optional, Type
 
-from lisdf.components.base import StringConfigurable
+from lisdf.components.base import StringConfigurable, StringifyContext
 from lisdf.utils.printing import indent_text
 from lisdf.utils.typing import Vector3f
+
+"""A series of data structures for joints."""
 
 
 @dataclass
@@ -12,13 +15,17 @@ class JointDynamics(StringConfigurable):
     friction: float = 0
     armature: float = 0  # used by MJCF only.
 
-    def to_sdf(self) -> str:
+    def _to_sdf(self, ctx: StringifyContext) -> str:
+        if self.armature != 0:
+            ctx.warning(self, "armature is not supported in SDF.")
         return f"""<dynamics>
  <damping>{self.damping}</damping>
  <friction>{self.friction}</friction>
 </dynamics>"""
 
-    def to_urdf(self) -> str:
+    def _to_urdf(self, ctx: StringifyContext) -> str:
+        if self.armature != 0:
+            ctx.warning(self, "armature is not supported in SDF.")
         return f'<dynamics damping="{self.damping}" friction="{self.friction}" />'
 
 
@@ -29,7 +36,7 @@ class JointLimit(StringConfigurable):
     effort: Optional[float] = None
     velocity: Optional[float] = None
 
-    def to_sdf(self) -> str:
+    def _to_sdf(self, ctx: StringifyContext) -> str:
         fmt = "<limit>\n"
         if self.lower is not None:
             fmt += f"  <lower>{self.lower}</lower>\n"
@@ -41,7 +48,7 @@ class JointLimit(StringConfigurable):
             fmt += f"  <velocity>{self.velocity}</velocity>\n"
         return fmt + "</limit>"
 
-    def to_urdf(self) -> str:
+    def _to_urdf(self, ctx: StringifyContext) -> str:
         fmt = "<limit"
         if self.lower is not None:
             fmt += f' lower="{self.lower}"'
@@ -59,10 +66,12 @@ class JointCalibration(StringConfigurable):
     falling: float = 0
     rising: float = 0
 
-    def to_sdf(self) -> str:
+    def _to_sdf(self, ctx: StringifyContext) -> str:
+        if self.falling != 0 or self.rising != 0:
+            ctx.warning(self, "falling and rising are not supported in SDF.")
         return ""
 
-    def to_urdf(self) -> str:
+    def _to_urdf(self, ctx: StringifyContext) -> str:
         return f'<calibration falling="{self.falling}" rising="{self.rising}" />'
 
 
@@ -72,9 +81,41 @@ class JointMimic(StringConfigurable):
     multiplier: float = 1
     offset: float = 0
 
+    def _to_sdf(self, ctx: StringifyContext) -> str:
+        ctx.warning(self, "mimic is not supported in SDF.")
+        return ""
+
+    # flake8: noqa: E501
+    def _to_urdf(self, ctx: StringifyContext) -> str:
+        return f'<mimic joint="{self.joint}" multiplier="{self.multiplier}" offset="{self.offset}" />'
+
 
 @dataclass
-class JointInfo(StringConfigurable):
+class JointControlInfo(StringConfigurable):
+    lower: Optional[float] = None
+    upper: Optional[float] = None
+    velocity: Optional[float] = None
+    position: Optional[float] = None
+
+    def _to_sdf(self, ctx: StringifyContext) -> str:
+        ctx.warning(self, "safety_controller is not supported in SDF.")
+        return ""
+
+    def _to_urdf(self, ctx: StringifyContext) -> str:
+        fmt = "<safety_controller"
+        if self.lower is not None:
+            fmt += f' lower_velocity="{self.lower}"'
+        if self.upper is not None:
+            fmt += f' upper_velocity="{self.upper}"'
+        if self.velocity is not None:
+            fmt += f' velocity="{self.velocity}"'
+        if self.position is not None:
+            fmt += f' position="{self.position}"'
+        return fmt + "/>"
+
+
+@dataclass
+class JointInfo(StringConfigurable, ABC):
     """
     When inherit from this class, child classes should pass type="XXX"
     as a keyword argument. This will register a new JointInfo type
@@ -100,10 +141,10 @@ class JointInfo(StringConfigurable):
 
 @dataclass
 class FixedJointInfo(JointInfo, type="fixed"):
-    def to_sdf(self) -> str:
+    def _to_sdf(self, ctx: StringifyContext) -> str:
         return ""
 
-    def to_urdf(self) -> str:
+    def _to_urdf(self, ctx: StringifyContext) -> str:
         return ""
 
 
@@ -115,24 +156,24 @@ class SingleAxisJointInfo(JointInfo, type="controllable"):
     calibration: Optional[JointCalibration] = None
     mimic: Optional[JointMimic] = None
 
-    def to_sdf(self) -> str:
+    def _to_sdf(self, ctx: StringifyContext) -> str:
         return f"""<axis>
   <xyz>{self.axis[0]} {self.axis[1]} {self.axis[2]}</xyz>
-  {indent_text(self.limit.to_sdf()).strip() if self.limit is not None else ""}
-  {indent_text(self.dynamics.to_sdf()).strip() if self.dynamics is not None else ""}
-  {indent_text(self.calibration.to_sdf()).strip()
+  {indent_text(self.limit.to_sdf(ctx)).strip() if self.limit is not None else ""}
+  {indent_text(self.dynamics.to_sdf(ctx)).strip() if self.dynamics is not None else ""}
+  {indent_text(self.calibration.to_sdf(ctx)).strip()
   if self.calibration is not None else ""}
-  {indent_text(self.mimic.to_sdf()).strip() if self.mimic is not None else ""}
+  {indent_text(self.mimic.to_sdf(ctx)).strip() if self.mimic is not None else ""}
 </axis>"""
 
-    def to_urdf(self) -> str:
-        return f"""<axis xyz=\"{self.axis[0]} {self.axis[1]} {self.axis[2]}\" />
-  {indent_text(self.limit.to_urdf()).strip() if self.limit is not None else ""}
-  {indent_text(self.dynamics.to_urdf()).strip()
+    def _to_urdf(self, ctx: StringifyContext) -> str:
+        return f"""<axis xyz="{self.axis[0]} {self.axis[1]} {self.axis[2]}" />
+  {indent_text(self.limit.to_urdf(ctx)).strip() if self.limit is not None else ""}
+  {indent_text(self.dynamics.to_urdf(ctx)).strip()
   if self.dynamics is not None else ""}
-  {indent_text(self.calibration.to_urdf()).strip()
+  {indent_text(self.calibration.to_urdf(ctx)).strip()
   if self.calibration is not None else ""}
-  {indent_text(self.mimic.to_urdf()).strip() if self.mimic is not None else ""}"""
+  {indent_text(self.mimic.to_urdf(ctx)).strip() if self.mimic is not None else ""}"""
 
 
 @dataclass
@@ -148,26 +189,3 @@ class RevoluteJointInfo(SingleAxisJointInfo, type="revolute"):
 @dataclass
 class PrismaticJointInfo(SingleAxisJointInfo, type="prismatic"):
     pass
-
-
-@dataclass
-class JointControlInfo(StringConfigurable):
-    lower: Optional[float] = None
-    upper: Optional[float] = None
-    velocity: Optional[float] = None
-    position: Optional[float] = None
-
-    def to_sdf(self) -> str:
-        return ""
-
-    def to_urdf(self) -> str:
-        fmt = "<safety_controller"
-        if self.lower is not None:
-            fmt += f' lower_velocity="{self.lower}"'
-        if self.upper is not None:
-            fmt += f' upper_velocity="{self.upper}"'
-        if self.velocity is not None:
-            fmt += f' velocity="{self.velocity}"'
-        if self.position is not None:
-            fmt += f' position="{self.position}"'
-        return fmt + "/>"

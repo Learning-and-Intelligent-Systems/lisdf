@@ -3,7 +3,7 @@ import os.path as osp
 from collections import defaultdict
 from typing import Any, Callable, Dict, List, Optional
 
-from lisdf.parsing.xml_j.xml import XMLNode, load_file
+from lisdf.parsing.xml_j.xml import XMLNode, load_file, load_string
 from lisdf.utils.printing import indent_text
 
 
@@ -74,6 +74,10 @@ class XMLVisitor(object):
     def load_file(self, filename: str) -> Any:
         node = load_file(filename)
         return self.visit(filename, node)
+
+    def load_string(self, string: str) -> Any:
+        node = load_string(string)
+        return self.visit("string_file", node)
 
     def _resolve_path(self, path: str) -> str:
         return osp.normpath(osp.join(osp.dirname(self.filename_stack[-1]), path))

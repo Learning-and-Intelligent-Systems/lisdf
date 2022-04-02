@@ -13,6 +13,8 @@ from lisdf.parsing.xml_j.visitor import XMLVisitor, check_done_decorator
 
 
 class SDFVisitor(XMLVisitor):
+    DEFAULT_WORLD_NAME = "default_world"
+
     def include(self, node):
         uri = node.pop("uri", required=True)
 
@@ -47,6 +49,7 @@ class SDFVisitor(XMLVisitor):
                     ),
                     static=bool_string(node.pop("static", default="false")),
                     _scale1d=scale_f,
+                    _content=content,
                 )
             )
         else:
@@ -206,10 +209,11 @@ class SDFVisitor(XMLVisitor):
     @check_done_decorator
     def link(self, node):
         name = node.attributes.pop("name")
-        pose = node.pop("pose", return_type="data", default=C.Pose.identity())
+        pose = node.pop("pose", return_type="data", default=None)
         inertial = node.pop("inertial", return_type="data", default=C.Inertial.zeros())
         self_collide = bool_string(node.pop("self_collide", default="true"))
-        # TODO(Jiayuan Mao @ 03/24: handle parent.
+
+        # TODO(Jiayuan Mao @ 03/24): handle parent.
         link = C.SDFLink(
             name=name,
             parent=None,
@@ -232,13 +236,12 @@ class SDFVisitor(XMLVisitor):
     def joint(self, node):
         type = node.attributes.pop("type", "continuous")
 
-        # TODO(Jiayuan Mao @ 03/24: implement dynamics control information.
         if type == "fixed":
             joint_info = C.FixedJointInfo()
         elif type in ("continuous", "revolute", "prismatic"):
             axis_node = node.pop("axis", return_type="node", required=True)
 
-            axis = axis_node.pop("xyz", default="0 0 1")
+            axis = vector3f(axis_node.pop("xyz", default="0 0 1"))
             limit = None
             limit_node = axis_node.pop("limit", return_type="node", default=None)
             if limit_node is not None:
@@ -263,6 +266,8 @@ class SDFVisitor(XMLVisitor):
                 joint_info = C.RevoluteJointInfo(axis, limit=limit, dynamics=dynamics)
             elif type == "prismatic":
                 joint_info = C.PrismaticJointInfo(axis, limit=limit, dynamics=dynamics)
+            else:
+                raise NotImplementedError("Unknown joint type: {}.".format(type))
         else:
             raise NotImplementedError("Unknown joint type: {}.".format(type))
 
@@ -303,7 +308,7 @@ class SDFVisitor(XMLVisitor):
             pass
         else:
             name = node.attributes.pop("name", None)
-            pose = node.pop("pose", return_type="data", default=C.Pose.identity())
+            pose = node.pop("pose", return_type="data", default=None)
             static = bool_string(node.pop("static", default="false"))
             model = C.Model(name=name, pose=pose, parent=None, static=static)
             for c in node.pop_all_children():
@@ -357,7 +362,9 @@ class SDFVisitor(XMLVisitor):
     @check_done_decorator
     def state(self, node):
         self.exit_scope("state")
-        state = C.WorldState(node.attributes.pop("world_name"))
+        state = C.WorldState(
+            node.attributes.pop("world_name", type(self).DEFAULT_WORLD_NAME)
+        )
         for c in node.pop_all_children():
             if c.tag == "model":
                 state.model_states.append(c.data)
@@ -401,7 +408,7 @@ class SDFVisitor(XMLVisitor):
 
     @check_done_decorator
     def world(self, node):
-        name = node.attributes.pop("name", None)
+        name = node.attributes.pop("name", type(self).DEFAULT_WORLD_NAME)
         static = bool_string(node.pop("static", default="false"))
         world = C.World(name, static)
         for c in node.pop_all_children():
@@ -439,3 +446,8 @@ class SDFVisitor(XMLVisitor):
 def load_sdf(filename: str) -> C.LISDF:
     visitor = SDFVisitor()
     return visitor.load_file(filename).data
+
+
+def load_sdf_string(string: str) -> C.LISDF:
+    visitor = SDFVisitor()
+    return visitor.load_string(string).data

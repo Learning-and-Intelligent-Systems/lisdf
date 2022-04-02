@@ -1,13 +1,14 @@
+from abc import ABC
 from dataclasses import dataclass, field
 
 import numpy as np
 
-from lisdf.components.base import StringConfigurable
+from lisdf.components.base import StringConfigurable, StringifyContext
 from lisdf.utils.typing import Vector4f
 
 
 @dataclass(frozen=True)
-class Material(StringConfigurable):
+class Material(StringConfigurable, ABC):
     pass
 
 
@@ -25,13 +26,13 @@ class RGBA(Material):
         assert a.shape == (4,)
         return cls(a[0], a[1], a[2], a[3])
 
-    def to_sdf(self) -> str:
+    def _to_sdf(self, ctx: StringifyContext) -> str:
         return f"""<material>
   <ambient>{self.r:.3f} {self.g:.3f} {self.b:.3f} {self.a:.3f}</ambient>
   <diffuse>{self.r:.3f} {self.g:.3f} {self.b:.3f} {self.a:.3f}</diffuse>
 </material>"""
 
-    def to_urdf(self) -> str:
+    def _to_urdf(self, ctx: StringifyContext) -> str:
         return (
             f"""<color rgba="{self.r:.3f} {self.g:.3f} {self.b:.3f} {self.a:.3f}" />"""
         )
@@ -52,7 +53,8 @@ class PhongMaterial(Material):
         default_factory=lambda: np.array([0, 0, 0, 1], dtype="float32")
     )
 
-    def to_sdf(self) -> str:
+    # flake8: noqa: E501
+    def _to_sdf(self, ctx: StringifyContext) -> str:
         return f"""<material>
   <ambient>{self.ambient[0]} {self.ambient[1]} {self.ambient[2]} {self.ambient[3]}</ambient>
   <diffuse>{self.diffuse[0]} {self.diffuse[1]} {self.diffuse[2]} {self.diffuse[3]}</diffuse>
@@ -60,15 +62,32 @@ class PhongMaterial(Material):
   <emissive>{self.emissive[0]} {self.emissive[1]} {self.emissive[2]} {self.emissive[3]}</emissive>
 </material>"""
 
+    # flake8: noqa: E501
+    def _to_urdf(self, ctx: StringifyContext) -> str:
+        ctx.warning(self, "PhongMaterial is not supported in URDF.")
+        return f'<color rgba="{self.ambient[0]} {self.ambient[1]} {self.ambient[2]} {self.ambient[3]}" />'
+
 
 @dataclass(frozen=True)
 class Texture(Material):
     filename: str
 
-    def to_urdf(self) -> str:
+    def _to_sdf(self, ctx: StringifyContext) -> str:
+        ctx.warning(self, "Texture is not supported in SDF.")
+        return ""
+
+    def _to_urdf(self, ctx: StringifyContext) -> str:
         return f"""<texture filename="{self.filename}" />"""
 
 
 @dataclass(frozen=True)
 class MJCFMaterial(Material):
     identifier: str  # TODO
+
+    def _to_sdf(self, ctx: StringifyContext) -> str:
+        ctx.warning(self, "MJCF material is not supported in SDF.")
+        return ""
+
+    def _to_urdf(self, ctx: StringifyContext) -> str:
+        ctx.warning(self, "MJCF material is not supported in URDF.")
+        return ""
