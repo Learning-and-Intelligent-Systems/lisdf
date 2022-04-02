@@ -10,6 +10,7 @@ Object = str
 Atom = List[Union[Predicate, Object]]
 State = List[Atom]
 
+
 def parse_pddl(
     domain_file_path: str, problem_file_path: str
 ) -> Tuple[State, State, Dict[Type, Set[Object]]]:
