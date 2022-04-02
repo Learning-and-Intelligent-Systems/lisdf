@@ -269,7 +269,7 @@ class Link(StringConfigurable):
 
 @dataclass
 class Joint(StringConfigurable):
-    name: Optional[str]
+    name: str
     parent: str
     child: str
     pose: Pose
@@ -296,6 +296,7 @@ class Joint(StringConfigurable):
 </joint>"""
 
     def _to_urdf(self, ctx: StringifyContext) -> str:
+        assert self.name is not None
         name = ctx.get_scoped_name(self.name)
         parent = ctx.get_scoped_name(self.parent)
         child = ctx.get_scoped_name(self.child)
@@ -388,7 +389,8 @@ class SDFInclude(StringConfigurable):
             scale_str = (
                 f"<scale>{self.scale[0]} {self.scale[1]} {self.scale[2]}</scale>"
             )
-        return f"""<include name="{self.name}">
+        name_str = f' name="{self.name}"' if self.name is not None else ""
+        return f"""<include{name_str}">
   <uri>{self.uri}</uri>
   <static>{self.static}</static>
   {scale_str}

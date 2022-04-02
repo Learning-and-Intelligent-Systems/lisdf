@@ -14,6 +14,7 @@ from lisdf.parsing.xml_j.visitor import XMLVisitor, check_done_decorator
 
 class SDFVisitor(XMLVisitor):
     DEFAULT_WORLD_NAME = "default_world"
+    DEFAULT_MODEL_NAME = "default_model"
 
     def include(self, node):
         uri = node.pop("uri", required=True)
@@ -172,9 +173,7 @@ class SDFVisitor(XMLVisitor):
         return node.set_data(
             C.Collision(
                 name=node.attributes.pop("name", default_name),
-                pose=node.pop(
-                    "pose", return_type="data", default=C.Pose.identity()
-                ),
+                pose=node.pop("pose", return_type="data", default=C.Pose.identity()),
                 shape=node.pop("geometry", return_type="data", required=True),
                 surface=node.pop("surface", return_type="data", default=None),
             )
@@ -203,9 +202,7 @@ class SDFVisitor(XMLVisitor):
         return node.set_data(
             C.SDFVisual(
                 name=node.attributes.pop("name", default_name),
-                pose=node.pop(
-                    "pose", return_type="data", default=C.Pose.identity()
-                ),
+                pose=node.pop("pose", return_type="data", default=C.Pose.identity()),
                 shape=node.pop("geometry", return_type="data", required=True),
                 material=node.pop(
                     "material",
@@ -254,6 +251,9 @@ class SDFVisitor(XMLVisitor):
 
         if type == "fixed":
             joint_info = C.FixedJointInfo()
+            node.pop("axis")  # TODO: check the axis parameter in fixed joints.
+            for c in ["limit", "dynamics"]:
+                node.pop(c)
         elif type in ("continuous", "revolute", "prismatic"):
             axis_node = node.pop("axis", return_type="node", required=True)
 
@@ -288,7 +288,7 @@ class SDFVisitor(XMLVisitor):
             raise NotImplementedError("Unknown joint type: {}.".format(type))
 
         joint = C.Joint(
-            name=node.attributes.pop("name", None),
+            name=node.attributes.pop("name"),
             parent=node.pop("parent", required=True),
             child=node.pop("child", required=True),
             pose=node.pop("pose", return_type="data", default=C.Pose.identity()),
@@ -323,7 +323,7 @@ class SDFVisitor(XMLVisitor):
         if len(st) > 0:
             pass
         else:
-            name = node.attributes.pop("name", None)
+            name = node.attributes.pop("name", type(self).DEFAULT_MODEL_NAME)
             pose = node.pop("pose", return_type="data", default=None)
             static = bool_string(node.pop("static", default="false"))
             model = C.Model(name=name, pose=pose, parent=None, static=static)
@@ -340,7 +340,7 @@ class SDFVisitor(XMLVisitor):
 
     @check_done_decorator
     def state_joint(self, node):
-        name = node.attributes.pop("name", None)
+        name = node.attributes.pop("name")
         state = C.JointState(name)
         for c in node.pop_all_children():
             assert c.tag == "angle"
@@ -351,7 +351,7 @@ class SDFVisitor(XMLVisitor):
 
     @check_done_decorator
     def state_link(self, node):
-        name = node.attributes.pop("name", None)
+        name = node.attributes.pop("name")
         state = C.LinkState(
             name,
             pose=node.pop("pose", return_type="data", default=C.Pose.identity()),
