@@ -3,5 +3,5 @@
 
 
 from .mjcf import load_mjcf  # noqa: F401
-from .sdf_j import load_sdf  # noqa: F401
-from .urdf_j import load_urdf  # noqa: F401
+from .sdf_j import load_sdf, load_sdf_string  # noqa: F401
+from .urdf_j import load_urdf, load_urdf_string  # noqa: F401
