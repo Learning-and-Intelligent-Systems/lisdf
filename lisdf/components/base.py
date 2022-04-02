@@ -23,9 +23,10 @@ def set_name_scope_sep(sep: Optional[str]) -> None:
 
 
 class StringifyContext(object):
-    def __init__(self) -> None:
+    def __init__(self, **kwargs) -> None:
         self.stacks: DefaultDict[str, List[Any]] = defaultdict(list)
         self.warnings: List[Tuple[StringConfigurable, str]] = list()
+        self.options = kwargs
 
     def warning(self, obj: "StringConfigurable", message: str) -> None:
         self.warnings.append((obj, message))
@@ -69,14 +70,27 @@ class StringifyContext(object):
 class StringConfigurable(ABC):
     # TODO(Jiayuan Mao @ 03/24): implement these methods for the child classes.
 
-    def to_sdf(self, ctx: Optional[StringifyContext] = None) -> str:
+    DEFAULT_SDF_STRINGIFY_OPTIONS = {}
+    DEFAULT_URDF_STRINGIFY_OPTIONS = {
+        # The URDF standard supports defining the material for a visual element
+        # inside the visual element itself. However, this is not supported by
+        # some URDF parsers. Set this option to False to enforce all material
+        # definitions to be defined at the root level.
+        "allow_embedded_material": False
+    }
+
+    def to_sdf(self, ctx: Optional[StringifyContext] = None, **kwargs) -> str:
         if ctx is None:
-            ctx = StringifyContext()
+            for k, v in type(self).DEFAULT_SDF_STRINGIFY_OPTIONS.items():
+                kwargs.setdefault(k, v)
+            ctx = StringifyContext(**kwargs)
         return self._to_sdf(ctx)
 
-    def to_urdf(self, ctx: Optional[StringifyContext] = None) -> str:
+    def to_urdf(self, ctx: Optional[StringifyContext] = None, **kwargs) -> str:
         if ctx is None:
-            ctx = StringifyContext()
+            for k, v in type(self).DEFAULT_URDF_STRINGIFY_OPTIONS.items():
+                kwargs.setdefault(k, v)
+            ctx = StringifyContext(**kwargs)
         return self._to_urdf(ctx)
 
     def _to_sdf(self, ctx: StringifyContext) -> str:

@@ -173,9 +173,10 @@ class Visual(_Geom):
   {indent_text(self.material.to_sdf(ctx)).strip() if self.material is not None else ""}
 </visual>"""
 
-    def _to_material_urdf(self, ctx: StringifyContext) -> str:
-        name = ctx.get_scoped_name(self.name)
+    def to_material_urdf(self, ctx: StringifyContext) -> str:
+        print(self.material)
         if self.material is not None:
+            name = ctx.get_scoped_name(self.name)
             return f"""<material name="{name}_material">
   {indent_text(self.material.to_urdf(ctx)).strip() if self.material is not None else ""}
 </material>"""
@@ -185,7 +186,10 @@ class Visual(_Geom):
         name = ctx.get_scoped_name(self.name)
         material_str = ""
         if self.material is not None:
-            material_str = self._to_material_urdf(ctx)
+            if ctx.options['allow_embedded_material']:
+                material_str = self.to_material_urdf(ctx)
+            else:
+                material_str = f'<material name="{name}_material" />'
 
         return f"""<visual name="{name}">
   {self.pose.to_urdf(ctx)}
@@ -248,7 +252,14 @@ class Link(StringConfigurable):
             collision_str = "\n".join([c.to_urdf(ctx) for c in self.collisions])
             visual_str = "\n".join([v.to_urdf(ctx) for v in self.visuals])
 
-            return f"""<link name="{name}">
+            if ctx.options['allow_embedded_material']:
+                material_str = ""
+            else:
+                material_str = "\n".join([v.to_material_urdf(ctx) for v in self.visuals])
+            print(ctx.options, material_str, self.visuals)
+
+            return f"""{material_str}
+<link name="{name}">
   {indent_text(self.inertial.to_urdf(ctx)).strip() if self.inertial is not None else ""}
   {indent_text(collision_str).strip()}
   {indent_text(visual_str).strip()}
@@ -256,15 +267,15 @@ class Link(StringConfigurable):
         finally:
             ctx.pop_scoped_pose()
 
-    def to_sdf_xml(self) -> str:
+    def to_sdf_xml(self, **kwargs) -> str:
         model = Model(self.name)
         model.links.append(self)
-        return model.to_sdf_xml()
+        return model.to_sdf_xml(**kwargs)
 
-    def to_urdf_xml(self) -> str:
+    def to_urdf_xml(self, **kwargs) -> str:
         model = Model(self.name)
         model.links.append(self)
-        return model.to_urdf_xml()
+        return model.to_urdf_xml(**kwargs)
 
 
 @dataclass
@@ -330,10 +341,10 @@ class Model(StringConfigurable):
   {indent_text(joint_str).strip()}
 </model>"""
 
-    def to_sdf_xml(self) -> str:
+    def to_sdf_xml(self, **kwargs) -> str:
         return f"""<?xml version="1.0"?>
 <sdf version="1.9">
-{self.to_sdf()}
+{self.to_sdf(**kwargs)}
 </sdf>"""
 
     def _to_urdf(self, ctx: StringifyContext) -> str:
@@ -355,9 +366,9 @@ class Model(StringConfigurable):
         finally:
             ctx.pop_scoped_name()
 
-    def to_urdf_xml(self) -> str:
+    def to_urdf_xml(self, **kwargs) -> str:
         return f"""<?xml version="1.0"?>
-{self.to_urdf()}"""
+{self.to_urdf(**kwargs)}"""
 
 
 @dataclass

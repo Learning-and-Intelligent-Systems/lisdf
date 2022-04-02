@@ -238,7 +238,7 @@ class SDFVisitor(XMLVisitor):
             if c.tag == "collision":
                 link.collisions.append(c.data)
             elif c.tag == "visual":
-                link.collisions.append(c.data)
+                link.visuals.append(c.data)
             elif c.tag == "sensor":
                 link.sensors.append(c.data)
             else:
