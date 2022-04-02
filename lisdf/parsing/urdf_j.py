@@ -155,9 +155,12 @@ class URDFVisitor(XMLVisitor):
         self._st["link_visual"].pop()
         self._st["link_collision"].pop()
         node.attributes.pop("type", None)  # TODO: warning unused type.
+        # TODO: URDF doesn't support pose actually...
+        pose = node.pop("origin", return_type="data", default=None)
         link = C.Link(
             name=node.attributes.pop("name"),
             parent=None,
+            pose=pose,
             inertial=node.pop("inertial", return_type="data", default=None),
         )
         for c in node.pop_all_children():
