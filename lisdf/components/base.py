@@ -2,7 +2,7 @@ from abc import ABC
 from collections import defaultdict
 from dataclasses import dataclass
 from functools import cached_property
-from typing import Any, DefaultDict, List, Optional, Tuple
+from typing import Any, DefaultDict, Dict, List, Optional, Tuple
 
 import numpy as np
 
@@ -70,8 +70,8 @@ class StringifyContext(object):
 class StringConfigurable(ABC):
     # TODO(Jiayuan Mao @ 03/24): implement these methods for the child classes.
 
-    DEFAULT_SDF_STRINGIFY_OPTIONS = {}
-    DEFAULT_URDF_STRINGIFY_OPTIONS = {
+    DEFAULT_SDF_STRINGIFY_OPTIONS: Dict[str, Any] = {}
+    DEFAULT_URDF_STRINGIFY_OPTIONS: Dict[str, Any] = {
         # The URDF standard supports defining the material for a visual element
         # inside the visual element itself. However, this is not supported by
         # some URDF parsers. Set this option to False to enforce all material

@@ -27,6 +27,10 @@ class Inertia(StringConfigurable):
         return cls(0, 0, 0, 0, 0, 0)
 
     @classmethod
+    def identity(cls) -> "Inertia":
+        return cls(1, 0, 0, 1, 0, 1)
+
+    @classmethod
     def from_diagonal(cls, ixx, iyy, izz) -> "Inertia":
         return cls(ixx, 0, 0, iyy, 0, izz)
 
@@ -69,6 +73,10 @@ class Inertial(StringConfigurable):
     @classmethod
     def zeros(cls) -> "Inertial":
         return cls(0, Pose.identity(), Inertia.zeros())
+
+    @classmethod
+    def identity(cls) -> "Inertial":
+        return cls(1, Pose.identity(), Inertia.identity())
 
     def _to_sdf(self, ctx: StringifyContext) -> str:
         return f"""<inertial>
@@ -186,7 +194,7 @@ class Visual(_Geom):
         name = ctx.get_scoped_name(self.name)
         material_str = ""
         if self.material is not None:
-            if ctx.options['allow_embedded_material']:
+            if ctx.options["allow_embedded_material"]:
                 material_str = self.to_material_urdf(ctx)
             else:
                 material_str = f'<material name="{name}_material" />'
@@ -252,10 +260,12 @@ class Link(StringConfigurable):
             collision_str = "\n".join([c.to_urdf(ctx) for c in self.collisions])
             visual_str = "\n".join([v.to_urdf(ctx) for v in self.visuals])
 
-            if ctx.options['allow_embedded_material']:
+            if ctx.options["allow_embedded_material"]:
                 material_str = ""
             else:
-                material_str = "\n".join([v.to_material_urdf(ctx) for v in self.visuals])
+                material_str = "\n".join(
+                    [v.to_material_urdf(ctx) for v in self.visuals]
+                )
             print(ctx.options, material_str, self.visuals)
 
             return f"""{material_str}
