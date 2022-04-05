@@ -1,5 +1,6 @@
 import functools
 import os.path as osp
+from abc import ABC, abstractmethod
 from collections import defaultdict
 from typing import Any, Callable, Dict, List, Optional
 
@@ -7,7 +8,21 @@ from lisdf.parsing.xml_j.xml import XMLNode, load_file, load_string
 from lisdf.utils.printing import indent_text
 
 
-class XMLVisitor(object):
+class XMLVisitorInterface(ABC):
+    @abstractmethod
+    def get_scope(self) -> Optional[str]:
+        raise NotImplementedError()
+
+    @abstractmethod
+    def enter_scope(self, scope: str) -> None:
+        raise NotImplementedError()
+
+    @abstractmethod
+    def exit_scope(self, scope: str) -> None:
+        raise NotImplementedError()
+
+
+class XMLVisitor(XMLVisitorInterface):
     """
     A Top-Down Visitor for the XML tree.
 
@@ -60,6 +75,9 @@ class XMLVisitor(object):
             return getattr(self, funcname)
         funcname = tag.replace("-", "_")
         return getattr(self, funcname, None)
+
+    def get_scope(self) -> Optional[str]:
+        return self.scope_stack[-1] if len(self.scope_stack) > 0 else None
 
     def enter_scope(self, scope: str) -> None:
         self.scope_stack.append(scope)

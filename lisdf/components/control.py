@@ -2,7 +2,11 @@ from abc import ABC
 from dataclasses import dataclass
 from typing import ClassVar, Dict, Optional, Type
 
-from lisdf.components.base import StringConfigurable, StringifyContext
+from lisdf.components.base import (
+    StringConfigurable,
+    StringifyContext,
+    unsupported_stringify,
+)
 from lisdf.utils.printing import indent_text
 from lisdf.utils.typing import Vector3f
 
@@ -62,28 +66,21 @@ class JointLimit(StringConfigurable):
 
 
 @dataclass
+@unsupported_stringify(disable_sdf=True)
 class JointCalibration(StringConfigurable):
     falling: float = 0
     rising: float = 0
-
-    def _to_sdf(self, ctx: StringifyContext) -> str:
-        if self.falling != 0 or self.rising != 0:
-            ctx.warning(self, "falling and rising are not supported in SDF.")
-        return ""
 
     def _to_urdf(self, ctx: StringifyContext) -> str:
         return f'<calibration falling="{self.falling}" rising="{self.rising}" />'
 
 
 @dataclass
+@unsupported_stringify(disable_sdf=True)
 class JointMimic(StringConfigurable):
     joint: str
     multiplier: float = 1
     offset: float = 0
-
-    def _to_sdf(self, ctx: StringifyContext) -> str:
-        ctx.warning(self, "mimic is not supported in SDF.")
-        return ""
 
     # flake8: noqa: E501
     def _to_urdf(self, ctx: StringifyContext) -> str:
@@ -91,15 +88,12 @@ class JointMimic(StringConfigurable):
 
 
 @dataclass
+@unsupported_stringify(disable_sdf=True)
 class JointControlInfo(StringConfigurable):
     lower: Optional[float] = None
     upper: Optional[float] = None
     velocity: Optional[float] = None
     position: Optional[float] = None
-
-    def _to_sdf(self, ctx: StringifyContext) -> str:
-        ctx.warning(self, "safety_controller is not supported in SDF.")
-        return ""
 
     def _to_urdf(self, ctx: StringifyContext) -> str:
         fmt = "<safety_controller"

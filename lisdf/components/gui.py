@@ -1,12 +1,18 @@
 from dataclasses import dataclass
 from typing import Optional
 
-from lisdf.components.base import Pose, StringConfigurable, StringifyContext
+from lisdf.components.base import (
+    Pose,
+    StringConfigurable,
+    StringifyContext,
+    unsupported_stringify,
+)
 from lisdf.utils.printing import indent_text
 from lisdf.utils.typing import Vector3f
 
 
 @dataclass
+@unsupported_stringify(disable_urdf=True)
 class GUICamera(StringConfigurable):
     name: Optional[str]
     pose: Pose
@@ -36,12 +42,9 @@ class GUICamera(StringConfigurable):
         fmt += """</camera>"""
         return fmt
 
-    def _to_urdf(self, ctx: StringifyContext) -> str:
-        ctx.warning(self, "GUI Camera is not supported in URDF.")
-        return ""
-
 
 @dataclass
+@unsupported_stringify(disable_urdf=True)
 class GUI(StringConfigurable):
     camera: GUICamera
 
@@ -49,7 +52,3 @@ class GUI(StringConfigurable):
         return f"""<gui>
   {indent_text(self.camera.to_sdf(ctx)).strip()}
 </gui>"""
-
-    def _to_urdf(self, ctx: StringifyContext) -> str:
-        ctx.warning(self, "GUI is not supported in URDF.")
-        return ""

@@ -40,6 +40,39 @@ from .model_sdf import (  # noqa: F401
     SDFVisual,
 )
 from .model_urdf import URDFModel  # noqa: F401
+from .pddl import (  # noqa: F401
+    PDDL_AND,
+    PDDL_EQUALS,
+    PDDL_EXISTS,
+    PDDL_FORALL,
+    PDDL_GREATER,
+    PDDL_GREATER_EQUALS,
+    PDDL_IMPLIES,
+    PDDL_LESS,
+    PDDL_LESS_EQUALS,
+    PDDL_NOT,
+    PDDL_NOT_EQUALS,
+    PDDL_OR,
+    PDDL_SDF_GROUP,
+    PDDL_SDF_JOINT,
+    PDDL_SDF_LINK,
+    PDDL_SDF_MODEL,
+    PDDLDomain,
+    PDDLFunctionCall,
+    PDDLLiteral,
+    PDDLNamedValue,
+    PDDLObject,
+    PDDLOperator,
+    PDDLPredicate,
+    PDDLProblem,
+    PDDLProposition,
+    PDDLSDFObject,
+    PDDLStringConfigurable,
+    PDDLType,
+    PDDLValue,
+    PDDLVariable,
+    PDDLVectorValue,
+)
 from .scene import LISDF, World  # noqa: F401
 from .sensor import CameraSensor, Sensor  # noqa: F401
 from .shape import (  # noqa: F401
@@ -50,6 +83,14 @@ from .shape import (  # noqa: F401
     PlaneShapeInfo,
     ShapeInfo,
     SphereShapeInfo,
+)
+from .srdf import (  # noqa: F401
+    ChainIdentifier,
+    DisableCollisions,
+    Group,
+    GroupIdentifier,
+    JointIdentifier,
+    LinkIdentifier,
 )
 from .state import (  # noqa: F401
     JointAxisState,

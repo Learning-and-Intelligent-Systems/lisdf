@@ -1,9 +1,10 @@
 import lisdf.components as C
+from lisdf.parsing.srdf import SRDFParserMixin
 from lisdf.parsing.string_utils import safe_float, vector2f, vector3f, vector4f
 from lisdf.parsing.xml_j.visitor import XMLVisitor, check_done_decorator
 
 
-class URDFVisitor(XMLVisitor):
+class URDFVisitor(XMLVisitor, SRDFParserMixin):
     def _parse_filename(self, filename: str) -> str:
         if filename.startswith("package://"):
             return filename
@@ -289,6 +290,10 @@ class URDFVisitor(XMLVisitor):
                 model.links.append(c.data)
             elif c.tag == "joint":
                 model.joints.append(c.data)
+            elif c.tag == "group":
+                model.groups.append(c.data)
+            elif c.tag == "disable_collisions":
+                model.disable_collisions.append(c.data)
             else:
                 raise TypeError("Unknown tag: {}.".format(c.tag))
 

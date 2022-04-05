@@ -3,7 +3,11 @@ from dataclasses import dataclass, field
 
 import numpy as np
 
-from lisdf.components.base import StringConfigurable, StringifyContext
+from lisdf.components.base import (
+    StringConfigurable,
+    StringifyContext,
+    unsupported_stringify,
+)
 from lisdf.utils.typing import Vector4f
 
 
@@ -69,18 +73,16 @@ class PhongMaterial(Material):
 
 
 @dataclass(frozen=True)
+@unsupported_stringify(disable_sdf=True)
 class Texture(Material):
     filename: str
-
-    def _to_sdf(self, ctx: StringifyContext) -> str:
-        ctx.warning(self, "Texture is not supported in SDF.")
-        return ""
 
     def _to_urdf(self, ctx: StringifyContext) -> str:
         return f"""<texture filename="{self.filename}" />"""
 
 
 @dataclass(frozen=True)
+@unsupported_stringify(disable_sdf=True, disable_urdf=True)
 class MJCFMaterial(Material):
     identifier: str  # TODO
 

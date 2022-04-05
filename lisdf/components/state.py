@@ -1,11 +1,17 @@
 from dataclasses import dataclass, field
 from typing import List, Optional
 
-from lisdf.components.base import Pose, StringConfigurable, StringifyContext
+from lisdf.components.base import (
+    Pose,
+    StringConfigurable,
+    StringifyContext,
+    unsupported_stringify,
+)
 from lisdf.utils.printing import indent_text
 
 
 @dataclass
+@unsupported_stringify(disable_urdf=True)
 class JointAxisState(StringConfigurable):
     axis: int
     value: float
@@ -13,12 +19,9 @@ class JointAxisState(StringConfigurable):
     def _to_sdf(self, ctx: StringifyContext) -> str:
         return f'<angle axis="{self.axis}">{self.value}</angle>'
 
-    def _to_urdf(self, ctx: StringifyContext) -> str:
-        ctx.warning(self, "JointAxisState is not supported in URDF.")
-        return ""
-
 
 @dataclass
+@unsupported_stringify(disable_urdf=True)
 class JointState(StringConfigurable):
     name: str
     axis_states: List[JointAxisState] = field(default_factory=list)
@@ -30,12 +33,9 @@ class JointState(StringConfigurable):
         fmt += "</joint>"
         return fmt
 
-    def _to_urdf(self, ctx: StringifyContext) -> str:
-        ctx.warning(self, "JointState is not supported in URDF.")
-        return ""
-
 
 @dataclass
+@unsupported_stringify(disable_urdf=True)
 class LinkState(StringConfigurable):
     name: str
     pose: Optional[Pose] = None
@@ -47,12 +47,9 @@ class LinkState(StringConfigurable):
         fmt += "</link>"
         return fmt
 
-    def _to_urdf(self, ctx: StringifyContext) -> str:
-        ctx.warning(self, "LinkState is not supported in URDF.")
-        return ""
-
 
 @dataclass
+@unsupported_stringify(disable_urdf=True)
 class ModelState(StringConfigurable):
     name: str
     parent: Optional[str] = None
@@ -71,12 +68,9 @@ class ModelState(StringConfigurable):
         fmt += "</model>"
         return fmt
 
-    def _to_urdf(self, ctx: StringifyContext) -> str:
-        ctx.warning(self, "ModelState is not supported in URDF.")
-        return ""
-
 
 @dataclass
+@unsupported_stringify(disable_urdf=True)
 class WorldState(StringConfigurable):
     name: str
     model_states: List[ModelState] = field(default_factory=list)
@@ -87,7 +81,3 @@ class WorldState(StringConfigurable):
             fmt += indent_text(model_state.to_sdf(ctx)).strip() + "\n"
         fmt += "</state>"
         return fmt
-
-    def _to_urdf(self, ctx: StringifyContext) -> str:
-        ctx.warning(self, "WorldState is not supported in URDF.")
-        return ""

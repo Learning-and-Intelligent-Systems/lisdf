@@ -1,9 +1,9 @@
 from dataclasses import dataclass, field
-from typing import List, Optional
+from typing import Dict, List, Optional, Union
 
-from lisdf.components.base import StringConfigurable, StringifyContext
+from lisdf.components.base import NAME_SCOPE_SEP, StringConfigurable, StringifyContext
 from lisdf.components.gui import GUI
-from lisdf.components.model import Model
+from lisdf.components.model import Joint, Link, Model, SDFInclude, URDFInclude
 from lisdf.components.state import WorldState
 from lisdf.utils.printing import indent_text
 
@@ -12,7 +12,7 @@ from lisdf.utils.printing import indent_text
 class World(StringConfigurable):
     name: Optional[str] = None
     static: bool = False
-    models: List[Model] = field(default_factory=list)
+    models: List[Union[Model, SDFInclude, URDFInclude]] = field(default_factory=list)
     states: List[WorldState] = field(default_factory=list)
     gui: Optional[GUI] = None
 
@@ -45,6 +45,10 @@ class LISDF(StringConfigurable):
         self.model: Optional[Model] = None
         self.worlds: List[World] = list()
 
+        self.link_dict: Dict[str, Link] = dict()
+        self.joint_dict: Dict[str, Joint] = dict()
+        self.model_dict: Dict[str, Model] = dict()
+
     def set_sdf_version(self, version: str) -> None:
         split = version.split(".")
 
@@ -63,6 +67,40 @@ class LISDF(StringConfigurable):
                 % (",".join(self.SUPPORTED_VERSIONS))
             )
         self.sdf_version = version
+
+    def build_lookup_tables(self):
+        assert len(self.worlds) <= 1, "Only one world is supported."
+
+        def add_model(model: Model, model_name: Optional[str] = None):
+            if model_name is None:
+                model_name = model.name
+            self.model_dict[model_name] = model
+
+            if NAME_SCOPE_SEP is not None:
+                for link in model.links:
+                    self.link_dict[model_name + NAME_SCOPE_SEP + link.name] = link
+                for joint in model.joints:
+                    self.joint_dict[model_name + NAME_SCOPE_SEP + joint.name] = joint
+            else:
+                for link in model.links:
+                    self.link_dict[link.name] = link
+                for joint in model.joints:
+                    self.joint_dict[joint.name] = joint
+
+        if self.model is not None:
+            add_model(self.model)
+        else:
+            for model in self.worlds[0].models:
+                if isinstance(model, URDFInclude):
+                    add_model(model.content, model.name)
+                elif isinstance(model, SDFInclude):
+                    if model.content.model is not None:
+                        add_model(model.content.model, model.name)
+                    else:
+                        for model in model.content.worlds[0].models:
+                            add_model(model, model.name)
+                elif isinstance(model, Model):
+                    add_model(model)
 
     def _to_sdf(self, ctx: StringifyContext) -> str:
         fmt = '<?xml version="1.0" ?>\n'

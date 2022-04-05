@@ -1,10 +1,11 @@
 from dataclasses import dataclass
 
-from lisdf.components.base import StringifyContext
+from lisdf.components.base import StringifyContext, unsupported_stringify
 from lisdf.components.model import Link, SurfaceContact, SurfaceFriction, Visual
 
 
 @dataclass
+@unsupported_stringify(disable_urdf=True)
 class SDFSurfaceContact(SurfaceContact):
     collide_bitmask: int = 0xFFFF
     collide_without_contact: bool = False
@@ -15,12 +16,9 @@ class SDFSurfaceContact(SurfaceContact):
   <collide_without_contact>{self.collide_without_contact}</collide_without_contact>
 </contact>"""
 
-    def _to_urdf(self, ctx: StringifyContext) -> str:
-        ctx.warning(self, "SDFSurfaceContact is not supported in URDF.")
-        return ""
-
 
 @dataclass
+@unsupported_stringify(disable_urdf=True)
 class SDFSurfaceFriction(SurfaceFriction):
     ode_mu: float = 0.0
     ode_mu2: float = 0.0
@@ -32,10 +30,6 @@ class SDFSurfaceFriction(SurfaceFriction):
     <mu2>{self.ode_mu2}</mu2>
   </ode>
 </friction>"""
-
-    def _to_urdf(self, ctx: StringifyContext) -> str:
-        ctx.warning(self, "SDFSurfaceContact is not supported in URDF.")
-        return ""
 
 
 @dataclass
@@ -64,5 +58,5 @@ class SDFLink(Link):
 
     def _to_urdf(self, ctx: StringifyContext) -> str:
         if not self.self_collide:
-            ctx.warning(self, "Visual::self_collide is not supported in URDF")
+            ctx.warning(self, "Visual::self_collide is not supported in URDF.")
         return super()._to_urdf(ctx)

@@ -2,7 +2,11 @@ from abc import ABC
 from dataclasses import dataclass
 from typing import ClassVar, Dict, Type
 
-from lisdf.components.base import StringConfigurable, StringifyContext
+from lisdf.components.base import (
+    StringConfigurable,
+    StringifyContext,
+    unsupported_stringify,
+)
 
 
 @dataclass
@@ -23,11 +27,8 @@ class Sensor(StringConfigurable, ABC):
 
 
 @dataclass
+@unsupported_stringify(disable_urdf=True)
 class CameraSensor(Sensor, type="camera"):
     def _to_sdf(self, ctx: StringifyContext) -> str:
         return f"""<sensor name="{self.name}" type="{self.type}">
 </sensor>"""
-
-    def _to_urdf(self, ctx: StringifyContext) -> str:
-        ctx.warning(self, "CameraSensor is not supported in URDF.")
-        return ""

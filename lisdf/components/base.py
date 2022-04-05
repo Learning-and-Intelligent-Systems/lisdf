@@ -2,7 +2,17 @@ from abc import ABC
 from collections import defaultdict
 from dataclasses import dataclass
 from functools import cached_property
-from typing import Any, DefaultDict, Dict, List, Optional, Tuple
+from typing import (
+    Any,
+    Callable,
+    DefaultDict,
+    Dict,
+    List,
+    Optional,
+    Tuple,
+    Type,
+    TypeVar,
+)
 
 import numpy as np
 
@@ -14,10 +24,13 @@ from lisdf.utils.transformations import (
 from lisdf.utils.transformations_more import lookat_rpy
 from lisdf.utils.typing import Vector3f, Vector4f, Vector6f
 
-NAME_SCOPE_SEP = None
+T = TypeVar("T")
+
+NAME_SCOPE_SEP: Optional[str] = "::"
 
 
 def set_name_scope_sep(sep: Optional[str]) -> None:
+    """Set the name scope seperator to None to disable name scoping."""
     global NAME_SCOPE_SEP
     NAME_SCOPE_SEP = sep
 
@@ -41,11 +54,15 @@ class StringifyContext(object):
         return self.stacks[name][-1] if len(self.stacks[name]) > 0 else default
 
     def get_scoped_name(self, name: str) -> str:
+        if not self.options["use_scoped_name"]:
+            return name
+
         parent_name = self.st_top("model_name", None)
         if parent_name is None:
             return name
         if NAME_SCOPE_SEP is None:
             return name
+
         return f"{parent_name}{NAME_SCOPE_SEP}{name}"
 
     def push_scoped_name(self, name: str) -> None:
@@ -70,14 +87,25 @@ class StringifyContext(object):
 class StringConfigurable(ABC):
     # TODO(Jiayuan Mao @ 03/24): implement these methods for the child classes.
 
+    DEFAULT_LISDF_STRINGIFY_OPTIONS: Dict[str, Any] = {}
     DEFAULT_SDF_STRINGIFY_OPTIONS: Dict[str, Any] = {}
     DEFAULT_URDF_STRINGIFY_OPTIONS: Dict[str, Any] = {
         # The URDF standard supports defining the material for a visual element
         # inside the visual element itself. However, this is not supported by
         # some URDF parsers. Set this option to False to enforce all material
         # definitions to be defined at the root level.
-        "allow_embedded_material": False
+        "allow_embedded_material": False,
+        # When export the URDF model, whether to use the scoped name (i.e. names
+        # that is composed of the parent name and the child name).
+        "use_scoped_name": False,
     }
+
+    def to_lisdf(self, ctx: Optional[StringifyContext] = None, **kwargs) -> str:
+        if ctx is None:
+            for k, v in type(self).DEFAULT_LISDF_STRINGIFY_OPTIONS.items():
+                kwargs.setdefault(k, v)
+            ctx = StringifyContext(**kwargs)
+        return self._to_lisdf(ctx)
 
     def to_sdf(self, ctx: Optional[StringifyContext] = None, **kwargs) -> str:
         if ctx is None:
@@ -93,11 +121,44 @@ class StringConfigurable(ABC):
             ctx = StringifyContext(**kwargs)
         return self._to_urdf(ctx)
 
+    def _to_lisdf(self, ctx: StringifyContext) -> str:
+        return self._to_sdf(ctx)
+
     def _to_sdf(self, ctx: StringifyContext) -> str:
         raise NotImplementedError()
 
     def _to_urdf(self, ctx: StringifyContext) -> str:
         raise NotImplementedError()
+
+
+def unsupported_stringify(
+    *, disable_sdf: bool = False, disable_urdf: bool = False
+) -> Callable[[Type[T]], Type[T]]:
+    # TODO (Jiayuan Mao @ 04/03): find a more checker/IDE-friendly way to inject.
+    def decorator(cls: Type[T]) -> Type[T]:
+        if not disable_sdf:
+
+            def _to_sdf(self: StringConfigurable, ctx: StringifyContext) -> str:
+                ctx.warning(
+                    self, "Unsupported SDF stringification for {}".format(cls.__name__)
+                )
+                return ""
+
+            setattr(cls, "to_sdf", _to_sdf)
+
+        if not disable_urdf:
+
+            def _to_urdf(self: StringConfigurable, ctx: StringifyContext) -> str:
+                ctx.warning(
+                    self,
+                    "Unsupported URDF stringification for {}.".format(cls.__name__),
+                )
+                return ""
+
+            setattr(cls, "to_urdf", _to_urdf)
+        return cls
+
+    return decorator
 
 
 @dataclass

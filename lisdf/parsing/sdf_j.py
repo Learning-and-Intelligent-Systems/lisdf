@@ -1,4 +1,5 @@
 import lisdf.components as C
+from lisdf.parsing.srdf import SRDFParserMixin
 from lisdf.parsing.string_utils import (
     bool_string,
     safe_float,
@@ -12,7 +13,7 @@ from lisdf.parsing.urdf_j import load_urdf
 from lisdf.parsing.xml_j.visitor import XMLVisitor, check_done_decorator
 
 
-class SDFVisitor(XMLVisitor):
+class SDFVisitor(XMLVisitor, SRDFParserMixin):
     DEFAULT_WORLD_NAME = "default_world"
     DEFAULT_MODEL_NAME = "default_model"
 
@@ -332,6 +333,10 @@ class SDFVisitor(XMLVisitor):
                     model.joints.append(c.data)
                 elif c.tag == "link":
                     model.links.append(c.data)
+                elif c.tag == "group":
+                    model.groups.append(c.data)
+                elif c.tag == "disable_collisions":
+                    model.disable_collisions.append(c.data)
                 else:
                     raise NotImplementedError(
                         "Unknown tag for model: {}.".format(c.tag)
@@ -456,14 +461,17 @@ class SDFVisitor(XMLVisitor):
                 lisdf.model = c.data
             else:
                 raise NotImplementedError("Unknown tag for sdf: {}.".format(c.tag))
+        lisdf.build_lookup_tables()
         return node.set_data(lisdf)
 
 
-def load_sdf(filename: str) -> C.LISDF:
+def load_sdf(filename: str, verbose: bool = False) -> C.LISDF:
     visitor = SDFVisitor()
+    visitor.set_verbose(verbose)
     return visitor.load_file(filename).data
 
 
-def load_sdf_string(string: str) -> C.LISDF:
+def load_sdf_string(string: str, verbose: bool = False) -> C.LISDF:
     visitor = SDFVisitor()
+    visitor.set_verbose(verbose)
     return visitor.load_string(string).data

@@ -4,11 +4,17 @@ from typing import List, Optional
 
 import numpy as np
 
-from lisdf.components.base import Pose, StringConfigurable, StringifyContext
+from lisdf.components.base import (
+    Pose,
+    StringConfigurable,
+    StringifyContext,
+    unsupported_stringify,
+)
 from lisdf.components.control import JointControlInfo, JointInfo
 from lisdf.components.material import RGBA, Material
 from lisdf.components.sensor import Sensor
 from lisdf.components.shape import ShapeInfo
+from lisdf.components.srdf import DisableCollisions, Group
 from lisdf.utils.printing import indent_text
 from lisdf.utils.typing import Vector3f, Vector4f
 
@@ -112,6 +118,7 @@ class SurfaceFriction(StringConfigurable):
 
 
 @dataclass
+@unsupported_stringify(disable_urdf=True)
 class SurfaceInfo(StringConfigurable):
     contact: Optional[SurfaceContact] = None
     friction: Optional[SurfaceFriction] = None
@@ -121,10 +128,6 @@ class SurfaceInfo(StringConfigurable):
   {indent_text(self.contact.to_sdf(ctx)).strip() if self.contact else ""}
   {indent_text(self.friction.to_sdf(ctx)).strip() if self.friction else ""}
 </surface>"""
-
-    def _to_urdf(self, ctx: StringifyContext) -> str:
-        ctx.warning(self, "Link surface properties are not supported in URDF.")
-        return ""
 
 
 @dataclass
@@ -340,6 +343,8 @@ class Model(StringConfigurable):
 
     links: List[Link] = field(default_factory=list)
     joints: List[Joint] = field(default_factory=list)
+    groups: List[Group] = field(default_factory=list)
+    disable_collisions: List[DisableCollisions] = field(default_factory=list)
 
     def _to_sdf(self, ctx: StringifyContext) -> str:
         link_str = "\n".join([link.to_sdf(ctx) for link in self.links])
@@ -382,7 +387,8 @@ class Model(StringConfigurable):
 
 
 @dataclass
-class SDFInclude(StringConfigurable):
+@unsupported_stringify(disable_urdf=True)
+class _IncludedModel(StringConfigurable):
     name: Optional[str]
     uri: str
     scale: Vector3f
@@ -418,10 +424,12 @@ class SDFInclude(StringConfigurable):
   {self.pose.to_sdf(ctx) if self.pose is not None else ""}
 </include>"""
 
-    def _to_urdf(self, ctx: StringifyContext) -> str:
-        raise ValueError("Include tags is not supported for URDF.")
+
+@dataclass
+class SDFInclude(_IncludedModel):
+    pass
 
 
 @dataclass
-class URDFInclude(SDFInclude):
+class URDFInclude(_IncludedModel):
     pass
