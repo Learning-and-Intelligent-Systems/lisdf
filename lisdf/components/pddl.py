@@ -74,12 +74,6 @@ class PDDLType(PDDLStringConfigurable):
             return self.pddl_name + " - " + self.parent.to_pddl(ctx)
 
 
-PDDL_SDF_LINK: PDDLType = PDDLType(f"sdf{PDDL_SCOPE_SEP}link")
-PDDL_SDF_JOINT: PDDLType = PDDLType(f"sdf{PDDL_SCOPE_SEP}joint")
-PDDL_SDF_GROUP: PDDLType = PDDLType(f"sdf{PDDL_SCOPE_SEP}group")
-PDDL_SDF_MODEL: PDDLType = PDDLType(f"sdf{PDDL_SCOPE_SEP}model")
-
-
 @dataclass
 class PDDLVariable(PDDLStringConfigurable):
     name: str

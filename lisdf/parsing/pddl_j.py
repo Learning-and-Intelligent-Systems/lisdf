@@ -18,7 +18,7 @@ class LISPDDLParser(object):
 
     def __init__(self):
         with open(type(self).grammar_file) as f:
-            self.lark = Lark(f)
+            self.lark = Lark(f, propagate_positions=True)
 
     def load(self, file):
         with open(file) as f:
@@ -72,16 +72,21 @@ class PDDLVisitor(Transformer):
             assert definition_type.value == "domain"
 
     def type_definition(self, args):
+        # Very ugly hack to handle multi-line definition in PDDL.
+        # In PDDL, type definition can be separated by newline.
+        # This kinds of breaks the parsing strategy that ignores all whitespaces.
         if args[-1].data == "parent_type_name":
-            parent_name = args[-1].children[0]
+            parent_line, parent_name = args[-1].children[0].children[0]
             args = args[:-1]
-            parent_type = self.domain.types[parent_name]
         else:
-            parent_type = None
+            parent_line, parent_name = -1, None
         for arg in args:
-            self.domain.types[arg.children[0]] = C.PDDLType(
-                arg.children[0], parent_type
-            )
+            arg_line, arg_name = arg.children[0]
+            if arg_line == parent_line:
+                parent_type = self.domain.types[parent_name]
+                self.domain.types[arg_name] = C.PDDLType(arg_name, parent_type)
+            else:
+                self.domain.types[arg_name] = C.PDDLType(arg_name, None)
 
     @inline_args
     def constants_definition(self, *args):
@@ -99,6 +104,14 @@ class PDDLVisitor(Transformer):
     def init_definition_item(self, proposition):
         assert isinstance(proposition, C.PDDLProposition)
         self.problem.init.append(proposition)
+        for arg in proposition.arguments:
+            if isinstance(arg, C.PDDLObject):
+                if arg.name not in self.problem.objects and arg.sdf_object is None:
+                    raise NameError(
+                        "Unknown object: {} in {}.".format(
+                            arg.name, proposition.to_pddl()
+                        )
+                    )
 
     @inline_args
     def goal_definition(self, goal):
@@ -113,26 +126,30 @@ class PDDLVisitor(Transformer):
     @inline_args
     def typedvariable(self, name, typename):
         # name is of type `PDDLVariable`.
-        return C.PDDLVariable(name.name, self.domain.types[typename.children[0]])
+        return C.PDDLVariable(name.name, self.domain.types[typename.children[0][1]])
 
     @inline_args
     def constant(self, name):
         name = name.value
         sdf_object = None
         if name in self.sdf.model_dict:
-            sdf_object = C.PDDLSDFObject(name, None, C.PDDL_SDF_MODEL)
+            sdf_object = C.PDDLSDFObject(name, None, self.domain.types["sdf::model"])
         elif name in self.sdf.link_dict:
             if NAME_SCOPE_SEP is None:
                 model_name, lname = "", name
             else:
                 model_name, lname = name.split(NAME_SCOPE_SEP)
-            sdf_object = C.PDDLSDFObject(model_name, lname, C.PDDL_SDF_LINK)
+            sdf_object = C.PDDLSDFObject(
+                model_name, lname, self.domain.types["sdf::link"]
+            )
         elif name in self.sdf.joint_dict:
             if NAME_SCOPE_SEP is None:
                 model_name, lname = "", name
             else:
                 model_name, jname = name.split(NAME_SCOPE_SEP)
-            sdf_object = C.PDDLSDFObject(model_name, jname, C.PDDL_SDF_JOINT)
+            sdf_object = C.PDDLSDFObject(
+                model_name, jname, self.domain.types["sdf::joint"]
+            )
 
         type = None
         if sdf_object is not None:
@@ -146,7 +163,7 @@ class PDDLVisitor(Transformer):
         # name is of type `PDDLObject`.
         return C.PDDLObject(
             name.name,
-            self.domain.types[typename.children[0]],
+            self.domain.types[typename.children[0][1]],
             sdf_object=name.sdf_object,
         )
 
@@ -172,7 +189,8 @@ class PDDLVisitor(Transformer):
 
     @inline_args
     def type_name(self, name):
-        return name.value
+        # propagate the "lineno" of the type definition up.
+        return name.line, name.value
 
     @inline_args
     def function_name(self, name):

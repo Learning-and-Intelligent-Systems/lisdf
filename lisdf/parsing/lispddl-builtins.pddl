@@ -1,14 +1,16 @@
 (define
     (domain lispddl-builtins)
     (:types
-        sdf::link
-        sdf::joint
-        sdf::group
-        sdf::model
-        sdf::link-pose
-        sdf::joint-pose
-        sdf::group-pose
-        sdf::model-pose
+        sdf::object
+        sdf::value
+        sdf::link - sdf::object
+        sdf::joint - sdf::object
+        sdf::group - sdf::object
+        sdf::model - sdf::object
+        sdf::link-pose - sdf::value
+        sdf::joint-pose - sdf::value
+        sdf::group-pose - sdf::value
+        sdf::model-pose - sdf::value
     )
     (:predicates
         ; predicates for downstream parsers that do not support typing.
