@@ -6,9 +6,7 @@ from lisdf.plan_executor.robot import Robot
 
 
 class LISDFPlanAnimator(LeafSystem):
-    def __init__(
-        self, robot: Robot, plant: MultibodyPlant, sim_context: Context
-    ):
+    def __init__(self, robot: Robot, plant: MultibodyPlant, sim_context: Context):
         super().__init__()
         self.plant = plant
         self.plant_robot_ref = plant.GetModelInstanceByName("robot")

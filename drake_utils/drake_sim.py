@@ -1,3 +1,5 @@
+import time
+
 import numpy as np
 from pydrake.geometry.render import (
     ClippingRange,
@@ -16,10 +18,12 @@ from pydrake.systems.framework import DiagramBuilder
 from pydrake.systems.meshcat_visualizer import ConnectMeshcatVisualizer
 from pydrake.systems.sensors import CameraInfo, RgbdSensor
 
+from drake_utils.interpolator_wrapper import DrakePiecewisePolynomialInterpolator
 from drake_utils.lisdf_animator import LISDFPlanAnimator
 from drake_utils.lisdf_controller import LISDFPlanController
 from drake_utils.panda import Panda
 from drake_utils.utils import make_robot_controller, xyz_rpy_deg
+from lisdf.plan_executor.lisdf_executor import LISDFPlanExecutor
 from lisdf.planner_output.plan import LISDFPlan
 
 
@@ -68,15 +72,18 @@ def main(plan: LISDFPlan):
 
     plant.Finalize()
 
+    panda_init_conf = np.concatenate([np.zeros((7,)), np.array([0.05, 0.05])])
+    plan_executor = LISDFPlanExecutor(
+        robot=Panda(configuration=panda_init_conf),
+        plan=plan,
+        path_interpolator_cls=DrakePiecewisePolynomialInterpolator,
+    )
+
     if simulate_physics:
         # FIXME: init can be read from LISDF
         # if last_q_des is None and the first command is ActuateGripper, we crash)
         # gripper open initially
-        panda_init_conf = np.concatenate([np.zeros((7,)), np.array([0.05, 0.05])])
-        lisdf_controller = LISDFPlanController(
-            robot=Panda(configuration=panda_init_conf),
-            plan=plan,
-        )
+        lisdf_controller = LISDFPlanController(plan_executor)
         joint_controller = builder.AddSystem(lisdf_controller)
 
         # Connect the robot controller to the plant
@@ -96,11 +103,7 @@ def main(plan: LISDFPlan):
             plant.get_actuation_input_port(robot),
         )
     else:
-        panda_init_conf = np.concatenate([np.zeros((7,)), np.array([0.05, 0.05])])
-        lisdf_controller = LISDFPlanController(
-            robot=Panda(configuration=panda_init_conf),
-            plan=plan,
-        )
+        lisdf_controller = LISDFPlanController(plan_executor)
         joint_controller = builder.AddSystem(lisdf_controller)
 
         robot_animator = builder.AddSystem(
@@ -121,6 +124,8 @@ def main(plan: LISDFPlan):
 
     simulator = Simulator(diagram)
     simulator.Initialize()
+    # simulator.set_target_realtime_rate(1.0)
+
     simulator.get_mutable_context().SetTime(0.0)
     plant_context = plant.GetMyContextFromRoot(  # noqa: F841
         simulator.get_mutable_context()
@@ -134,9 +139,18 @@ def main(plan: LISDFPlan):
     # Set initial state
     meshcat_vis.reset_recording()
     meshcat_vis.start_recording()
-    total_time = 60.0
 
+    # Execute for plan duration and add 1 second for good measure
+    total_time = plan_executor.duration + 1.0
+    print(f"Advancing for {total_time}s")
+
+    # Measure how long the simulation actually took given we set realtime rate
+    simulate_start_time = time.perf_counter()
     simulator.AdvanceTo(total_time)
+
+    simulate_end_time = time.perf_counter()
+    simulate_duration = simulate_end_time - simulate_start_time
+    print(f"Simulating {total_time}s took {simulate_duration}s")
 
     meshcat_vis.publish_recording()
     meshcat_vis.vis.render_static()
@@ -145,5 +159,5 @@ def main(plan: LISDFPlan):
 
 if __name__ == "__main__":
     plan_json = open("lisdf_plan.json").read()
-    plan = LISDFPlan.from_json(plan_json)
-    main(plan)
+    plan_ = LISDFPlan.from_json(plan_json)
+    main(plan_)

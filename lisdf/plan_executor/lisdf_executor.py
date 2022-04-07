@@ -1,0 +1,112 @@
+from abc import ABC
+from typing import Dict, Type, cast
+
+from lisdf.plan_executor.executor import CommandExecutor
+from lisdf.plan_executor.gripper_executor import ActuateGripperExecutor
+from lisdf.plan_executor.joint_space_path_executor import (
+    JointSpacePathExecutor,
+    PathInterpolator,
+)
+from lisdf.plan_executor.robot import Robot
+from lisdf.planner_output.command import ActuateGripper, Command, JointSpacePath
+from lisdf.planner_output.plan import LISDFPlan
+
+
+class NoExecutorFoundError(ValueError):
+    pass
+
+
+class _EmptyCommand(Command, type="_EmptyCommand"):
+    """To keep the typing happy."""
+
+    @classmethod
+    def _from_json_dict(cls, json_dict: Dict) -> "Command":
+        raise NotImplementedError
+
+    def validate(self):
+        raise NotImplementedError
+
+
+class LISDFPlanExecutor(CommandExecutor, ABC):
+    """
+    Class that gets the executor for a given time step and executes it.
+    This provides the functionality to execute a plan.
+
+    This still needs to be connected up to a simulator such as Pybullet or Drake.
+    """
+
+    def __init__(
+        self,
+        robot: Robot,
+        plan: LISDFPlan,
+        path_interpolator_cls: Type[PathInterpolator],
+        start_time: float = 0.0,
+    ):
+        """
+        Parameters
+        ----------
+        robot: the Robot to execute the plan on
+        plan: the LISDF plan to execute
+        path_interpolator_cls: the class to use for interpolating a joint space path
+        start_time: the time to start executing the plan
+        """
+        super().__init__(robot=robot, command=_EmptyCommand(), start_time=start_time)
+        self.plan = plan
+        self._path_interpolator_cls = path_interpolator_cls
+
+        # Create all the executors with their respective start times based on
+        # a command's duration.
+        current_time = start_time
+        self._executors = []
+        for command in plan.commands:
+            self._executors.append(self._create_executor(command, current_time))
+            # Increase start time by duration of the executor
+            current_time += self._executors[-1].duration
+
+        # Sanity checks that none of the executor start and end times overlap
+        prev_end_time = start_time
+        for executor in self._executors:
+            assert executor.end_time > executor.start_time
+            assert executor.end_time == executor.start_time + executor.duration
+            # TODO: we should probably add a delta between commands so there is time to
+            #  transition between them...
+            assert executor.start_time >= prev_end_time
+            prev_end_time = executor.end_time
+        assert prev_end_time == self.end_time == start_time + self.duration
+
+    @property
+    def duration(self) -> float:
+        return sum(executor.duration for executor in self._executors)
+
+    def _create_executor(self, command: Command, start_time: float) -> CommandExecutor:
+        """Create command executor for the given command"""
+        if command.type == JointSpacePath.type:
+            return JointSpacePathExecutor(
+                self.robot,
+                cast(JointSpacePath, command),  # cast the type as mypy can't infer it
+                start_time,
+                interpolator_cls=self._path_interpolator_cls,
+            )
+        elif command.type == ActuateGripper.type:
+            return ActuateGripperExecutor(self.robot, command, start_time)
+        else:
+            # You should add support for new command types here
+            raise ValueError(f"Unsupported command type: {command.type}")
+
+    def _get_executor_at_time(self, time: float) -> CommandExecutor:
+        """Get the executor that should be executed at the given time"""
+        # FIXME: this is O(n) as we do a linear search. n = number of commands
+        #  We could improve this with a dict that supports time ranges
+        for executor in self._executors:
+            if executor.start_time <= time < executor.end_time:
+                return executor
+
+        raise NoExecutorFoundError(f"No executor found for time {time}")
+
+    def execute(self, current_time: float) -> None:
+        """
+        Execute the plan at the given time. This will grab the relevant executor and
+        execute it to update the robot state.
+        """
+        executor = self._get_executor_at_time(current_time)
+        executor.execute(current_time)

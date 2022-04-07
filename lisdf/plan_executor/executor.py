@@ -21,6 +21,7 @@ class CommandExecutor(ABC):
         command: Command,
         start_time: float,
     ):
+        # FIXME: could we move robot to the execute method?
         self.robot = robot
         self.command = command
         self.start_time = start_time
