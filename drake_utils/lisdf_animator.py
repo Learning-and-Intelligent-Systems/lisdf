@@ -1,14 +1,14 @@
-import warnings
-
 import numpy as np
-from pydrake.systems.framework import BasicVector, LeafSystem, Context
 from pydrake.multibody.plant import MultibodyPlant
+from pydrake.systems.framework import BasicVector, Context, LeafSystem
 
 from lisdf.plan_executor.robot_state import RobotWithState
 
 
 class LISDFPlanAnimator(LeafSystem):
-    def __init__(self, robot: RobotWithState, plant: MultibodyPlant, sim_context: Context):
+    def __init__(
+        self, robot: RobotWithState, plant: MultibodyPlant, sim_context: Context
+    ):
         super().__init__()
         self.plant = plant
         self.plant_robot_ref = plant.GetModelInstanceByName("robot")

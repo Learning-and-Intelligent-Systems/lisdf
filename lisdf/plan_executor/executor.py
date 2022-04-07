@@ -1,7 +1,6 @@
 from abc import ABC, abstractmethod
 from typing import Generic, TypeVar
 
-
 from lisdf.plan_executor.robot import RobotWithState
 from lisdf.planner_output.command import Command
 

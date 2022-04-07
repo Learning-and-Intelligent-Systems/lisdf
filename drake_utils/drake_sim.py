@@ -10,14 +10,14 @@ from pydrake.geometry.render import (
 from pydrake.math import RigidTransform
 from pydrake.multibody.parsing import Parser
 from pydrake.multibody.plant import AddMultibodyPlantSceneGraph
-from pydrake.multibody.tree import Joint
+from pydrake.multibody.tree import Joint  # noqa: F401
 from pydrake.systems.analysis import Simulator
 from pydrake.systems.framework import DiagramBuilder
 from pydrake.systems.meshcat_visualizer import ConnectMeshcatVisualizer
 from pydrake.systems.sensors import CameraInfo, RgbdSensor
 
-from drake_utils.lisdf_controller import LISDFPlanController
 from drake_utils.lisdf_animator import LISDFPlanAnimator
+from drake_utils.lisdf_controller import LISDFPlanController
 from drake_utils.panda import Panda
 from drake_utils.utils import make_robot_controller, xyz_rpy_deg
 from lisdf.planner_output.plan import LISDFPlan

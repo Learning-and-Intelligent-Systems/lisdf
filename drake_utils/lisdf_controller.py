@@ -3,13 +3,12 @@ import warnings
 import numpy as np
 from pydrake.systems.framework import BasicVector, LeafSystem
 
-
 from drake_utils.interpolator_wrapper import DrakePiecewisePolynomialInterpolator
 from lisdf.plan_executor.executor import CommandExecutor
 from lisdf.plan_executor.gripper_executor import ActuateGripperExecutor
 from lisdf.plan_executor.joint_space_path_executor import JointSpacePathExecutor
-from lisdf.plan_executor.robot_state import RobotWithState, RobotWithGripper
-from lisdf.planner_output.command import Command, JointSpacePath, ActuateGripper
+from lisdf.plan_executor.robot_state import RobotWithGripper, RobotWithState
+from lisdf.planner_output.command import ActuateGripper, Command, JointSpacePath
 from lisdf.planner_output.plan import LISDFPlan
 
 

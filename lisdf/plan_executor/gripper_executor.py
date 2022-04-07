@@ -1,4 +1,3 @@
-
 from lisdf.plan_executor.executor import CommandExecutor
 from lisdf.plan_executor.robot import RobotWithGripper
 from lisdf.planner_output.command import ActuateGripper, GripperPosition
