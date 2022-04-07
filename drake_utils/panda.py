@@ -2,25 +2,25 @@ from typing import List
 
 import numpy as np
 
-from lisdf.plan_executor.robot import RobotWithGripper
+from lisdf.plan_executor.robot_state import RobotWithGripper
 from lisdf.planner_output.command import GripperPosition
 
 
 class Panda(RobotWithGripper):
     @property
-    def joint_configuration(self) -> np.array:
+    def joint_configuration(self) -> np.ndarray:
         return self.configuration[:7]
 
-    def set_joint_configuration(self, joint_configuration: np.array) -> None:
+    def set_joint_configuration(self, joint_configuration: np.ndarray) -> None:
         self.configuration = np.concatenate(
             [joint_configuration, self.gripper_configuration]
         )
 
     @property
-    def gripper_configuration(self) -> np.array:
+    def gripper_configuration(self) -> np.ndarray:
         return self.configuration[7:]
 
-    def set_gripper_configuration(self, gripper_configuration: np.array) -> None:
+    def set_gripper_configuration(self, gripper_configuration: np.ndarray) -> None:
         self.configuration = np.concatenate(
             [self.joint_configuration, gripper_configuration]
         )

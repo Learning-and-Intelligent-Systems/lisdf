@@ -13,14 +13,14 @@ else
     exit
 fi
 
-#echo "Running type checking."
-#mypy . --config-file mypy.ini
-#if [ $? -eq 0 ]; then
-#    echo "Type checking passed."
-#else
-#    echo "Type checking failed! Terminating check script early."
-#    exit
-#fi
+echo "Running type checking."
+mypy . --config-file mypy.ini
+if [ $? -eq 0 ]; then
+    echo "Type checking passed."
+else
+    echo "Type checking failed! Terminating check script early."
+    exit
+fi
 
 echo "Running unit tests."
 # Note: tests/ directory is not included in coverage

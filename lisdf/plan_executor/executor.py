@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
-from typing import Generic, TypeVar
+from typing import TypeVar
 
-from lisdf.plan_executor.robot import RobotWithState
+from lisdf.plan_executor.robot_state import RobotWithState
 from lisdf.planner_output.command import Command
 
 # Use TypeVar so we can infer types in subclasses
@@ -17,8 +17,8 @@ class CommandExecutor(ABC):
 
     def __init__(
         self,
-        robot: Generic[RobotType],
-        command: Generic[CommandType],
+        robot: RobotWithState,
+        command: Command,
         start_time: float,
     ):
         self.robot = robot
