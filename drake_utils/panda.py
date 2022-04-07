@@ -2,7 +2,7 @@ from typing import List
 
 import numpy as np
 
-from drake_utils.robot import RobotWithGripper
+from lisdf.plan_executor.robot import RobotWithGripper
 from lisdf.planner_output.command import GripperPosition
 
 

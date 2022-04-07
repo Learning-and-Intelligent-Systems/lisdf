@@ -1,13 +1,12 @@
-from drake_utils.lisdf_executor.executor import CommandExecutor
-from drake_utils.robot import RobotWithGripper
+
+from lisdf.plan_executor.executor import CommandExecutor
+from lisdf.plan_executor.robot import RobotWithGripper
 from lisdf.planner_output.command import ActuateGripper, GripperPosition
 
 
 class ActuateGripperExecutor(CommandExecutor):
-    def __init__(
-        self, robot: RobotWithGripper, command: ActuateGripper, start_time: float
-    ):
-        super().__init__(robot, command, start_time)
+    robot: RobotWithGripper
+    command: ActuateGripper
 
     @property
     def duration(self) -> float:

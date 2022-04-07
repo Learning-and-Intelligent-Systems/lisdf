@@ -8,7 +8,12 @@ from lisdf.planner_output.command import GripperPosition
 
 
 @dataclass
-class DrakeRobot(ABC):
+class RobotWithState(ABC):
+    """
+    A Robot model for the plan execution. We call it RobotWithState so it doesn't
+    clash with the Robot class in the XML parser.
+    """
+
     configuration: np.array
 
     @property
@@ -42,7 +47,7 @@ class DrakeRobot(ABC):
         return self.joint_ordering
 
 
-class RobotWithGripper(DrakeRobot, ABC):
+class RobotWithGripper(RobotWithState, ABC):
     @abstractmethod
     def gripper_configuration_for_position(self, position: GripperPosition) -> np.array:
         raise NotImplementedError

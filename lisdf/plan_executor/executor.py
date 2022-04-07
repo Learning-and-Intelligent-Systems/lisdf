@@ -1,11 +1,12 @@
 from abc import ABC, abstractmethod
 from typing import Generic, TypeVar
 
-from drake_utils.robot import DrakeRobot
+
+from lisdf.plan_executor.robot import RobotWithState
 from lisdf.planner_output.command import Command
 
 # Use TypeVar so we can infer types in subclasses
-RobotType = TypeVar("RobotType", bound=DrakeRobot)
+RobotType = TypeVar("RobotType", bound=RobotWithState)
 CommandType = TypeVar("CommandType", bound=Command)
 
 

@@ -18,9 +18,10 @@ from pydrake.systems.sensors import CameraInfo, RgbdSensor
 
 from drake_utils.lisdf_controller import LISDFPlanController
 from drake_utils.lisdf_animator import LISDFPlanAnimator
-from drake_utils.robot.panda import Panda
+from drake_utils.panda import Panda
 from drake_utils.utils import make_robot_controller, xyz_rpy_deg
 from lisdf.planner_output.plan import LISDFPlan
+
 
 def main(plan: LISDFPlan):
     builder = DiagramBuilder()
@@ -73,7 +74,8 @@ def main(plan: LISDFPlan):
         # gripper open initially
         panda_init_conf = np.concatenate([np.zeros((7,)), np.array([0.05, 0.05])])
         lisdf_controller = LISDFPlanController(
-            robot=Panda(configuration=panda_init_conf), plan=plan,
+            robot=Panda(configuration=panda_init_conf),
+            plan=plan,
         )
         joint_controller = builder.AddSystem(lisdf_controller)
 
@@ -96,19 +98,24 @@ def main(plan: LISDFPlan):
     else:
         panda_init_conf = np.concatenate([np.zeros((7,)), np.array([0.05, 0.05])])
         lisdf_controller = LISDFPlanController(
-            robot=Panda(configuration=panda_init_conf), plan=plan,
+            robot=Panda(configuration=panda_init_conf),
+            plan=plan,
         )
         joint_controller = builder.AddSystem(lisdf_controller)
 
-        robot_animator = builder.AddSystem(LISDFPlanAnimator(
-            robot=Panda(configuration=panda_init_conf), plant=plant, sim_context=None))
+        robot_animator = builder.AddSystem(
+            LISDFPlanAnimator(
+                robot=Panda(configuration=panda_init_conf),
+                plant=plant,
+                sim_context=None,
+            )
+        )
         builder.Connect(
-                joint_controller.get_output_port(),
-                robot_animator.get_input_port())
+            joint_controller.get_output_port(), robot_animator.get_input_port()
+        )
         builder.Connect(
-                robot_animator.get_output_port(),
-                plant.get_actuation_input_port(robot))
-
+            robot_animator.get_output_port(), plant.get_actuation_input_port(robot)
+        )
 
     diagram = builder.Build()
 
@@ -122,7 +129,7 @@ def main(plan: LISDFPlan):
     if not simulate_physics:
         plant.mutable_gravity_field().set_gravity_vector(np.array([0, 0, 0.0]))
         robot_animator.sim_context = plant_context
-        #plant.get_actuation_input_port().FixValue(plant_context, np.zeros(9))
+        # plant.get_actuation_input_port().FixValue(plant_context, np.zeros(9))
 
     # Set initial state
     meshcat_vis.reset_recording()

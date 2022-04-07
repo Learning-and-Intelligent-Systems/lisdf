@@ -3,16 +3,18 @@ import warnings
 import numpy as np
 from pydrake.systems.framework import BasicVector, LeafSystem
 
-from drake_utils.lisdf_executor.executor import CommandExecutor
-from drake_utils.lisdf_executor.gripper_executor import ActuateGripperExecutor
-from drake_utils.lisdf_executor.joint_space_path_executor import JointSpacePathExecutor
-from drake_utils.robot import DrakeRobot, RobotWithGripper
-from lisdf.planner_output.command import ActuateGripper, Command, JointSpacePath
+
+from drake_utils.interpolator_wrapper import DrakePiecewisePolynomialInterpolator
+from lisdf.plan_executor.executor import CommandExecutor
+from lisdf.plan_executor.gripper_executor import ActuateGripperExecutor
+from lisdf.plan_executor.joint_space_path_executor import JointSpacePathExecutor
+from lisdf.plan_executor.robot_state import RobotWithState, RobotWithGripper
+from lisdf.planner_output.command import Command, JointSpacePath, ActuateGripper
 from lisdf.planner_output.plan import LISDFPlan
 
 
 class LISDFPlanController(LeafSystem):
-    def __init__(self, robot: DrakeRobot, plan: LISDFPlan):
+    def __init__(self, robot: RobotWithState, plan: LISDFPlan):
         super().__init__()
         self.robot = robot
         self.plan = plan
@@ -33,7 +35,12 @@ class LISDFPlanController(LeafSystem):
         """Create command executor for the given command"""
         if command.type == JointSpacePath.type:
             command: JointSpacePath
-            return JointSpacePathExecutor(self.robot, command, start_time)
+            return JointSpacePathExecutor(
+                self.robot,
+                command,
+                start_time,
+                interpolator_cls=DrakePiecewisePolynomialInterpolator,
+            )
         elif command.type == ActuateGripper.type:
             command: ActuateGripper
             self.robot: RobotWithGripper
