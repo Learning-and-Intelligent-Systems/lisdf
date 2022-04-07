@@ -53,6 +53,8 @@ class LISDFPlanExecutor(CommandExecutor, ABC):
         super().__init__(robot=robot, command=_EmptyCommand(), start_time=start_time)
         self.plan = plan
         self._path_interpolator_cls = path_interpolator_cls
+        # We assume that the execute method is called with increasing time
+        self._last_execute_time = self.start_time
 
         # Create all the executors with their respective start times based on
         # a command's duration.
@@ -62,6 +64,8 @@ class LISDFPlanExecutor(CommandExecutor, ABC):
             self._executors.append(self._create_executor(command, current_time))
             # Increase start time by duration of the executor
             current_time += self._executors[-1].duration
+
+        self._current_executor_idx = 0
 
         # Sanity checks that none of the executor start and end times overlap
         prev_end_time = start_time
@@ -95,18 +99,26 @@ class LISDFPlanExecutor(CommandExecutor, ABC):
 
     def _get_executor_at_time(self, time: float) -> CommandExecutor:
         """Get the executor that should be executed at the given time"""
-        # FIXME: this is O(n) as we do a linear search. n = number of commands
-        #  We could improve this with a dict that supports time ranges
-        for executor in self._executors:
-            if executor.start_time <= time < executor.end_time:
-                return executor
+        if self._current_executor_idx >= len(self._executors):
+            raise NoExecutorFoundError(f"Time {time} is after the end of the plan")
 
-        raise NoExecutorFoundError(f"No executor found for time {time}")
+        current_executor = self._executors[self._current_executor_idx]
+        if time >= current_executor.end_time:
+            self._current_executor_idx += 1
+            # This won't cause infinite recursion because `time` stays fixed
+            return self._get_executor_at_time(time)
+
+        return current_executor
 
     def execute(self, current_time: float) -> None:
         """
         Execute the plan at the given time. This will grab the relevant executor and
         execute it to update the robot state.
         """
+        if current_time < self._last_execute_time:
+            raise RuntimeError(
+                "Execute time must be increasing - i.e., time only progresses"
+            )
+
         executor = self._get_executor_at_time(current_time)
         executor.execute(current_time)
