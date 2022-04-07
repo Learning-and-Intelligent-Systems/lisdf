@@ -5,7 +5,7 @@ from typing import ClassVar, Type
 import numpy as np
 
 from lisdf.plan_executor.executor import CommandExecutor
-from lisdf.plan_executor.robot_state import RobotWithState
+from lisdf.plan_executor.robot import Robot
 from lisdf.planner_output.command import JointSpacePath
 
 
@@ -43,7 +43,7 @@ class JointSpacePathExecutor(CommandExecutor):
 
     def __init__(
         self,
-        robot: RobotWithState,
+        robot: Robot,
         path: JointSpacePath,
         start_time: float,
         interpolator_cls: Type[PathInterpolator],

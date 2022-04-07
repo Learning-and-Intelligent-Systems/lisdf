@@ -2,12 +2,12 @@ import numpy as np
 from pydrake.multibody.plant import MultibodyPlant
 from pydrake.systems.framework import BasicVector, Context, LeafSystem
 
-from lisdf.plan_executor.robot_state import RobotWithState
+from lisdf.plan_executor.robot import Robot
 
 
 class LISDFPlanAnimator(LeafSystem):
     def __init__(
-        self, robot: RobotWithState, plant: MultibodyPlant, sim_context: Context
+        self, robot: Robot, plant: MultibodyPlant, sim_context: Context
     ):
         super().__init__()
         self.plant = plant

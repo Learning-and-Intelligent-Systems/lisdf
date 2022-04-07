@@ -6,10 +6,9 @@ import numpy as np
 from lisdf.planner_output.command import GripperPosition
 
 
-class RobotWithState(ABC):
+class Robot(ABC):
     """
-    A Robot model for the plan execution. We call it RobotWithState so it doesn't
-    clash with the Robot class in the XML parser.
+    A Robot model for the plan execution.
     """
 
     def __init__(self, configuration: np.ndarray):
@@ -46,7 +45,7 @@ class RobotWithState(ABC):
         return self.joint_ordering
 
 
-class RobotWithGripper(RobotWithState, ABC):
+class RobotWithGripper(Robot, ABC):
     @abstractmethod
     def gripper_configuration_for_position(
         self, position: GripperPosition

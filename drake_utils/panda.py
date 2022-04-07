@@ -2,11 +2,13 @@ from typing import List
 
 import numpy as np
 
-from lisdf.plan_executor.robot_state import RobotWithGripper
+from lisdf.plan_executor.robot import RobotWithGripper
 from lisdf.planner_output.command import GripperPosition
 
 
 class Panda(RobotWithGripper):
+    """Franka Emika Panda robot."""
+
     @property
     def joint_configuration(self) -> np.ndarray:
         return self.configuration[:7]
