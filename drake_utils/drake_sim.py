@@ -25,7 +25,11 @@ from drake_utils.panda import Panda
 from drake_utils.utils import make_robot_controller, xyz_rpy_deg
 from lisdf.plan_executor.lisdf_executor import LISDFPlanExecutor
 from lisdf.planner_output.plan import LISDFPlan
+from lisdf.parsing.parse_sdf import load_sdf
 
+def dump_xml(fname, xml_string):
+    with open(fname, "w") as f:
+        f.write(xml_string)
 
 def main(plan: LISDFPlan):
     builder = DiagramBuilder()
@@ -37,9 +41,23 @@ def main(plan: LISDFPlan):
         plant, scene_graph = AddMultibodyPlantSceneGraph(builder, 0)
 
     parser = Parser(plant)
+    parser.package_map().Add("franka_description", "lisdf-models/models/panda/")
     parser.package_map().Add("assets", "assets/")
-    parser.AddAllModelsFromFile("lisdf-models/models/m0m_panda/model.sdf")
-    robot = parser.AddModelFromFile("assets/panda_arm_hand.urdf", model_name="robot")
+    problem_sdf = load_sdf("m0m_panda/model.sdf", "lisdf-models/models/")
+    for world in problem_sdf.worlds:
+        for model in world.models:
+            xml_string = "\n".join(model.to_xml_string().split("\n")[1:])
+            if not "</robot>" in xml_string:
+                xml_string = "<?xml version=\"1.0\" ?>\n<sdf version=\"1.4\">\n{}\n</sdf>".format(xml_string)
+                fname = "model.sdf"
+                dump_xml(fname, xml_string)
+                parser.AddModelFromFile(fname)
+            else:
+                fname = "model.urdf"
+                xml_string = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n{}\n".format(xml_string)
+                dump_xml(fname, xml_string)
+                robot = parser.AddModelFromFile(fname, model_name="robot")
+    #robot = parser.AddModelFromFile("assets/panda_arm_hand.urdf", model_name="robot")
 
     # Weld robot to the world
     plant.WeldFrames(
