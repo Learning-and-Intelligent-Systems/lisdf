@@ -42,7 +42,6 @@ def main(plan: LISDFPlan):
 
     parser = Parser(plant)
     parser.package_map().Add("franka_description", "lisdf-models/models/panda/")
-    parser.package_map().Add("assets", "assets/")
     problem_sdf = load_sdf("m0m_panda/model.sdf", "lisdf-models/models/")
     for world in problem_sdf.worlds:
         for model in world.models:
@@ -98,9 +97,6 @@ def main(plan: LISDFPlan):
     )
 
     if simulate_physics:
-        # FIXME: init can be read from LISDF
-        # if last_q_des is None and the first command is ActuateGripper, we crash)
-        # gripper open initially
         lisdf_controller = LISDFPlanController(plan_executor)
         joint_controller = builder.AddSystem(lisdf_controller)
 
@@ -149,6 +145,7 @@ def main(plan: LISDFPlan):
         simulator.get_mutable_context()
     )
 
+    #plant.get_actuation_input_port().FixValue(plant_context, np.zeros(28))
     if not simulate_physics:
         plant.mutable_gravity_field().set_gravity_vector(np.array([0, 0, 0.0]))
         robot_animator.sim_context = plant_context
