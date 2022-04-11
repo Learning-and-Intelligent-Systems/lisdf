@@ -71,11 +71,25 @@ object_type_name: type_name
 TRUE: "true"
 FALSE: "false"
 bool: TRUE | FALSE
-%import common.INT
-int: INT
-%import common.SIGNED_NUMBER
-float: SIGNED_NUMBER
+
+// numbers
+INT: DIGIT+
+SIGNED_INT: ["+"|"-"] INT
+// DECIMAL: INT "." INT? | "." INT
+DECIMAL: INT "." INT?
+
+// float = /-?\d+(\.\d+)?([eE][+-]?\d+)?/
+_EXP: ("e"|"E") SIGNED_INT
+FLOAT: INT _EXP | DECIMAL _EXP?
+SIGNED_FLOAT: ["+"|"-"] FLOAT
+
+NUMBER: FLOAT | INT
+SIGNED_NUMBER: ["+"|"-"] NUMBER
+
+int: INT | SIGNED_INT
+float: NUMBER | SIGNED_NUMBER
 ?number: int | float
+
 %import common.ESCAPED_STRING
 string: ESCAPED_STRING
 list: "[" "]"
