@@ -1,9 +1,13 @@
 [flake8]
 max-line-length = 88
 extend-ignore = E203
-exclude =
-    .env
-    env
-    .venv
-    venv
-    lisdf-models
+exclude = (?x)(
+    .env/
+    | env/
+    | .venv/
+    | venv/
+    | lisdf-models/
+    | drake_utils/
+    | pybullet-planning/
+    | kitchen-worlds/
+  )
