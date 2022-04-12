@@ -142,3 +142,6 @@ dmypy.json
 # We've already committed the reference.
 # Black uses this to discover what to ignore as well so it's a small hack
 lisdf-models
+
+model.sdf
+model.urdf

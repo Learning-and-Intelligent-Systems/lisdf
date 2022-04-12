@@ -1,0 +1,30 @@
+<?xml version="1.0" ?>
+<sdf version="1.4">
+<model name="potted_meat_can#13_1">
+  <pose>0.5 -0.5 0.03 0.0 0.0 0.0</pose>
+  <static>false</static>
+  <link name="potted_meat_can">
+    <collision name="potted_meat_can_collision">
+      <geometry>
+        <box>
+          <size>0.08 0.04 0.08</size>
+        </box>
+      </geometry>
+    </collision>
+    <visual name="potted_meat_can_visual">
+      <geometry>
+        <mesh>
+          <uri>lisdf-models/models/m0m_panda/../ycb/010_potted_meat_can/textured.obj</uri>
+          <scale>1.0 1.0 1.0</scale>
+        </mesh>
+      </geometry>
+      <material>
+        <ambient>1.0 1.0 1.0 1.0</ambient>
+        <diffuse>1.0 1.0 1.0 1.0</diffuse>
+        <specular>1.0 1.0 1.0 1.0</specular>
+        <emissive>1.0 1.0 1.0 1.0</emissive>
+      </material>
+    </visual>
+  </link>
+</model>
+</sdf>

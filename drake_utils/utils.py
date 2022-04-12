@@ -17,6 +17,7 @@ def make_robot_controller(robot_model):
     cplant, _ = AddMultibodyPlantSceneGraph(cbuilder, 0.01)
     cparser = Parser(cplant)
     cparser.package_map().Add("assets", "assets/")
+    cparser.package_map().Add("franka_description", "lisdf-models/models/panda/")
     robot = cparser.AddModelFromFile(robot_model)
     # TODO: the location of the weldjoint should be read from the URDF?
     # TODO: the base link must be read from the URDF

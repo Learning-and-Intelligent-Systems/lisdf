@@ -9,6 +9,7 @@ from pydrake.geometry.render import (
     RenderCameraCore,
     RenderEngineVtkParams,
 )
+from pydrake.geometry import Role
 from pydrake.math import RigidTransform
 from pydrake.multibody.parsing import Parser
 from pydrake.multibody.plant import AddMultibodyPlantSceneGraph
@@ -84,7 +85,7 @@ def main(plan: LISDFPlan):
         scene_graph.get_query_output_port(), sensor.query_object_input_port()
     )
     meshcat_vis = ConnectMeshcatVisualizer(
-        builder, scene_graph, zmq_url="new", open_browser=False
+        builder, scene_graph, zmq_url="new", open_browser=False, role=Role.kProximity
     )
 
     plant.Finalize()
@@ -102,7 +103,7 @@ def main(plan: LISDFPlan):
 
         # Connect the robot controller to the plant
         torque_controller = builder.AddSystem(
-            make_robot_controller("assets/panda_arm_hand.urdf")
+            make_robot_controller("lisdf-models/models/panda/robots/panda_drake.urdf")
         )
         builder.Connect(
             joint_controller.get_output_port(),

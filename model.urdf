@@ -1,0 +1,722 @@
+<?xml version="1.0" encoding="utf-8"?>
+<robot name="panda" version="1.0">
+  <link name="panda_link0">
+    <inertial>
+      <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0"/>
+      <mass value="2.8142028896"/>
+      <inertia ixx="0.0129886979" ixy="0.0" ixz="0.0" iyy="0.0165355284" iyz="0.0" izz="0.0203311636"/>
+    </inertial>
+    <visual>
+      <geometry>
+        <mesh filename="package://franka_description/meshes/visual/link0.dae"/>
+      </geometry>
+    </visual>
+    <collision>
+      <origin xyz="0.02 0.0 0.04" rpy="0.0 0.0 0.0"/>
+      <geometry>
+        <sphere radius="0.06"/>
+      </geometry>
+    </collision>
+    <collision>
+      <origin xyz="0.01 0.05 0.06" rpy="0.0 0.0 0.0"/>
+      <geometry>
+        <sphere radius="0.06"/>
+      </geometry>
+    </collision>
+    <collision>
+      <origin xyz="0.01 -0.05 0.06" rpy="0.0 0.0 0.0"/>
+      <geometry>
+        <sphere radius="0.06"/>
+      </geometry>
+    </collision>
+    <collision>
+      <origin xyz="-0.06 0.0 0.06" rpy="0.0 0.0 0.0"/>
+      <geometry>
+        <sphere radius="0.06"/>
+      </geometry>
+    </collision>
+    <collision>
+      <origin xyz="-0.06 0.05 0.06" rpy="0.0 0.0 0.0"/>
+      <geometry>
+        <sphere radius="0.06"/>
+      </geometry>
+    </collision>
+    <collision>
+      <origin xyz="-0.03 0.05 0.06" rpy="0.0 0.0 0.0"/>
+      <geometry>
+        <sphere radius="0.06"/>
+      </geometry>
+    </collision>
+    <collision>
+      <origin xyz="-0.03 -0.05 0.06" rpy="0.0 0.0 0.0"/>
+      <geometry>
+        <sphere radius="0.06"/>
+      </geometry>
+    </collision>
+    <collision>
+      <origin xyz="-0.06 -0.05 0.06" rpy="0.0 0.0 0.0"/>
+      <geometry>
+        <sphere radius="0.06"/>
+      </geometry>
+    </collision>
+    <collision>
+      <origin xyz="-0.09 -0.05 0.06" rpy="0.0 0.0 0.0"/>
+      <geometry>
+        <sphere radius="0.06"/>
+      </geometry>
+    </collision>
+    <collision>
+      <origin xyz="-0.09 0.0 0.06" rpy="0.0 0.0 0.0"/>
+      <geometry>
+        <sphere radius="0.06"/>
+      </geometry>
+    </collision>
+    <collision>
+      <origin xyz="-0.09 0.05 0.06" rpy="0.0 0.0 0.0"/>
+      <geometry>
+        <sphere radius="0.06"/>
+      </geometry>
+    </collision>
+    <collision>
+      <origin xyz="-0.12 0.0 0.06" rpy="0.0 0.0 0.0"/>
+      <geometry>
+        <sphere radius="0.06"/>
+      </geometry>
+    </collision>
+    <collision>
+      <origin xyz="0.0 0.0 0.113" rpy="0.0 0.0 0.0"/>
+      <geometry>
+        <sphere radius="0.06"/>
+      </geometry>
+    </collision>
+    <collision>
+      <origin xyz="0.0 0.0 0.083" rpy="0.0 0.0 0.0"/>
+      <geometry>
+        <sphere radius="0.06"/>
+      </geometry>
+    </collision>
+  </link>
+  <link name="panda_link1">
+    <inertial>
+      <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0"/>
+      <mass value="2.3599995791"/>
+      <inertia ixx="0.0186863903" ixy="0.0" ixz="0.0" iyy="0.0143789874" iyz="0.0" izz="0.00906812"/>
+    </inertial>
+    <visual>
+      <geometry>
+        <mesh filename="package://franka_description/meshes/visual/link1.dae"/>
+      </geometry>
+    </visual>
+    <collision>
+      <origin xyz="0.0 0.0 -0.13" rpy="0.0 0.0 0.0"/>
+      <geometry>
+        <sphere radius="0.06"/>
+      </geometry>
+    </collision>
+    <collision>
+      <origin xyz="0.0 0.0 -0.16" rpy="0.0 0.0 0.0"/>
+      <geometry>
+        <sphere radius="0.06"/>
+      </geometry>
+    </collision>
+    <collision>
+      <origin xyz="0.0 0.0 -0.19" rpy="0.0 0.0 0.0"/>
+      <geometry>
+        <sphere radius="0.06"/>
+      </geometry>
+    </collision>
+    <collision>
+      <origin xyz="0.0 -0.04 -0.06" rpy="0.0 0.0 0.0"/>
+      <geometry>
+        <sphere radius="0.06"/>
+      </geometry>
+    </collision>
+    <collision>
+      <origin xyz="0.0 -0.075 -0.0" rpy="0.0 0.0 0.0"/>
+      <geometry>
+        <sphere radius="0.06"/>
+      </geometry>
+    </collision>
+    <collision>
+      <origin xyz="0.0 -0.035 -0.0" rpy="0.0 0.0 0.0"/>
+      <geometry>
+        <sphere radius="0.06"/>
+      </geometry>
+    </collision>
+  </link>
+  <joint name="panda_joint1" type="revolute">
+    <origin xyz="0.0 0.0 0.333" rpy="0.0 0.0 0.0"/>
+    <axis xyz="0.0 0.0 1.0"/>
+    <parent link="panda_link0"/>
+    <child link="panda_link1"/>
+    <limit effort="87.0" lower="-2.8973" upper="2.8973" velocity="2.175"/>
+    <safety_controller k_velocity="40.0" k_position="100.0" soft_lower_limit="-2.8973" soft_upper_limit="2.8973"/>
+  </joint>
+  <link name="panda_link2">
+    <inertial>
+      <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0"/>
+      <mass value="2.379518833"/>
+      <inertia ixx="0.0190388734" ixy="0.0" ixz="0.0" iyy="0.0091429124" iyz="0.0" izz="0.014697537"/>
+    </inertial>
+    <visual>
+      <geometry>
+        <mesh filename="package://franka_description/meshes/visual/link2.dae"/>
+      </geometry>
+    </visual>
+    <collision>
+      <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0"/>
+      <geometry>
+        <sphere radius="0.06"/>
+      </geometry>
+    </collision>
+    <collision>
+      <origin xyz="0.0 0.0 0.035" rpy="0.0 0.0 0.0"/>
+      <geometry>
+        <sphere radius="0.06"/>
+      </geometry>
+    </collision>
+    <collision>
+      <origin xyz="0.0 0.0 0.075" rpy="0.0 0.0 0.0"/>
+      <geometry>
+        <sphere radius="0.06"/>
+      </geometry>
+    </collision>
+    <collision>
+      <origin xyz="0.0 -0.171 0.0" rpy="0.0 0.0 0.0"/>
+      <geometry>
+        <sphere radius="0.06"/>
+      </geometry>
+    </collision>
+    <collision>
+      <origin xyz="0.0 -0.136 0.0" rpy="0.0 0.0 0.0"/>
+      <geometry>
+        <sphere radius="0.06"/>
+      </geometry>
+    </collision>
+    <collision>
+      <origin xyz="0.0 -0.07 0.04" rpy="0.0 0.0 0.0"/>
+      <geometry>
+        <sphere radius="0.06"/>
+      </geometry>
+    </collision>
+  </link>
+  <joint name="panda_joint2" type="revolute">
+    <origin xyz="0.0 0.0 0.0" rpy="-1.57079632679 0.0 0.0"/>
+    <axis xyz="0.0 0.0 1.0"/>
+    <parent link="panda_link1"/>
+    <child link="panda_link2"/>
+    <limit effort="87.0" lower="-1.7628" upper="1.7628" velocity="2.175"/>
+    <safety_controller k_velocity="40.0" k_position="100.0" soft_lower_limit="-1.7628" soft_upper_limit="1.7628"/>
+  </joint>
+  <link name="panda_link3">
+    <inertial>
+      <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0"/>
+      <mass value="2.6498823337"/>
+      <inertia ixx="0.0129300178" ixy="0.0" ixz="0.0" iyy="0.0150242121" iyz="0.0" izz="0.0142734598"/>
+    </inertial>
+    <visual>
+      <geometry>
+        <mesh filename="package://franka_description/meshes/visual/link3.dae"/>
+      </geometry>
+    </visual>
+    <collision>
+      <origin xyz="0.0 0.0 -0.11" rpy="0.0 0.0 0.0"/>
+      <geometry>
+        <sphere radius="0.06"/>
+      </geometry>
+    </collision>
+    <collision>
+      <origin xyz="0.0 0.0 -0.07" rpy="0.0 0.0 0.0"/>
+      <geometry>
+        <sphere radius="0.06"/>
+      </geometry>
+    </collision>
+    <collision>
+      <origin xyz="0.0825 0.03 -0.0" rpy="0.0 0.0 0.0"/>
+      <geometry>
+        <sphere radius="0.06"/>
+      </geometry>
+    </collision>
+    <collision>
+      <origin xyz="0.0825 0.06 -0.0" rpy="0.0 0.0 0.0"/>
+      <geometry>
+        <sphere radius="0.06"/>
+      </geometry>
+    </collision>
+    <collision>
+      <origin xyz="0.04 0.03 -0.03" rpy="0.0 0.0 0.0"/>
+      <geometry>
+        <sphere radius="0.06"/>
+      </geometry>
+    </collision>
+  </link>
+  <joint name="panda_joint3" type="revolute">
+    <origin xyz="0.0 -0.316 0.0" rpy="1.57079632679 0.0 0.0"/>
+    <axis xyz="0.0 0.0 1.0"/>
+    <parent link="panda_link2"/>
+    <child link="panda_link3"/>
+    <limit effort="87.0" lower="-2.8973" upper="2.8973" velocity="2.175"/>
+    <safety_controller k_velocity="40.0" k_position="100.0" soft_lower_limit="-2.8973" soft_upper_limit="2.8973"/>
+  </joint>
+  <link name="panda_link4">
+    <inertial>
+      <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0"/>
+      <mass value="2.6948018744"/>
+      <inertia ixx="0.0133874611" ixy="0.0" ixz="0.0" iyy="0.014514325" iyz="0.0" izz="0.0155175551"/>
+    </inertial>
+    <visual>
+      <geometry>
+        <mesh filename="package://franka_description/meshes/visual/link4.dae"/>
+      </geometry>
+    </visual>
+    <collision>
+      <origin xyz="0.0 0.0 0.06" rpy="0.0 0.0 0.0"/>
+      <geometry>
+        <sphere radius="0.06"/>
+      </geometry>
+    </collision>
+    <collision>
+      <origin xyz="0.0 0.0 0.03" rpy="0.0 0.0 0.0"/>
+      <geometry>
+        <sphere radius="0.06"/>
+      </geometry>
+    </collision>
+    <collision>
+      <origin xyz="-0.035 0.03 0.04" rpy="0.0 0.0 0.0"/>
+      <geometry>
+        <sphere radius="0.05"/>
+      </geometry>
+    </collision>
+    <collision>
+      <origin xyz="-0.05 0.04 0.01" rpy="0.0 0.0 0.0"/>
+      <geometry>
+        <sphere radius="0.055"/>
+      </geometry>
+    </collision>
+    <collision>
+      <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0"/>
+      <geometry>
+        <sphere radius="0.06"/>
+      </geometry>
+    </collision>
+    <collision>
+      <origin xyz="-0.0825 0.064 -0.0" rpy="0.0 0.0 0.0"/>
+      <geometry>
+        <sphere radius="0.06"/>
+      </geometry>
+    </collision>
+    <collision>
+      <origin xyz="-0.0825 0.104 -0.0" rpy="0.0 0.0 0.0"/>
+      <geometry>
+        <sphere radius="0.06"/>
+      </geometry>
+    </collision>
+  </link>
+  <joint name="panda_joint4" type="revolute">
+    <origin xyz="0.0825 0.0 0.0" rpy="1.57079632679 0.0 0.0"/>
+    <axis xyz="0.0 0.0 1.0"/>
+    <parent link="panda_link3"/>
+    <child link="panda_link4"/>
+    <limit effort="87.0" lower="-3.0718" upper="-0.0698" velocity="2.175"/>
+    <safety_controller k_velocity="40.0" k_position="100.0" soft_lower_limit="-3.0718" soft_upper_limit="-0.0698"/>
+  </joint>
+  <link name="panda_link5">
+    <inertial>
+      <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0"/>
+      <mass value="2.9812816864"/>
+      <inertia ixx="0.0325565705" ixy="0.0" ixz="0.0" iyy="0.0270660472" iyz="0.0" izz="0.0115023375"/>
+    </inertial>
+    <visual>
+      <geometry>
+        <mesh filename="package://franka_description/meshes/visual/link5.dae"/>
+      </geometry>
+    </visual>
+    <collision>
+      <origin xyz="0.0 0.0 -0.24" rpy="0.0 0.0 0.0"/>
+      <geometry>
+        <sphere radius="0.06"/>
+      </geometry>
+    </collision>
+    <collision>
+      <origin xyz="0.0 0.0 -0.21" rpy="0.0 0.0 0.0"/>
+      <geometry>
+        <sphere radius="0.06"/>
+      </geometry>
+    </collision>
+    <collision>
+      <origin xyz="0.0 0.09 -0.055" rpy="0.0 0.0 0.0"/>
+      <geometry>
+        <sphere radius="0.035"/>
+      </geometry>
+    </collision>
+    <collision>
+      <origin xyz="0.0 0.085 -0.08" rpy="0.0 0.0 0.0"/>
+      <geometry>
+        <sphere radius="0.035"/>
+      </geometry>
+    </collision>
+    <collision>
+      <origin xyz="0.0 0.085 -0.11" rpy="0.0 0.0 0.0"/>
+      <geometry>
+        <sphere radius="0.035"/>
+      </geometry>
+    </collision>
+    <collision>
+      <origin xyz="0.0 0.08 -0.13" rpy="0.0 0.0 0.0"/>
+      <geometry>
+        <sphere radius="0.035"/>
+      </geometry>
+    </collision>
+    <collision>
+      <origin xyz="0.0 0.08 -0.15" rpy="0.0 0.0 0.0"/>
+      <geometry>
+        <sphere radius="0.035"/>
+      </geometry>
+    </collision>
+    <collision>
+      <origin xyz="0.0 0.07 -0.16" rpy="0.0 0.0 0.0"/>
+      <geometry>
+        <sphere radius="0.04"/>
+      </geometry>
+    </collision>
+    <collision>
+      <origin xyz="0.0 0.08 -0.02" rpy="0.0 0.0 0.0"/>
+      <geometry>
+        <sphere radius="0.05"/>
+      </geometry>
+    </collision>
+    <collision>
+      <origin xyz="0.0 0.08 -0.0" rpy="0.0 0.0 0.0"/>
+      <geometry>
+        <sphere radius="0.055"/>
+      </geometry>
+    </collision>
+    <collision>
+      <origin xyz="0.0 0.05 -0.2" rpy="0.0 0.0 0.0"/>
+      <geometry>
+        <sphere radius="0.055"/>
+      </geometry>
+    </collision>
+    <collision>
+      <origin xyz="0.0 0.07 -0.0" rpy="0.0 0.0 0.0"/>
+      <geometry>
+        <sphere radius="0.06"/>
+      </geometry>
+    </collision>
+  </link>
+  <joint name="panda_joint5" type="revolute">
+    <origin xyz="-0.0825 0.384 0.0" rpy="-1.57079632679 0.0 0.0"/>
+    <axis xyz="0.0 0.0 1.0"/>
+    <parent link="panda_link4"/>
+    <child link="panda_link5"/>
+    <limit effort="12.0" lower="-2.8973" upper="2.8973" velocity="2.61"/>
+    <safety_controller k_velocity="40.0" k_position="100.0" soft_lower_limit="-2.8973" soft_upper_limit="2.8973"/>
+  </joint>
+  <link name="panda_link6">
+    <inertial>
+      <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0"/>
+      <mass value="1.1285806309"/>
+      <inertia ixx="0.0026052565" ixy="0.0" ixz="0.0" iyy="0.0039897229" iyz="0.0" izz="0.0047048591"/>
+    </inertial>
+    <visual>
+      <geometry>
+        <mesh filename="package://franka_description/meshes/visual/link6.dae"/>
+      </geometry>
+    </visual>
+    <collision>
+      <origin xyz="0.08 0.03 0.0" rpy="0.0 0.0 0.0"/>
+      <geometry>
+        <sphere radius="0.06"/>
+      </geometry>
+    </collision>
+    <collision>
+      <origin xyz="0.04 0.01 0.0" rpy="0.0 0.0 0.0"/>
+      <geometry>
+        <sphere radius="0.06"/>
+      </geometry>
+    </collision>
+    <collision>
+      <origin xyz="0.04 0.0 0.0" rpy="0.0 0.0 0.0"/>
+      <geometry>
+        <sphere radius="0.06"/>
+      </geometry>
+    </collision>
+    <collision>
+      <origin xyz="0.0 0.0 0.01" rpy="0.0 0.0 0.0"/>
+      <geometry>
+        <sphere radius="0.06"/>
+      </geometry>
+    </collision>
+    <collision>
+      <origin xyz="0.0 0.0 -0.03" rpy="0.0 0.0 0.0"/>
+      <geometry>
+        <sphere radius="0.05"/>
+      </geometry>
+    </collision>
+  </link>
+  <joint name="panda_joint6" type="revolute">
+    <origin xyz="0.0 0.0 0.0" rpy="1.57079632679 0.0 0.0"/>
+    <axis xyz="0.0 0.0 1.0"/>
+    <parent link="panda_link5"/>
+    <child link="panda_link6"/>
+    <limit effort="12.0" lower="-0.0175" upper="3.7525" velocity="2.61"/>
+    <safety_controller k_velocity="40.0" k_position="100.0" soft_lower_limit="-0.0175" soft_upper_limit="3.7525"/>
+  </joint>
+  <link name="panda_link7">
+    <inertial>
+      <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0"/>
+      <mass value="0.4052912465"/>
+      <inertia ixx="0.0006316592" ixy="0.0" ixz="0.0" iyy="0.0006319639" iyz="0.0" izz="0.0010607721"/>
+    </inertial>
+    <visual>
+      <geometry>
+        <mesh filename="package://franka_description/meshes/visual/link7.dae"/>
+      </geometry>
+    </visual>
+    <collision>
+      <origin xyz="0.0 0.0 0.06" rpy="0.0 0.0 0.0"/>
+      <geometry>
+        <sphere radius="0.06"/>
+      </geometry>
+    </collision>
+    <collision>
+      <origin xyz="0.0 0.0 0.01" rpy="0.0 0.0 0.0"/>
+      <geometry>
+        <sphere radius="0.05"/>
+      </geometry>
+    </collision>
+  </link>
+  <joint name="panda_joint7" type="revolute">
+    <origin xyz="0.088 0.0 0.0" rpy="1.57079632679 0.0 0.0"/>
+    <axis xyz="0.0 0.0 1.0"/>
+    <parent link="panda_link6"/>
+    <child link="panda_link7"/>
+    <limit effort="12.0" lower="-2.8973" upper="2.8973" velocity="2.61"/>
+    <safety_controller k_velocity="40.0" k_position="100.0" soft_lower_limit="-2.8973" soft_upper_limit="2.8973"/>
+  </joint>
+  <link name="panda_tool_tip"/>
+  <link name="panda_link8">
+    <collision>
+      <origin xyz="0.042 0.042 -0.02" rpy="0.0 0.0 0.0"/>
+      <geometry>
+        <sphere radius="0.04"/>
+      </geometry>
+    </collision>
+  </link>
+  <link name="camera_frame">
+    <visual>
+      <geometry>
+        <box size="0.1 0.02 0.02"/>
+      </geometry>
+    </visual>
+    <collision>
+      <geometry>
+        <box size="0.1 0.02 0.02"/>
+      </geometry>
+    </collision>
+  </link>
+  <joint name="panda_joint8" type="fixed">
+    <origin xyz="0.0 0.0 0.107" rpy="0.0 0.0 0.0"/>
+    <axis xyz="0.0 0.0 0.0"/>
+    <parent link="panda_link7"/>
+    <child link="panda_link8"/>
+  </joint>
+  <transmission name="panda_tran1">
+    <type>transmission_interface/SimpleTransmission</type>
+    <joint name="panda_joint1">
+      <hardwareInterface>PositionJointInterface</hardwareInterface>
+    </joint>
+    <actuator name="panda_motor1">
+      <mechanicalReduction>1.0</mechanicalReduction>
+    </actuator>
+  </transmission>
+  <transmission name="panda_tran2">
+    <type>transmission_interface/SimpleTransmission</type>
+    <joint name="panda_joint2">
+      <hardwareInterface>PositionJointInterface</hardwareInterface>
+    </joint>
+    <actuator name="panda_motor2">
+      <mechanicalReduction>1.0</mechanicalReduction>
+    </actuator>
+  </transmission>
+  <transmission name="panda_tran3">
+    <type>transmission_interface/SimpleTransmission</type>
+    <joint name="panda_joint3">
+      <hardwareInterface>PositionJointInterface</hardwareInterface>
+    </joint>
+    <actuator name="panda_motor3">
+      <mechanicalReduction>1.0</mechanicalReduction>
+    </actuator>
+  </transmission>
+  <transmission name="panda_tran4">
+    <type>transmission_interface/SimpleTransmission</type>
+    <joint name="panda_joint4">
+      <hardwareInterface>PositionJointInterface</hardwareInterface>
+    </joint>
+    <actuator name="panda_motor4">
+      <mechanicalReduction>1.0</mechanicalReduction>
+    </actuator>
+  </transmission>
+  <transmission name="panda_tran5">
+    <type>transmission_interface/SimpleTransmission</type>
+    <joint name="panda_joint5">
+      <hardwareInterface>PositionJointInterface</hardwareInterface>
+    </joint>
+    <actuator name="panda_motor5">
+      <mechanicalReduction>1.0</mechanicalReduction>
+    </actuator>
+  </transmission>
+  <transmission name="panda_tran6">
+    <type>transmission_interface/SimpleTransmission</type>
+    <joint name="panda_joint6">
+      <hardwareInterface>PositionJointInterface</hardwareInterface>
+    </joint>
+    <actuator name="panda_motor6">
+      <mechanicalReduction>1.0</mechanicalReduction>
+    </actuator>
+  </transmission>
+  <transmission name="panda_tran7">
+    <type>transmission_interface/SimpleTransmission</type>
+    <joint name="panda_joint7">
+      <hardwareInterface>PositionJointInterface</hardwareInterface>
+    </joint>
+    <actuator name="panda_motor7">
+      <mechanicalReduction>1.0</mechanicalReduction>
+    </actuator>
+  </transmission>
+  <joint name="panda_hand_joint" type="fixed">
+    <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 -0.785398163397"/>
+    <parent link="panda_link8"/>
+    <child link="panda_hand"/>
+  </joint>
+  <link name="panda_hand">
+    <inertial>
+      <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0"/>
+      <mass value="0.5583304799"/>
+      <inertia ixx="0.0023394448" ixy="0.0" ixz="0.0" iyy="0.0005782786" iyz="0.0" izz="0.0021310296"/>
+    </inertial>
+    <visual>
+      <geometry>
+        <mesh filename="package://franka_description/meshes/visual/hand.dae"/>
+      </geometry>
+    </visual>
+    <collision>
+      <origin xyz="0.0 -0.06 0.015" rpy="0.0 0.0 0.0"/>
+      <geometry>
+        <sphere radius="0.05"/>
+      </geometry>
+    </collision>
+    <collision>
+      <origin xyz="0.0 -0.06 0.03" rpy="0.0 0.0 0.0"/>
+      <geometry>
+        <sphere radius="0.05"/>
+      </geometry>
+    </collision>
+    <collision>
+      <origin xyz="0.0 0.0 0.03" rpy="0.0 0.0 0.0"/>
+      <geometry>
+        <sphere radius="0.05"/>
+      </geometry>
+    </collision>
+    <collision>
+      <origin xyz="0.0 0.06 0.03" rpy="0.0 0.0 0.0"/>
+      <geometry>
+        <sphere radius="0.05"/>
+      </geometry>
+    </collision>
+  </link>
+  <joint name="panda_tool_tip_joint" type="fixed">
+    <origin xyz="0.0 0.0 0.1" rpy="0.0 -1.5708 0.0"/>
+    <axis xyz="0.0 0.0 0.0"/>
+    <parent link="panda_hand"/>
+    <child link="panda_tool_tip"/>
+  </joint>
+  <joint name="camera_frame_joint" type="fixed">
+    <origin xyz="0.030768772587180138 0.0 0.05" rpy="0.0 0.0 -1.5708"/>
+    <axis xyz="0.0 0.0 0.0"/>
+    <parent link="panda_hand"/>
+    <child link="camera_frame"/>
+  </joint>
+  <link name="panda_leftfinger">
+    <inertial>
+      <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0"/>
+      <mass value="0.0140552232"/>
+      <inertia ixx="4.20413082650939e-06" ixy="0.0" ixz="0.0" iyy="3.90263687466755e-06" iyz="0.0" izz="1.33474964199095e-06"/>
+    </inertial>
+    <visual>
+      <geometry>
+        <mesh filename="package://franka_description/meshes/visual/finger.dae"/>
+      </geometry>
+    </visual>
+    <collision>
+      <origin xyz="0.0 0.007 0.045" rpy="0.0 0.0 0.0"/>
+      <geometry>
+        <sphere radius="0.012"/>
+      </geometry>
+    </collision>
+    <collision>
+      <origin xyz="0.0 0.015 0.03" rpy="0.0 0.0 0.0"/>
+      <geometry>
+        <sphere radius="0.012"/>
+      </geometry>
+    </collision>
+  </link>
+  <link name="panda_rightfinger">
+    <inertial>
+      <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0"/>
+      <mass value="0.0140552232"/>
+      <inertia ixx="4.20413082650939e-06" ixy="0.0" ixz="0.0" iyy="3.90263687466755e-06" iyz="0.0" izz="1.33474964199095e-06"/>
+    </inertial>
+    <visual>
+      <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 3.14159265359"/>
+      <geometry>
+        <mesh filename="package://franka_description/meshes/visual/finger.dae"/>
+      </geometry>
+    </visual>
+    <collision>
+      <origin xyz="0.0 -0.007 0.045" rpy="0.0 0.0 0.0"/>
+      <geometry>
+        <sphere radius="0.012"/>
+      </geometry>
+    </collision>
+    <collision>
+      <origin xyz="0.0 -0.015 0.03" rpy="0.0 0.0 0.0"/>
+      <geometry>
+        <sphere radius="0.012"/>
+      </geometry>
+    </collision>
+  </link>
+  <joint name="panda_finger_joint1" type="prismatic">
+    <origin xyz="0.0 0.0 0.0584" rpy="0.0 0.0 0.0"/>
+    <axis xyz="0.0 1.0 0.0"/>
+    <parent link="panda_hand"/>
+    <child link="panda_leftfinger"/>
+    <limit effort="20.0" lower="0.0" upper="0.045" velocity="0.2"/>
+  </joint>
+  <joint name="panda_finger_joint2" type="prismatic">
+    <origin xyz="0.0 0.0 0.0584" rpy="0.0 0.0 0.0"/>
+    <axis xyz="0.0 -1.0 0.0"/>
+    <parent link="panda_hand"/>
+    <child link="panda_rightfinger"/>
+    <limit effort="20.0" lower="0.0" upper="0.045" velocity="0.2"/>
+    <mimic joint="panda_finger_joint1"/>
+  </joint>
+  <transmission name="panda_finger_tran1">
+    <type>transmission_interface/SimpleTransmission</type>
+    <joint name="panda_finger_joint1">
+      <hardwareInterface>PositionJointInterface</hardwareInterface>
+    </joint>
+    <actuator name="panda_finger_motor1">
+      <mechanicalReduction>1.0</mechanicalReduction>
+    </actuator>
+  </transmission>
+  <transmission name="panda_finger_tran2">
+    <type>transmission_interface/SimpleTransmission</type>
+    <joint name="panda_finger_joint2">
+      <hardwareInterface>PositionJointInterface</hardwareInterface>
+    </joint>
+    <actuator name="panda_finger_motor2">
+      <mechanicalReduction>1.0</mechanicalReduction>
+    </actuator>
+  </transmission>
+</robot>
