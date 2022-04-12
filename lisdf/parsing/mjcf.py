@@ -11,7 +11,7 @@ from lisdf.parsing.string_utils import (
     vector4f,
     wxyz_from_euler,
 )
-from lisdf.parsing.xml_j.visitor import XMLVisitor
+from lisdf.parsing.xml_j.visitor import XMLVisitor, check_done
 from lisdf.parsing.xml_j.xml import XMLNode
 
 
@@ -36,7 +36,7 @@ class MJCFVisitor(XMLVisitor):
     # TODO(Jiayuan Mao @ 03/24): think about a better way to unify
     # the parsing of sdf and mjcf files.
 
-    # TODO(Jiayuan Mao @ 03/24): write better docs for self._check_done.
+    # TODO(Jiayuan Mao @ 03/24): write better docs for check_done.
 
     """Defaults"""
 
@@ -59,12 +59,12 @@ class MJCFVisitor(XMLVisitor):
             self._data["defaults"][classname] = self._st["default"][-1]
             st.pop()
         node.attributes.pop("class", None)
-        return self._check_done(node)
+        return check_done(node)
 
     """Asset"""
 
     def asset(self, node: XMLNode):
-        return self._check_done(node)
+        return check_done(node)
 
     def mesh(self, node: XMLNode):
         file = node.attributes.pop("file")
@@ -73,7 +73,7 @@ class MJCFVisitor(XMLVisitor):
         data = self._data["mesh"]
         assert name not in data
         data[name] = dict(filename=file, scale=scale)
-        return self._check_done(node)
+        return check_done(node)
 
     def texture(self, node: XMLNode):
         name = node.attributes.pop("name", "skybox")
@@ -82,14 +82,14 @@ class MJCFVisitor(XMLVisitor):
         data = self._data["texture"]
         assert name not in data
         data[name] = node.attributes.copy()
-        return self._check_done(node, attr=False)
+        return check_done(node, attr=False)
 
     def material(self, node: XMLNode):
         name = node.attributes.pop("name")
         data = self._data["material"]
         assert name not in data
         data[name] = node.attributes.copy()
-        return self._check_done(node, attr=False)
+        return check_done(node, attr=False)
 
     def include(self, node: XMLNode) -> XMLNode:
         filename = osp.join(
@@ -104,7 +104,7 @@ class MJCFVisitor(XMLVisitor):
     def mujocoinclude(self, node: XMLNode):
         """<mujocoinclude> are used only as the root tag for mujoco-included files."""
         if len(node.children) == 0:
-            return self._check_done(node)
+            return check_done(node)
         return node
 
     def body_init(self, node: XMLNode):
@@ -133,7 +133,7 @@ class MJCFVisitor(XMLVisitor):
 
         # TODO(Jiayuan Mao @ 03/23): fix this.
         node.attributes.pop("mocap", None)
-        return self._check_done(node)
+        return check_done(node)
 
     def camera(self, node: XMLNode):
         # TODO(Jiayuan Mao @ 03/23): fix this.
@@ -150,7 +150,7 @@ class MJCFVisitor(XMLVisitor):
         body = self._st["body"][-1]
         assert body.inertial is None
         body.inertial = inertial
-        return self._check_done(node)
+        return check_done(node)
 
     def site(self, node: XMLNode):
         name = node.attributes.pop("name")
@@ -173,10 +173,10 @@ class MJCFVisitor(XMLVisitor):
 
         data = self._data["site"]
         assert name not in data
-        data[name] = C.Geom(name, pose, shape, C.RGBA(*vector4f(rgba)))
+        data[name] = C.MJCFVisual(name, pose, shape, material=C.RGBA(*vector4f(rgba)))
         body.visuals.append(data[name])
 
-        return self._check_done(node)
+        return check_done(node)
 
     def geom(self, node: XMLNode):
         st = self._st["default"]
@@ -236,7 +236,7 @@ class MJCFVisitor(XMLVisitor):
         material = node.attributes.pop("material", None)
         rgba = node.attributes.pop("rgba", "0.5 0.5 0.5 1")
 
-        visual: C.VisualInfo
+        visual: C.Material
         if material is not None:
             visual = C.MJCFMaterial(material)
         else:
@@ -257,22 +257,28 @@ class MJCFVisitor(XMLVisitor):
         contact_affinity = node.attributes.pop("conaffinity", 0)
         contact_dim = node.attributes.pop("condim", 3)  # frictional
 
-        geom = C.MJCFGeom(
+        visual_geom = C.MJCFVisual(
             name,
             pose,
             shape=shape,
-            visual=visual,
+            material=visual,
+        )
+        body.visuals.append(visual_geom)
+        collision_geom = C.MJCFCollision(
+            name,
+            pose,
+            shape=shape,
             inertial_group=inertial_group,
             contact_type=contact_type,
             contact_affinity=contact_affinity,
             contact_dim=contact_dim,
         )
-        body.collisions.append(geom)
-        body.visuals.append(geom)
+        body.collisions.append(collision_geom)
         if name is not None:
-            self._data["geom"][name] = geom
+            self._data["visual"][name] = visual_geom
+            self._data["collision"][name] = collision_geom
 
-        return self._check_done(node)
+        return check_done(node)
 
     def joint(self, node: XMLNode):
         st = self._st["default"]
@@ -292,15 +298,23 @@ class MJCFVisitor(XMLVisitor):
         type = node.attributes.pop("type", "hinge")
         pose = self._find_pose(node)
 
-        if type == "slide":
-            type = "prismatic"
-
         axis = node.attributes.pop("axis", "0 0 1")
         limited = bool_string(node.attributes.pop("limited", "false"))
-        range = node.attributes.pop("range", "0 0")
+        range = vector2f(node.attributes.pop("range", "0 0"))
         damping = node.attributes.pop("damping", 0)
         armature = node.attributes.pop("armature", 0)
+
+        dynamics = C.JointDynamics(damping=damping, armature=armature)
+        limit = C.JointLimit(lower=range[0], upper=range[1])
         control = self._find_control(node)
+
+        if type == "slide":
+            type = "prismatic"
+        elif type == "hinge":
+            if limited:
+                type = "revolute"
+            else:
+                type = "continuous"
 
         joint = C.Joint(
             name,
@@ -310,10 +324,8 @@ class MJCFVisitor(XMLVisitor):
             C.JointInfo.from_type(
                 type,
                 axis=vector3f(axis),
-                limited=limited,
-                range=vector2f(range),
-                damping=float(damping),
-                armature=float(armature),
+                limit=limit,
+                dynamics=dynamics,
             ),
             control,
         )
@@ -324,7 +336,7 @@ class MJCFVisitor(XMLVisitor):
         body_parent = self._st["body"][-2]
         joint.parent = body_parent.name
         joint.child = body_child.name
-        return self._check_done(node)
+        return check_done(node)
 
     def freejoint(self, node: XMLNode):
         name = node.attributes.pop("name", None)
@@ -341,15 +353,15 @@ class MJCFVisitor(XMLVisitor):
         body_parent = self._st["body"][-2]
         joint.parent = body_parent.name
         joint.child = body_child.name
-        return self._check_done(node)
+        return check_done(node)
 
     def worldbody(self, node: XMLNode):
         if len(node.children) == 0:
-            return self._check_done(node)
+            return check_done(node)
         return node
 
     def actuator(self, node: XMLNode):
-        return self._check_done(node)
+        return check_done(node)
 
     def position(self, node: XMLNode):
         st = self._st["default"]
@@ -376,7 +388,7 @@ class MJCFVisitor(XMLVisitor):
         assert joint not in data
         # TODO(Jiayuan Mao @ 03/23): fix this.
         self._data["actuator"][joint] = (joint, float(kp), control)
-        return self._check_done(node)
+        return check_done(node)
 
     def _find_rotation(self, node: XMLNode):
         found = set()
@@ -402,10 +414,20 @@ class MJCFVisitor(XMLVisitor):
     def _find_control(self, node: XMLNode):
         limited = bool_string(node.attributes.pop("ctrllimited", "false"))
         range = node.attributes.pop("ctrlrange", "0 0")
-        return C.ControlInfo(limited, range)
+        if limited:
+            return C.JointControlInfo(lower=range[0], upper=range[1])
+        return None
+
+    def as_model(self):
+        model = C.MJCFModel("mjcf_model")
+        for link in self._data["body"].values():
+            model.links.append(link)
+        for joint in self._data["joint"].values():
+            model.joints.append(joint)
+        return model
 
 
-def load_mjcf(filename: str, flatten_only: bool = False):
+def load_mjcf(filename: str, flatten_only: bool = False) -> C.MJCFModel:
     visitor: XMLVisitor
 
     if flatten_only:
@@ -414,4 +436,4 @@ def load_mjcf(filename: str, flatten_only: bool = False):
 
     visitor = MJCFVisitor()
     visitor.load_file(filename)
-    return visitor
+    return visitor.as_model()
