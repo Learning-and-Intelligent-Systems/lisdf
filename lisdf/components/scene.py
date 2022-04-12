@@ -22,11 +22,11 @@ class World(StringConfigurable):
         fmt += f"<world{name_str}>\n"
         fmt += f"  <static>{self.static}</static>\n"
         for model in self.models:
-            fmt += f"  {indent_text(model.to_sdf(ctx)).strip()}\n"
+            fmt += f"  {indent_text(model.to_sdf(ctx))}\n"
         for state in self.states:
-            fmt += f"  {indent_text(state.to_sdf(ctx)).strip()}\n"
+            fmt += f"  {indent_text(state.to_sdf(ctx))}\n"
         if self.gui is not None:
-            fmt += f"  {indent_text(self.gui.to_sdf(ctx)).strip()}\n"
+            fmt += f"  {indent_text(self.gui.to_sdf(ctx))}\n"
         fmt += "</world>\n"
         return fmt
 
@@ -74,41 +74,61 @@ class LISDF(StringConfigurable):
         def add_model(model: Model, model_name: Optional[str] = None):
             if model_name is None:
                 model_name = model.name
+
+            assert (
+                model_name not in self.model_dict
+            ), f"Model name already exists: {model_name}."
             self.model_dict[model_name] = model
 
-            if NAME_SCOPE_SEP is not None:
-                for link in model.links:
-                    self.link_dict[model_name + NAME_SCOPE_SEP + link.name] = link
-                for joint in model.joints:
-                    self.joint_dict[model_name + NAME_SCOPE_SEP + joint.name] = joint
-            else:
-                for link in model.links:
-                    self.link_dict[link.name] = link
-                for joint in model.joints:
-                    self.joint_dict[joint.name] = joint
+            for link in model.links:
+                link_name = (
+                    model_name + NAME_SCOPE_SEP + link.name
+                    if NAME_SCOPE_SEP is not None
+                    else link.name
+                )
+                assert (
+                    link_name not in self.link_dict
+                ), f"Link name already exists: {link_name}."
+                self.link_dict[link_name] = link
+            for joint in model.joints:
+                joint_name = (
+                    model_name + NAME_SCOPE_SEP + joint.name
+                    if NAME_SCOPE_SEP is not None
+                    else joint.name
+                )
+                assert (
+                    joint_name not in self.joint_dict
+                ), f"Joint name already exists: {joint_name}."
+                self.joint_dict[joint_name] = joint
 
         if self.model is not None:
             add_model(self.model)
         else:
-            for model in self.worlds[0].models:
-                if isinstance(model, URDFInclude):
-                    add_model(model.content, model.name)
-                elif isinstance(model, SDFInclude):
-                    if model.content.model is not None:
-                        add_model(model.content.model, model.name)
+            for world in self.worlds:
+                # NB(Jiayuan Mao):: Currently we only support at most one world
+                # in a LISDF file. Thus, we don't need to prepend the world name
+                # to the model name.
+                for model in world.models:
+                    if isinstance(model, URDFInclude):
+                        add_model(model.content, model.name)
+                    elif isinstance(model, SDFInclude):
+                        if model.content.model is not None:
+                            add_model(model.content.model, model.name)
+                        else:
+                            for model in model.content.worlds[0].models:
+                                add_model(model, model.name)
+                    elif isinstance(model, Model):
+                        add_model(model)
                     else:
-                        for model in model.content.worlds[0].models:
-                            add_model(model, model.name)
-                elif isinstance(model, Model):
-                    add_model(model)
+                        raise TypeError(f"Unsupported model type: {type(model)}.")
 
     def _to_sdf(self, ctx: StringifyContext) -> str:
         fmt = '<?xml version="1.0" ?>\n'
         fmt += f'<sdf version="{self.sdf_version}">\n'
         if self.model is not None:
-            fmt += f"  {indent_text(self.model.to_sdf(ctx)).strip()}\n"
+            fmt += f"  {indent_text(self.model.to_sdf(ctx))}\n"
         for world in self.worlds:
-            fmt += f"  {indent_text(world.to_sdf(ctx)).strip()}\n"
+            fmt += f"  {indent_text(world.to_sdf(ctx))}\n"
         fmt += "</sdf>\n"
         return fmt
 

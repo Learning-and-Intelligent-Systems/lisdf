@@ -33,7 +33,8 @@ class LISPDDLParser(object):
         domain_tree = domain_tree.children[0]
         problem_tree = problem_tree.children[0]
 
-        transformer = PDDLVisitor(lisdf, C.PDDLDomain(""), C.PDDLProblem(""))
+        domain = C.PDDLDomain("")
+        transformer = PDDLVisitor(lisdf, domain, C.PDDLProblem("", domain))
         transformer.set_mode("extend")
         builtins = self.load(type(self).builtins_file).children[0]
         transformer.transform(builtins)
@@ -53,7 +54,6 @@ class PDDLVisitor(Transformer):
         self.sdf = sdf
         self.domain = domain
         self.problem = problem
-        self.problem.domain = domain
         self.mode = "domain"
 
     def set_mode(self, mode):
@@ -75,6 +75,18 @@ class PDDLVisitor(Transformer):
         # Very ugly hack to handle multi-line definition in PDDL.
         # In PDDL, type definition can be separated by newline.
         # This kinds of breaks the parsing strategy that ignores all whitespaces.
+        # More specifically, consider the following two definitions:
+        # ```
+        # (:types
+        #   a
+        #   b - a
+        # )
+        # ```
+        # and
+        # ```
+        # (:types
+        #   a b - a
+        # )
         if args[-1].data == "parent_type_name":
             parent_line, parent_name = args[-1].children[0].children[0]
             args = args[:-1]

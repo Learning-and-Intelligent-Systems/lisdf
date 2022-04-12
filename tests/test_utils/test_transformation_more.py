@@ -24,9 +24,12 @@ def test_lookat_rpy(camera_pos, target_pos):
 
     rpy = lookat_rpy(camera_pos, target_pos)
     mat = euler_matrix(*rpy)
-    z = np.array([0, 0, 1, 1], dtype="float32")
-    zz = (mat @ z)[:-1]
+    z = np.array([0, 0, 1, 1], dtype="float32")  # the unit-z vector.
+    # the unit-z vector of the camera frame in the world frame.
+    z_in_world = (mat @ z)[:-1]
 
     assert np.allclose(
-        zz / np.linalg.norm(zz), delta / np.linalg.norm(delta), atol=1e-6
+        z_in_world / np.linalg.norm(z_in_world),
+        delta / np.linalg.norm(delta),
+        atol=1e-6,
     )

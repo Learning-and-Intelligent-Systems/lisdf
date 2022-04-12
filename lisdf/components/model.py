@@ -88,33 +88,25 @@ class Inertial(StringConfigurable):
         return f"""<inertial>
   <mass>{self.mass}</mass>
   {self.pose.to_sdf(ctx)}
-  {indent_text(self.inertia.to_sdf(ctx)).strip()}
+  {indent_text(self.inertia.to_sdf(ctx))}
 </inertial>"""
 
     def _to_urdf(self, ctx: StringifyContext) -> str:
         return f"""<inertial>
   <mass value="{self.mass}"></mass>
   {self.pose.to_urdf(ctx)}
-  {indent_text(self.inertia.to_urdf(ctx)).strip()}
+  {indent_text(self.inertia.to_urdf(ctx))}
 </inertial>"""
 
 
 @dataclass
-class SurfaceContact(StringConfigurable):
-    def _to_sdf(self, ctx: StringifyContext) -> str:
-        return ""
-
-    def _to_urdf(self, ctx: StringifyContext) -> str:
-        return ""
+class SurfaceContact(StringConfigurable, ABC):
+    pass
 
 
 @dataclass
-class SurfaceFriction(StringConfigurable):
-    def _to_sdf(self, ctx: StringifyContext) -> str:
-        return ""
-
-    def _to_urdf(self, ctx: StringifyContext) -> str:
-        return ""
+class SurfaceFriction(StringConfigurable, ABC):
+    pass
 
 
 @dataclass
@@ -125,8 +117,8 @@ class SurfaceInfo(StringConfigurable):
 
     def _to_sdf(self, ctx: StringifyContext) -> str:
         return f"""<surface>
-  {indent_text(self.contact.to_sdf(ctx)).strip() if self.contact else ""}
-  {indent_text(self.friction.to_sdf(ctx)).strip() if self.friction else ""}
+  {indent_text(self.contact.to_sdf(ctx)) if self.contact else ""}
+  {indent_text(self.friction.to_sdf(ctx)) if self.friction else ""}
 </surface>"""
 
 
@@ -138,22 +130,22 @@ class _Geom(StringConfigurable, ABC):
     pose: Pose
     shape: ShapeInfo
 
+    @property
+    def type(self):
+        return self.shape.type
+
 
 @dataclass
 class Collision(_Geom):
     surface: Optional[SurfaceInfo] = None
 
-    @property
-    def type(self):
-        return self.shape.type
-
     def _to_sdf(self, ctx: StringifyContext) -> str:
         return f"""<collision name="{self.name}">>
   {self.pose.to_sdf(ctx) if self.pose is not None else ""}
   <geometry>
-    {indent_text(self.shape.to_sdf(ctx), 2).strip()}
+    {indent_text(self.shape.to_sdf(ctx), 2)}
   </geometry>
-  {indent_text(self.surface.to_sdf(ctx)).strip() if self.surface is not None else ""}
+  {indent_text(self.surface.to_sdf(ctx)) if self.surface is not None else ""}
 </collision>"""
 
     def _to_urdf(self, ctx: StringifyContext) -> str:
@@ -161,9 +153,9 @@ class Collision(_Geom):
         return f"""<collision name="{name}">
   {self.pose.to_urdf(ctx)}
   <geometry>
-    {indent_text(self.shape.to_urdf(ctx), 2).strip()}
+    {indent_text(self.shape.to_urdf(ctx), 2)}
   </geometry>
-  {indent_text(self.surface.to_urdf(ctx)).strip() if self.surface is not None else ""}
+  {indent_text(self.surface.to_urdf(ctx)) if self.surface is not None else ""}
 </collision>"""
 
 
@@ -171,25 +163,20 @@ class Collision(_Geom):
 class Visual(_Geom):
     material: Optional[Material] = None
 
-    @property
-    def type(self):
-        return self.shape.type
-
     def _to_sdf(self, ctx: StringifyContext) -> str:
         return f"""<visual name="{self.name}">
   {self.pose.to_sdf(ctx) if self.pose is not None else ""}
   <geometry>
-    {indent_text(self.shape.to_sdf(ctx), 2).strip()}
+    {indent_text(self.shape.to_sdf(ctx), 2)}
   </geometry>
-  {indent_text(self.material.to_sdf(ctx)).strip() if self.material is not None else ""}
+  {indent_text(self.material.to_sdf(ctx)) if self.material is not None else ""}
 </visual>"""
 
     def to_material_urdf(self, ctx: StringifyContext) -> str:
-        print(self.material)
         if self.material is not None:
             name = ctx.get_scoped_name(self.name)
             return f"""<material name="{name}_material">
-  {indent_text(self.material.to_urdf(ctx)).strip() if self.material is not None else ""}
+  {indent_text(self.material.to_urdf(ctx)) if self.material is not None else ""}
 </material>"""
         return ""
 
@@ -205,9 +192,9 @@ class Visual(_Geom):
         return f"""<visual name="{name}">
   {self.pose.to_urdf(ctx)}
   <geometry>
-    {indent_text(self.shape.to_urdf(ctx), 2).strip()}
+    {indent_text(self.shape.to_urdf(ctx), 2)}
   </geometry>
-  {indent_text(material_str).strip()}
+  {indent_text(material_str)}
 </visual>"""
 
 
@@ -225,6 +212,8 @@ class Link(StringConfigurable):
     def from_simple_geom(
         cls,
         name: str,
+        # the relative pose of the visual/collisions,
+        # assuming the link is attached to the origin of the world.
         pose: Pose,
         shape_type: str,
         rgba: Vector4f,
@@ -237,11 +226,11 @@ class Link(StringConfigurable):
         material = RGBA(*rgba)
         return cls(
             name,
-            pose=None,
+            pose=None,  # you should use a joint to specify the position of this link.
             parent=None,
             inertial=inertial,
-            collisions=[Collision(name + "_collision", pose, shape)],
-            visuals=[Visual(name + "_visual", pose, shape, material)],
+            collisions=[Collision(f"{name}_collision", pose, shape)],
+            visuals=[Visual(f"{name}_visual", pose, shape, material)],
         )
 
     def _to_sdf(self, ctx: StringifyContext) -> str:
@@ -249,36 +238,35 @@ class Link(StringConfigurable):
         visual_str = "\n".join([v.to_sdf(ctx) for v in self.visuals])
         return f"""<link name="{self.name}">
   {self.pose.to_sdf(ctx) if self.pose is not None else ""}
-  {indent_text(self.inertial.to_sdf(ctx)).strip() if self.inertial is not None else ""}
-  {indent_text(collision_str).strip()}
-  {indent_text(visual_str).strip()}
+  {indent_text(self.inertial.to_sdf(ctx)) if self.inertial is not None else ""}
+  {indent_text(collision_str)}
+  {indent_text(visual_str)}
 </link>"""
 
     def _to_urdf(self, ctx: StringifyContext) -> str:
         if self.pose is not None:
             ctx.push_scoped_pose(self.pose)
 
-        try:
-            name = ctx.get_scoped_name(self.name)
-            collision_str = "\n".join([c.to_urdf(ctx) for c in self.collisions])
-            visual_str = "\n".join([v.to_urdf(ctx) for v in self.visuals])
+        name = ctx.get_scoped_name(self.name)
+        collision_str = "\n".join([c.to_urdf(ctx) for c in self.collisions])
+        visual_str = "\n".join([v.to_urdf(ctx) for v in self.visuals])
 
-            if ctx.options["allow_embedded_material"]:
-                material_str = ""
-            else:
-                material_str = "\n".join(
-                    [v.to_material_urdf(ctx) for v in self.visuals]
-                )
-            print(ctx.options, material_str, self.visuals)
+        if ctx.options["allow_embedded_material"]:
+            material_str = ""
+        else:
+            material_str = "\n".join([v.to_material_urdf(ctx) for v in self.visuals])
 
-            return f"""{material_str}
+        fmt = f"""{material_str}
 <link name="{name}">
-  {indent_text(self.inertial.to_urdf(ctx)).strip() if self.inertial is not None else ""}
-  {indent_text(collision_str).strip()}
-  {indent_text(visual_str).strip()}
+  {indent_text(self.inertial.to_urdf(ctx)) if self.inertial is not None else ""}
+  {indent_text(collision_str)}
+  {indent_text(visual_str)}
 </link>"""
-        finally:
+
+        if self.pose is not None:
             ctx.pop_scoped_pose()
+
+        return fmt
 
     def to_sdf_xml(self, **kwargs) -> str:
         model = Model(self.name)
@@ -314,8 +302,8 @@ class Joint(StringConfigurable):
   <parent>{self.parent}</parent>
   <child>{self.child}</child>
   {self.pose.to_sdf(ctx)}
-  {indent_text(self.joint_info.to_sdf(ctx)).strip()}
-  {indent_text(self.control_info.to_sdf(ctx)).strip()
+  {indent_text(self.joint_info.to_sdf(ctx))}
+  {indent_text(self.control_info.to_sdf(ctx))
   if self.control_info is not None else ""}
 </joint>"""
 
@@ -328,8 +316,8 @@ class Joint(StringConfigurable):
   <parent link="{parent}"/>
   <child link="{child}"/>
   {self.pose.to_urdf(ctx)}
-  {indent_text(self.joint_info.to_urdf(ctx)).strip()}
-  {indent_text(self.control_info.to_urdf(ctx)).strip()
+  {indent_text(self.joint_info.to_urdf(ctx))}
+  {indent_text(self.control_info.to_urdf(ctx))
   if self.control_info is not None else ""}
 </joint>"""
 
@@ -352,8 +340,8 @@ class Model(StringConfigurable):
         return f"""<model name="{self.name}">
   <static>{self.static}</static>
   {self.pose.to_sdf(ctx) if self.pose is not None else ""}
-  {indent_text(link_str).strip()}
-  {indent_text(joint_str).strip()}
+  {indent_text(link_str)}
+  {indent_text(joint_str)}
 </model>"""
 
     def to_sdf_xml(self, **kwargs) -> str:
@@ -371,15 +359,14 @@ class Model(StringConfigurable):
             ctx.warning(self, "Model::static will be ignored in URDF.")
 
         ctx.push_scoped_name(self.name)
-        try:
-            link_str = "\n".join([link.to_urdf(ctx) for link in self.links])
-            joint_str = "\n".join([joint.to_urdf(ctx) for joint in self.joints])
-            return f"""<robot name="{self.name}">
-  {indent_text(link_str).strip()}
-  {indent_text(joint_str).strip()}
+        link_str = "\n".join([link.to_urdf(ctx) for link in self.links])
+        joint_str = "\n".join([joint.to_urdf(ctx) for joint in self.joints])
+        fmt = f"""<robot name="{self.name}">
+  {indent_text(link_str)}
+  {indent_text(joint_str)}
 </robot>"""
-        finally:
-            ctx.pop_scoped_name()
+        ctx.pop_scoped_name()
+        return fmt
 
     def to_urdf_xml(self, **kwargs) -> str:
         return f"""<?xml version="1.0"?>
@@ -401,7 +388,9 @@ class _IncludedModel(StringConfigurable):
 
     @property
     def scale_1d(self):
-        assert self._scale1d is not None, "scale_1d is not allowed. Use scale instead."
+        if self._scale1d is None:
+            raise AttributeError("scale_1d is not allowed. Use scale instead.")
+
         return self._scale1d
 
     @property

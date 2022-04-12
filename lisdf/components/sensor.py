@@ -30,5 +30,4 @@ class Sensor(StringConfigurable, ABC):
 @unsupported_stringify(disable_urdf=True)
 class CameraSensor(Sensor, type="camera"):
     def _to_sdf(self, ctx: StringifyContext) -> str:
-        return f"""<sensor name="{self.name}" type="{self.type}">
-</sensor>"""
+        return f'<sensor name="{self.name}" type="{self.type}"></sensor>'

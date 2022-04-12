@@ -36,11 +36,10 @@ class GUICamera(StringConfigurable):
 
     def _to_sdf(self, ctx: StringifyContext) -> str:
         name_str = f' name="{self.name}"' if self.name else ""
-        fmt = f"""<camera{name_str}>"""
-        fmt += f"""<pose>{self.pose.to_sdf(ctx)}</pose>"""
-        fmt += f"""<projection_type>{self.projection_type}</projection_type>"""
-        fmt += """</camera>"""
-        return fmt
+        return f"""<camera{name_str}>
+          <pose>{self.pose.to_sdf(ctx)}</pose>
+          <projection_type>{self.projection_type}</projection_type>
+        </camera>"""
 
 
 @dataclass
@@ -50,5 +49,5 @@ class GUI(StringConfigurable):
 
     def _to_sdf(self, ctx: StringifyContext) -> str:
         return f"""<gui>
-  {indent_text(self.camera.to_sdf(ctx)).strip()}
+  {indent_text(self.camera.to_sdf(ctx))}
 </gui>"""

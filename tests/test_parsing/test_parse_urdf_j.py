@@ -23,9 +23,9 @@ def test_sdf_parsing_j(models_dir, test_dir: str):
     )  # the parser already asserts all attributes and nodes are parsed.
 
     string = node.to_sdf()
-    print(string)
+    # print(string)
     _ = load_sdf_string(string)
 
     string = node.to_urdf()
-    print(string)
+    # print(string)
     _ = load_urdf_string(string)

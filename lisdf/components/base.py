@@ -5,6 +5,7 @@ from functools import cached_property
 from typing import (
     Any,
     Callable,
+    ClassVar,
     DefaultDict,
     Dict,
     List,
@@ -54,6 +55,27 @@ class StringifyContext(object):
         return self.stacks[name][-1] if len(self.stacks[name]) > 0 else default
 
     def get_scoped_name(self, name: str) -> str:
+        """
+        Prepend the current scope to the name.
+
+        Args:
+            name: the input name.
+
+        Returns:
+            When the use_scoped_name option is True, the name is prepended with
+            the current scope. For example, when we are stringifying a model,
+            the to_sdf method will do seomthing like this:
+            ```
+                ctx.push_scoped_name(self.model_name)
+                for link in self.links:
+                    link.to_sdf()
+                ctx.pop_scoped_name()
+            ```
+
+            Then, inside the link.to_sdf method, users can call the function
+            get_scoped_name to get the name of the link. It will return:
+            `model_name + "::" + link.name`.
+        """
         if not self.options["use_scoped_name"]:
             return name
 
@@ -72,6 +94,12 @@ class StringifyContext(object):
         self.st_pop("model_name")
 
     def get_scoped_pose(self, pose: "Pose") -> "Pose":
+        """
+        In SDF files we constantly allow nested definition of poses.
+        For example, we can specify the pose of a model then all links under
+        this model will be transformed. This helper function maintains a stack
+        of poses from the root node. The usage is similar to the `get_scoped_name`.
+        """
         parent_pose = self.st_top("pose", None)
         if parent_pose is None:
             return pose
@@ -87,9 +115,9 @@ class StringifyContext(object):
 class StringConfigurable(ABC):
     # TODO(Jiayuan Mao @ 03/24): implement these methods for the child classes.
 
-    DEFAULT_LISDF_STRINGIFY_OPTIONS: Dict[str, Any] = {}
-    DEFAULT_SDF_STRINGIFY_OPTIONS: Dict[str, Any] = {}
-    DEFAULT_URDF_STRINGIFY_OPTIONS: Dict[str, Any] = {
+    DEFAULT_LISDF_STRINGIFY_OPTIONS: ClassVar[Dict[str, Any]] = {}
+    DEFAULT_SDF_STRINGIFY_OPTIONS: ClassVar[Dict[str, Any]] = {}
+    DEFAULT_URDF_STRINGIFY_OPTIONS: ClassVar[Dict[str, Any]] = {
         # The URDF standard supports defining the material for a visual element
         # inside the visual element itself. However, this is not supported by
         # some URDF parsers. Set this option to False to enforce all material
@@ -164,7 +192,7 @@ def unsupported_stringify(
 @dataclass
 class Pose(StringConfigurable):
     pos: Vector3f
-    quat_wxyz: Vector3f
+    quat_wxyz: Vector4f
 
     @classmethod
     def from_rpy_6d(cls, a: Vector6f) -> "Pose":

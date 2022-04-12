@@ -1,3 +1,5 @@
+import warnings
+
 import lisdf.components as C
 from lisdf.parsing.srdf import SRDFParserMixin
 from lisdf.parsing.string_utils import safe_float, vector2f, vector3f, vector4f
@@ -271,12 +273,15 @@ class URDFVisitor(XMLVisitor, SRDFParserMixin):
         )
 
     def transmission_init(self, node):
+        warnings.warn("Transmission properties in URDF has not been implemented.")
         return "skip"  # TODO: implement transmission.
 
     def gazebo_init(self, node):
+        warnings.warn("Gazebo properties in URDF has not been implemented.")
         return "skip"
 
     def verbose_init(self, node):
+        # This is not a official part of URDF specification.
         return "skip"
 
     def robot(self, node):

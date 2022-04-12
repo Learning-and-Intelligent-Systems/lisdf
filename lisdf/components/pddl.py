@@ -1,6 +1,6 @@
 from abc import ABC
 from dataclasses import dataclass, field
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, ClassVar, Dict, List, Optional, Union
 
 import numpy as np
 
@@ -30,7 +30,7 @@ def set_pddl_scope_sep(sep: str) -> None:
 
 
 class PDDLStringConfigurable(ABC):
-    DEFAULT_PDDL_STRINGIFY_OPTIONS: Dict[str, Any] = {
+    DEFAULT_PDDL_STRINGIFY_OPTIONS: ClassVar[Dict[str, Any]] = {
         "use_types": True,
     }
 
@@ -71,7 +71,7 @@ class PDDLType(PDDLStringConfigurable):
         if self.parent is None:
             return self.pddl_name
         else:
-            return self.pddl_name + " - " + self.parent.to_pddl(ctx)
+            return f"{self.pddl_name} - {self.parent.to_pddl(ctx)}"
 
 
 @dataclass
@@ -109,15 +109,8 @@ class PDDLPredicate(PDDLStringConfigurable):
             self.name = name
             self.scope_name = None
 
-        if arguments is not None:
-            self.arguments = arguments
-        else:
-            self.arguments = []
-
-        if return_type is not None:
-            self.return_type = return_type
-        else:
-            self.return_type = PDDLType("bool")
+        self.arguments = arguments if arguments is not None else []
+        self.return_type = return_type if return_type is not None else PDDLType("bool")
 
     @property
     def pddl_name(self) -> str:
@@ -164,9 +157,7 @@ class PDDLDomain(PDDLStringConfigurable):
         fmt += "  (:types\n"
         fmt += (
             "    "
-            + indent_text(
-                "\n".join([t.to_pddl(ctx) for t in self.types.values()]), 2
-            ).strip()
+            + indent_text("\n".join([t.to_pddl(ctx) for t in self.types.values()]), 2)
             + "\n"
         )
         fmt += "  )\n"
@@ -175,7 +166,7 @@ class PDDLDomain(PDDLStringConfigurable):
             "    "
             + indent_text(
                 "\n".join([p.to_pddl(ctx) for p in self.predicates.values()]), 2
-            ).strip()
+            )
             + "\n"
         )
         fmt += "  )\n"
@@ -268,7 +259,7 @@ class PDDLProposition(PDDLStringConfigurable):
 @dataclass
 class PDDLProblem(PDDLStringConfigurable):
     name: str
-    domain: Optional[PDDLDomain] = None
+    domain: PDDLDomain
     objects: Dict[str, PDDLObject] = field(default_factory=dict)
     init: List[PDDLProposition] = field(default_factory=list)
     conjunctive_goal: List[PDDLPredicate] = field(default_factory=list)
@@ -279,25 +270,21 @@ class PDDLProblem(PDDLStringConfigurable):
         fmt += "  (:objects\n"
         fmt += (
             "    "
-            + indent_text(
-                "\n".join([o.to_pddl(ctx) for o in self.objects.values()]), 2
-            ).strip()
+            + indent_text("\n".join([o.to_pddl(ctx) for o in self.objects.values()]), 2)
             + "\n"
         )
         fmt += "  )\n"
         fmt += "  (:init\n"
         fmt += (
             "    "
-            + indent_text("\n".join([p.to_pddl(ctx) for p in self.init]), 2).strip()
+            + indent_text("\n".join([p.to_pddl(ctx) for p in self.init]), 2)
             + "\n"
         )
         fmt += "  )\n"
         fmt += "  (:goal (and\n"
         fmt += (
             "    "
-            + indent_text(
-                "\n".join([p.to_pddl(ctx) for p in self.conjunctive_goal]), 2
-            ).strip()
+            + indent_text("\n".join([p.to_pddl(ctx) for p in self.conjunctive_goal]), 2)
             + "\n"
         )
         fmt += "  ))\n"
@@ -307,6 +294,13 @@ class PDDLProblem(PDDLStringConfigurable):
 
 @dataclass
 class PDDLFunctionCall(PDDLStringConfigurable):
+    """This is currently only used as a temporary data structure for
+    function applications in PDDL. Since we currently only support the most
+    basic strips functionality, the op_name can only be and or not. But in the
+    future we might want to support more complex function applications. Then we
+    should split this class to a base class and multiple derived classes.
+    """
+
     op_name: str
     arguments: List[Union["PDDLFunctionCall", PDDLVariable, PDDLValue]] = field(
         default_factory=list

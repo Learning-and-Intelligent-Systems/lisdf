@@ -135,6 +135,8 @@ class JointInfo(StringConfigurable, ABC):
 
 @dataclass
 class FixedJointInfo(JointInfo, type="fixed"):
+    """A fixed joint does not have any degrees of freedom."""
+
     def _to_sdf(self, ctx: StringifyContext) -> str:
         return ""
 
@@ -153,21 +155,21 @@ class SingleAxisJointInfo(JointInfo, type="controllable"):
     def _to_sdf(self, ctx: StringifyContext) -> str:
         return f"""<axis>
   <xyz>{self.axis[0]} {self.axis[1]} {self.axis[2]}</xyz>
-  {indent_text(self.limit.to_sdf(ctx)).strip() if self.limit is not None else ""}
-  {indent_text(self.dynamics.to_sdf(ctx)).strip() if self.dynamics is not None else ""}
-  {indent_text(self.calibration.to_sdf(ctx)).strip()
+  {indent_text(self.limit.to_sdf(ctx)) if self.limit is not None else ""}
+  {indent_text(self.dynamics.to_sdf(ctx)) if self.dynamics is not None else ""}
+  {indent_text(self.calibration.to_sdf(ctx))
   if self.calibration is not None else ""}
-  {indent_text(self.mimic.to_sdf(ctx)).strip() if self.mimic is not None else ""}
+  {indent_text(self.mimic.to_sdf(ctx)) if self.mimic is not None else ""}
 </axis>"""
 
     def _to_urdf(self, ctx: StringifyContext) -> str:
         return f"""<axis xyz="{self.axis[0]} {self.axis[1]} {self.axis[2]}" />
-  {indent_text(self.limit.to_urdf(ctx)).strip() if self.limit is not None else ""}
-  {indent_text(self.dynamics.to_urdf(ctx)).strip()
+  {indent_text(self.limit.to_urdf(ctx)) if self.limit is not None else ""}
+  {indent_text(self.dynamics.to_urdf(ctx))
   if self.dynamics is not None else ""}
-  {indent_text(self.calibration.to_urdf(ctx)).strip()
+  {indent_text(self.calibration.to_urdf(ctx))
   if self.calibration is not None else ""}
-  {indent_text(self.mimic.to_urdf(ctx)).strip() if self.mimic is not None else ""}"""
+  {indent_text(self.mimic.to_urdf(ctx)) if self.mimic is not None else ""}"""
 
 
 @dataclass

@@ -37,9 +37,7 @@ class RGBA(Material):
 </material>"""
 
     def _to_urdf(self, ctx: StringifyContext) -> str:
-        return (
-            f"""<color rgba="{self.r:.3f} {self.g:.3f} {self.b:.3f} {self.a:.3f}" />"""
-        )
+        return f'<color rgba="{self.r:.3f} {self.g:.3f} {self.b:.3f} {self.a:.3f}" />'
 
 
 @dataclass(frozen=True)
@@ -78,7 +76,7 @@ class Texture(Material):
     filename: str
 
     def _to_urdf(self, ctx: StringifyContext) -> str:
-        return f"""<texture filename="{self.filename}" />"""
+        return f'<texture filename="{self.filename}" />'
 
 
 @dataclass(frozen=True)

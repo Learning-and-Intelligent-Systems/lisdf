@@ -58,13 +58,13 @@ class Group(StringConfigurable):
     def _to_lisdf(self, ctx: StringifyContext) -> str:
         fmt = f'<group name="{self.name}">\n'
         for joint in self.joints:
-            fmt += indent_text(joint.to_lisdf(ctx))
+            fmt += indent_text(joint.to_lisdf(ctx), strip=False)
         for link in self.links:
-            fmt += indent_text(link.to_lisdf(ctx))
+            fmt += indent_text(link.to_lisdf(ctx), strip=False)
         for chain in self.chains:
-            fmt += indent_text(chain.to_lisdf(ctx))
+            fmt += indent_text(chain.to_lisdf(ctx), strip=False)
         for sub_group in self.sub_groups:
-            fmt += indent_text(sub_group.to_lisdf(ctx))
+            fmt += indent_text(sub_group.to_lisdf(ctx), strip=False)
         fmt += "</group>"
         return fmt
 
