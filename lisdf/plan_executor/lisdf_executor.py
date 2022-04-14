@@ -7,7 +7,7 @@ from lisdf.plan_executor.joint_space_path_executor import (
     JointSpacePathExecutor,
     PathInterpolator,
 )
-from lisdf.plan_executor.robots.robot import Robot
+from lisdf.plan_executor.robots.common import Robot
 from lisdf.planner_output.command import ActuateGripper, Command, JointSpacePath
 from lisdf.planner_output.plan import LISDFPlan
 

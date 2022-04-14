@@ -2,7 +2,7 @@ from typing import ClassVar, List
 
 import numpy as np
 
-from lisdf.plan_executor.robots.robot import RobotWithGripper
+from lisdf.plan_executor.robots.common import RobotWithGripper
 from lisdf.planner_output.command import GripperPosition
 
 

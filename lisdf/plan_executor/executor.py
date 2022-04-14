@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 
-from lisdf.plan_executor.robots.robot import Robot
+from lisdf.plan_executor.robots.common import Robot
 from lisdf.planner_output.command import Command
 
 

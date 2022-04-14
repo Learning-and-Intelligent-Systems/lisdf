@@ -1,7 +1,7 @@
 from typing import ClassVar
 
 from lisdf.plan_executor.executor import CommandExecutor
-from lisdf.plan_executor.robots.robot import RobotWithGripper
+from lisdf.plan_executor.robots.common import RobotWithGripper
 from lisdf.planner_output.command import ActuateGripper, GripperPosition
 
 

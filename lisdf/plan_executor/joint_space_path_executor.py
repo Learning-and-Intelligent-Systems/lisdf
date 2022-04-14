@@ -5,7 +5,7 @@ from typing import ClassVar, Type
 import numpy as np
 
 from lisdf.plan_executor.executor import CommandExecutor
-from lisdf.plan_executor.robots.robot import Robot
+from lisdf.plan_executor.robots.common import Robot
 from lisdf.planner_output.command import JointSpacePath
 
 
