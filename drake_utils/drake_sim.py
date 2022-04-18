@@ -35,7 +35,7 @@ def dump_xml(fname, xml_string):
 def main(plan: LISDFPlan):
     builder = DiagramBuilder()
     # if simulate_physics=False then 1 min of sim time = ~5 min of realtime
-    simulate_physics = True
+    simulate_physics = False
     if simulate_physics:
         plant, scene_graph = AddMultibodyPlantSceneGraph(builder, 0.001)
     else:
@@ -148,7 +148,7 @@ def main(plan: LISDFPlan):
 
     #plant.get_actuation_input_port().FixValue(plant_context, np.zeros(28))
     if not simulate_physics:
-        plant.mutable_gravity_field().set_gravity_vector(np.array([0, 0, 0.0]))
+        #plant.mutable_gravity_field().set_gravity_vector(np.array([0, 0, 0.0]))
         robot_animator.sim_context = plant_context
         # plant.get_actuation_input_port().FixValue(plant_context, np.zeros(9))
 
@@ -167,6 +167,9 @@ def main(plan: LISDFPlan):
     simulate_end_time = time.perf_counter()
     simulate_duration = simulate_end_time - simulate_start_time
     print(f"Simulating {total_time}s took {simulate_duration}s")
+    q_final = plant.GetPositions(plant_context, plant.GetModelInstanceByName("robot"))
+    print("final joints: ", q_final)
+
 
     meshcat_vis.publish_recording()
     meshcat_vis.vis.render_static()
