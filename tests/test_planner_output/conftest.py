@@ -54,7 +54,7 @@ def complex_commands() -> List[Command]:
 
 
 @pytest.fixture
-def expected_complex_lisdf_plan_dict(lisdf_path, version) -> Dict:
+def expected_complex_lisdf_plan_dict(lisdf_problem, version) -> Dict:
     """Expected plain python dict representation of a complex LISDF plan."""
     return {
         "commands": [
@@ -99,6 +99,6 @@ def expected_complex_lisdf_plan_dict(lisdf_path, version) -> Dict:
                 },
             },
         ],
-        "lisdf_path": lisdf_path,
+        "lisdf_problem": lisdf_problem,
         "version": version,
     }

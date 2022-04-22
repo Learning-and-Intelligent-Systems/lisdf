@@ -5,7 +5,7 @@ from typing import ClassVar, Type
 import numpy as np
 
 from lisdf.plan_executor.executor import CommandExecutor
-from lisdf.plan_executor.robot import Robot
+from lisdf.plan_executor.robots.common import Robot
 from lisdf.planner_output.command import JointSpacePath
 
 
@@ -38,6 +38,15 @@ class PathInterpolator(ABC):
         raise NotImplementedError
 
 
+class NearestTimeInterpolator(PathInterpolator):
+    def value(self, t: float) -> np.ndarray:
+        # Find the index of the value with closest time to t.
+        # Could improve to O(log n) but less readable.
+        shifted_t_all = np.abs(self.t_all - t)
+        closest_t_idx = np.argmin(shifted_t_all)
+        return self.confs[closest_t_idx]
+
+
 class JointSpacePathExecutor(CommandExecutor):
     _DEFAULT_JSP_DURATION: ClassVar[float] = 5.0
 
@@ -63,7 +72,7 @@ class JointSpacePathExecutor(CommandExecutor):
         )
         self._interpolator = interpolator_cls(t_all, confs)
 
-        # For warning when outside duration
+        # For warning when provided time is outside duration
         self._warned_outside_time_limits = False
 
     @property
@@ -71,6 +80,8 @@ class JointSpacePathExecutor(CommandExecutor):
         return self._duration
 
     def execute(self, current_time: float) -> None:
+        # Check if current time is within the bounds for duration. If it is outside,
+        # we rely on interpolator to provide the best value.
         if (
             not (self.start_time <= current_time < self.end_time)
             and not self._warned_outside_time_limits

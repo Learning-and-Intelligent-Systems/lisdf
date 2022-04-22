@@ -1,11 +1,16 @@
+from abc import ABC
 from dataclasses import dataclass
 from typing import ClassVar, Dict, Type
 
-from lisdf.components.base import StringConfigurable
+from lisdf.components.base import (
+    StringConfigurable,
+    StringifyContext,
+    unsupported_stringify,
+)
 
 
 @dataclass
-class Sensor(StringConfigurable):
+class Sensor(StringConfigurable, ABC):
     name: str
 
     type: ClassVar[str] = "Sensor"
@@ -22,5 +27,7 @@ class Sensor(StringConfigurable):
 
 
 @dataclass
+@unsupported_stringify(disable_urdf=True)
 class CameraSensor(Sensor, type="camera"):
-    pass
+    def _to_sdf(self, ctx: StringifyContext) -> str:
+        return f'<sensor name="{self.name}" type="{self.type}"></sensor>'

@@ -1,5 +1,12 @@
+<<<<<<< HEAD
 from lisdf.plan_executor.executor import CommandExecutor
 from lisdf.plan_executor.robot import RobotWithGripper
+=======
+from typing import ClassVar
+
+from lisdf.plan_executor.executor import CommandExecutor
+from lisdf.plan_executor.robots.common import RobotWithGripper
+>>>>>>> fe2ec0e683d12dc78f152d98f88caed6c25ec3b3
 from lisdf.planner_output.command import ActuateGripper, GripperPosition
 
 
@@ -7,10 +14,12 @@ class ActuateGripperExecutor(CommandExecutor):
     robot: RobotWithGripper
     command: ActuateGripper
 
+    DEFAULT_DURATION: ClassVar[float] = 1.0
+
     @property
     def duration(self) -> float:
         # Gripper command takes 1 second to execute in our simulated world for now
-        return 1.0
+        return self.DEFAULT_DURATION
 
     def execute(self, current_time: float) -> None:
         # TODO: check gripper name matches link name?

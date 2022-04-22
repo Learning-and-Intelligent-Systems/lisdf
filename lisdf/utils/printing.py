@@ -8,6 +8,7 @@ def indent_text(
     level: int = 1,
     indent_format: Optional[str] = None,
     tabsize: Optional[int] = None,
+    strip: bool = True,
 ):
     if indent_format is not None:
         assert tabsize is None, "Cannot provide both indent format and tabsize."
@@ -18,4 +19,6 @@ def indent_text(
         indent_format = " " * DEFAULT_TABSIZE
     assert isinstance(indent_format, str)
     indent_format = indent_format * level
-    return indent_format + text.replace("\n", "\n" + indent_format)
+
+    rv = indent_format + text.replace("\n", "\n" + indent_format)
+    return rv if not strip else rv.strip()

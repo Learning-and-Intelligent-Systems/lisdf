@@ -1,12 +1,7 @@
 from abc import ABC, abstractmethod
-from typing import TypeVar
 
-from lisdf.plan_executor.robot import Robot
+from lisdf.plan_executor.robots.common import Robot
 from lisdf.planner_output.command import Command
-
-# Use TypeVar so we can infer types in subclasses
-RobotType = TypeVar("RobotType", bound=Robot)
-CommandType = TypeVar("CommandType", bound=Command)
 
 
 class CommandExecutor(ABC):
@@ -21,7 +16,6 @@ class CommandExecutor(ABC):
         command: Command,
         start_time: float,
     ):
-        # FIXME: could we move robot to the execute method?
         self.robot = robot
         self.command = command
         self.start_time = start_time
@@ -39,6 +33,7 @@ class CommandExecutor(ABC):
         """Whether this executor has finished executing"""
         return current_time >= self.end_time
 
+    @abstractmethod
     def execute(self, current_time: float) -> None:
         """
         Execute the command at the given time to update the robot configurations

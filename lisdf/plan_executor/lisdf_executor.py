@@ -7,7 +7,7 @@ from lisdf.plan_executor.joint_space_path_executor import (
     JointSpacePathExecutor,
     PathInterpolator,
 )
-from lisdf.plan_executor.robot import Robot
+from lisdf.plan_executor.robots.common import Robot
 from lisdf.planner_output.command import ActuateGripper, Command, JointSpacePath
 from lisdf.planner_output.plan import LISDFPlan
 
@@ -53,7 +53,8 @@ class LISDFPlanExecutor(CommandExecutor, ABC):
         super().__init__(robot=robot, command=_EmptyCommand(), start_time=start_time)
         self.plan = plan
         self._path_interpolator_cls = path_interpolator_cls
-        # We assume that the execute method is called with increasing time
+
+        # Note: we assume that the execute method is called with increasing time
         self._last_execute_time = self.start_time
 
         # Create all the executors with their respective start times based on
@@ -66,14 +67,14 @@ class LISDFPlanExecutor(CommandExecutor, ABC):
             current_time += self._executors[-1].duration
 
         self._current_executor_idx = 0
+        self._run_sanity_checks(start_time)
 
+    def _run_sanity_checks(self, start_time: float) -> None:
         # Sanity checks that none of the executor start and end times overlap
         prev_end_time = start_time
         for executor in self._executors:
             assert executor.end_time > executor.start_time
             assert executor.end_time == executor.start_time + executor.duration
-            # TODO: we should probably add a delta between commands so there is time to
-            #  transition between them...
             assert executor.start_time >= prev_end_time
             prev_end_time = executor.end_time
         assert prev_end_time == self.end_time == start_time + self.duration
@@ -98,9 +99,15 @@ class LISDFPlanExecutor(CommandExecutor, ABC):
             raise ValueError(f"Unsupported command type: {command.type}")
 
     def _get_executor_at_time(self, time: float) -> CommandExecutor:
-        """Get the executor that should be executed at the given time"""
+        """
+        Get the executor that should be executed at the given time.
+        We assume this method is called with time increasing.
+        """
         if self._current_executor_idx >= len(self._executors):
             raise NoExecutorFoundError(f"Time {time} is after the end of the plan")
+        elif time == self.end_time:
+            # Edge case where we are at the end of the plan exactly (but not beyond it)
+            return self._executors[self._current_executor_idx]
 
         current_executor = self._executors[self._current_executor_idx]
         if time >= current_executor.end_time:
@@ -122,3 +129,4 @@ class LISDFPlanExecutor(CommandExecutor, ABC):
 
         executor = self._get_executor_at_time(current_time)
         executor.execute(current_time)
+        self._last_execute_time = current_time
