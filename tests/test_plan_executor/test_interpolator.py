@@ -27,12 +27,13 @@ NEAREST_TIME_INTERPOLATOR_TEST_CASES = [
 ]
 
 
-def test_interpolator_raises_error():
+@pytest.mark.parametrize(
+    "interpolator_cls", [LinearInterpolator, NearestTimeInterpolator]
+)
+def test_interpolator_raises_error(interpolator_cls):
     with pytest.raises(ValueError):
         # Number of timesteps does not equal number of configurations
-        NearestTimeInterpolator(
-            t_all=np.array([0.0, 1.0]), confs=np.array([[0.0, 0.0, 0.1]])
-        )
+        interpolator_cls(t_all=np.array([0.0, 1.0]), confs=np.array([[0.0, 0.0, 0.1]]))
 
 
 @pytest.mark.parametrize(
@@ -69,8 +70,9 @@ def test_linear_interpolator(joint_space_path, panda):
     def waypoint_at(idx_):
         return joint_space_path.waypoint_as_np_array(idx_, panda.joint_ordering)
 
-    # At time 0.0, the configuration is the first waypoint.
+    # At time 0.0 or before, the configuration is the first waypoint.
     assert np.allclose(interpolator.value(0.0), waypoint_at(0))
+    assert np.allclose(interpolator.value(-999), waypoint_at(0))
 
     # In between first and second waypoint (i.e., idx = 0 and 1),
     # check that it linearly interpolates
@@ -89,8 +91,9 @@ def test_linear_interpolator(joint_space_path, panda):
             waypoint_at(1) + slope * (time - interpolator.t_all[1]),
         )
 
-    # At end of command, the configuration is the last waypoint.
+    # At end of command (and beyond), the configuration is the last waypoint.
     assert np.allclose(interpolator.value(joint_space_path.duration), waypoint_at(-1))
+    assert np.allclose(interpolator.value(999), waypoint_at(-1))
 
     # Check that interpolator returns us the configuration at each given timestep
     # i.e., we want the robot to be at the configuration within the split duration
