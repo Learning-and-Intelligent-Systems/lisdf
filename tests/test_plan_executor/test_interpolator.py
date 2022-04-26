@@ -31,9 +31,15 @@ NEAREST_TIME_INTERPOLATOR_TEST_CASES = [
     "interpolator_cls", [LinearInterpolator, NearestTimeInterpolator]
 )
 def test_interpolator_raises_error(interpolator_cls):
+    # Number of timesteps does not equal number of configurations
     with pytest.raises(ValueError):
-        # Number of timesteps does not equal number of configurations
         interpolator_cls(t_all=np.array([0.0, 1.0]), confs=np.array([[0.0, 0.0, 0.1]]))
+
+    # Timesteps are not sorted
+    with pytest.raises(ValueError):
+        interpolator_cls(
+            t_all=np.array([0.2, 0.5, 0.3]), confs=np.array([[0.0], [0.1], [0.2]])
+        )
 
 
 @pytest.mark.parametrize(
