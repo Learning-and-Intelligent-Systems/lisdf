@@ -27,8 +27,11 @@ class JointSpacePathExecutor(CommandExecutor):
             else JointSpacePathExecutor._DEFAULT_JSP_DURATION
         )
 
-        # Create interpolator
-        confs = path.waypoints_as_np_array(joint_name_ordering=robot.joint_ordering)
+        # Create interpolator - use the waypoint joint name ordering as the joint
+        # ordering, as the internal Robot object will handle the underlying ordering
+        # for the simulators.
+        self._joint_name_ordering = list(path.waypoints.keys())
+        confs = path.waypoints_as_np_array(joint_name_ordering=self._joint_name_ordering)
         t_all = np.linspace(
             start_time, start_time + self.duration, num=path.num_waypoints
         )
@@ -58,4 +61,6 @@ class JointSpacePathExecutor(CommandExecutor):
         q_joint = self._interpolator.value(current_time)
 
         # Update the joint configuration of the robot (not the gripper)
-        self.robot.set_joint_configuration(q_joint)
+        # Use the joint name ordering as this configuration could be a subset
+        # of the entire robot (e.g. left arm only for a PR2).
+        self.robot.set_joint_configuration(q_joint, joint_names=self._joint_name_ordering)

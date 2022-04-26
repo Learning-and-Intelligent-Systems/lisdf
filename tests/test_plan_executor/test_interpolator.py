@@ -39,7 +39,6 @@ def test_interpolator_raises_error(interpolator_cls):
     with pytest.raises(ValueError):
         interpolator_cls(
             t_all=np.array([0.2, 0.5, 0.3]), confs=np.array([[0.0], [0.1], [0.2]])
-        )
 
 
 @pytest.mark.parametrize(

@@ -3,19 +3,19 @@ import time
 
 import numpy as np
 import pybullet as p
-
-from lisdf.plan_executor.interpolator import LinearInterpolator
-from lisdf.plan_executor.robots.pr2 import PR2
 from pybullet_tools.utils import (
     TEMP_DIR,
     connect,
     disable_gravity,
+    get_joint_positions,
     set_joint_positions,
     wait_for_user,
 )
 
 from lisdf.parsing.parse_sdf import load_sdf
+from lisdf.plan_executor.interpolator import LinearInterpolator
 from lisdf.plan_executor.lisdf_executor import LISDFPlanExecutor
+from lisdf.plan_executor.robots.pr2 import PR2
 from lisdf.planner_output.plan import LISDFPlan
 
 """
@@ -32,8 +32,8 @@ def from_lisdf(plan: LISDFPlan):
 
     pr2 = p.loadURDF(
         "lisdf-models/models/pr2/pr2.urdf",
-        useFixedBase=True
-        # "lisdf-models/models/panda/robots/panda_arm_hand.urdf", useFixedBase=True
+        # "lisdf-models/models/panda/robots/panda_arm_hand.urdf",
+        useFixedBase=True,
     )
 
     world = sdf_struct.aggregate_order[0]
@@ -51,8 +51,8 @@ def from_lisdf(plan: LISDFPlan):
     return objects, pr2
 
 
-def main(plan: LISDFPlan):
-    connect(use_gui=True)
+def main(plan: LISDFPlan, use_gui: bool = True):
+    connect(use_gui=use_gui)
     objects, pr2 = from_lisdf(plan)
     disable_gravity()
 
@@ -69,12 +69,15 @@ def main(plan: LISDFPlan):
 
     arm_jnt_ids = [jnt_to_id[jnt] for jnt in non_fixed_jnt_names]
 
+    empty_pr2 = PR2(None)
+    pr2_we_care_about = [jnt_to_id[jnt] for jnt in empty_pr2.joint_ordering]
+
+    initial_conf = np.array(get_joint_positions(robot_id, pr2_we_care_about))
     #################
     # wait_for_user("test")
 
-    panda_init_conf = np.concatenate([np.zeros((7,)), np.array([0.05, 0.05])])
     plan_executor = LISDFPlanExecutor(
-        robot=PR2(configuration=panda_init_conf),
+        robot=PR2(configuration=initial_conf),
         plan=plan,
         path_interpolator_cls=LinearInterpolator,
     )
@@ -87,7 +90,7 @@ def main(plan: LISDFPlan):
         while current_time < plan_executor.end_time:
             plan_executor.execute(current_time)
 
-            set_joint_positions(robot_id, arm_jnt_ids, robot.configuration)
+            set_joint_positions(robot_id, pr2_we_care_about, robot.configuration)
             # doesn't work with physics
             # p.setJointMotorControlArray(
             #     panda,
@@ -95,10 +98,10 @@ def main(plan: LISDFPlan):
             #     p.POSITION_CONTROL,
             #     targetPositions=list(robot.configuration),
             # )
-            states = p.getJointStates(robot_id, arm_jnt_ids)
+            states = p.getJointStates(robot_id, pr2_we_care_about)
             pos = [state[0] for state in states]
 
-            if itt % 10 == 0:
+            if itt % 100 == 0:
                 print(current_time, "des:", robot.configuration)
                 print("actual:", pos)
                 print("======================")
@@ -107,7 +110,7 @@ def main(plan: LISDFPlan):
             # p.stepSimulation()
             time.sleep(0.01)
             current_time = time.perf_counter() - start_time
-    except Exception as e:
+    except RuntimeError as e:
         print(e)
 
     states = p.getJointStates(robot_id, arm_jnt_ids)
@@ -118,6 +121,6 @@ def main(plan: LISDFPlan):
 
 
 if __name__ == "__main__":
-    plan_json = open("run_1650936124.8105118.json").read()
+    plan_json = open("pr2_plan.json").read()
     plan_ = LISDFPlan.from_json(plan_json)
-    main(plan_)
+    main(plan_, True)

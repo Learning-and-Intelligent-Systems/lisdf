@@ -63,6 +63,47 @@ class Robot(ABC):
 
 
 class RobotWithGripper(Robot, ABC):
+    @property
+    def joint_configuration(self) -> np.ndarray:
+        return self.configuration[: self.num_joints]
+
+    def set_joint_configuration(
+        self, joint_configuration: np.ndarray, joint_names: Optional[List[str]] = None
+    ) -> None:
+        if not joint_names:
+            # Setting full configuration of the arm (not gripper)
+            if len(joint_configuration) != self.num_joints:
+                raise ValueError(
+                    f"Expected {self.num_joints} joint configuration values, "
+                    f"got {len(joint_configuration)} values"
+                )
+            self.configuration = np.concatenate(
+                [joint_configuration, self.gripper_configuration]
+            )
+        else:
+            # Setting subset of joints - run some sanity checks first
+            if len(joint_configuration) != len(joint_names):
+                raise ValueError(
+                    "Length of joint configuration does not match number of joint names"
+                )
+            if len(joint_configuration) > self.num_joints:
+                raise ValueError(
+                    "Length of joint configuration is greater than number of joints."
+                    "You shouldn't include gripper joints here."
+                )
+
+            # Get the indices of the joints we want to set
+            for joint_name in joint_names:
+                if joint_name not in self.joint_ordering:
+                    raise ValueError(
+                        f"Joint {joint_name} does not exist in {type(self).__name__}"
+                    )
+
+            joint_idxs = [
+                self.joint_ordering.index(joint_name) for joint_name in joint_names
+            ]
+            self.configuration[joint_idxs] = joint_configuration
+
     @abstractmethod
     def gripper_configuration_for_position(
         self, position: GripperPosition

@@ -7,38 +7,17 @@ from lisdf.planner_output.command import GripperPosition
 
 
 class Panda(RobotWithGripper):
-    """Franka Emika Panda robot."""
+    """
+    Franka Emika Panda robot.
 
-    @property
-    def gripper_joint_ordering(self) -> List[str]:
-        return ["panda_finger_joint1", "panda_finger_joint2"]
+    First 7 entries of the configuration are the robot arm positions.
+    Last 2 entries of the configuration are the gripper positions.
+    Total = 9 joints.
+    """
 
     INITIAL_CONFIGURATION: ClassVar[np.ndarray] = np.array(
         [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.04, 0.04]
     )
-
-    @property
-    def joint_configuration(self) -> np.ndarray:
-        return self.configuration[:7]
-
-    def set_joint_configuration(
-        self, joint_configuration: np.ndarray, joint_names: Optional[List[str]] = None
-    ) -> None:
-        if not joint_names:
-            # Setting full configuration of the arm (not gripper)
-            if len(joint_configuration) != self.num_joints:
-                raise ValueError(
-                    f"Expected {self.num_joints} joint configuration values, "
-                    f"got {len(joint_configuration)} values"
-                )
-            self.configuration = np.concatenate([joint_configuration, self.gripper_configuration])
-        else:
-            self.configuration = joint_configuration
-
-    # def set_joint_configuration(self, joint_configuration: np.ndarray) -> None:
-    #     self.configuration = np.concatenate(
-    #         [joint_configuration, self.gripper_configuration]
-    #     )
 
     @property
     def gripper_configuration(self) -> np.ndarray:
@@ -75,3 +54,7 @@ class Panda(RobotWithGripper):
             "panda_joint6",
             "panda_joint7",
         ]
+
+    @property
+    def gripper_joint_ordering(self) -> List[str]:
+        return ["panda_finger_joint1", "panda_finger_joint2"]
