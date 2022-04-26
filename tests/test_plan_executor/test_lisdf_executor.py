@@ -2,10 +2,8 @@ import pytest
 from mock import Mock, call
 
 from lisdf.plan_executor.gripper_executor import ActuateGripperExecutor
-from lisdf.plan_executor.joint_space_path_executor import (
-    JointSpacePathExecutor,
-    NearestTimeInterpolator,
-)
+from lisdf.plan_executor.interpolator import NearestTimeInterpolator
+from lisdf.plan_executor.joint_space_path_executor import JointSpacePathExecutor
 from lisdf.plan_executor.lisdf_executor import LISDFPlanExecutor, NoExecutorFoundError
 from lisdf.planner_output.command import ActuateGripper, GripperPosition, JointSpacePath
 from lisdf.planner_output.plan import LISDFPlan
