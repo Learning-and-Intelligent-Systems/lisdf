@@ -3,10 +3,8 @@ from typing import Dict, Type, cast
 
 from lisdf.plan_executor.executor import CommandExecutor
 from lisdf.plan_executor.gripper_executor import ActuateGripperExecutor
-from lisdf.plan_executor.joint_space_path_executor import (
-    JointSpacePathExecutor,
-    PathInterpolator,
-)
+from lisdf.plan_executor.interpolator import PathInterpolator
+from lisdf.plan_executor.joint_space_path_executor import JointSpacePathExecutor
 from lisdf.plan_executor.robots.common import Robot
 from lisdf.planner_output.command import ActuateGripper, Command, JointSpacePath
 from lisdf.planner_output.plan import LISDFPlan
