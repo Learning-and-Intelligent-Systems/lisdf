@@ -10,6 +10,7 @@ supp_definitions: supp_definition* supp_definition
 ?supp_definition: domain_definition
                 | requirements_definition
                 | types_definition
+                | constants_definition
                 | predicates_definition
                 | objects_definition
                 | init_definition
@@ -28,6 +29,10 @@ types_definition: "(" ":" "types" type_definition* ")"
 type_definition:  object_type_name+
                 | object_type_name+ "-" parent_type_name
 parent_type_name: object_type_name
+
+// constants
+constants_definition: "(" ":" "constants" constant_definition* ")"
+constant_definition: allconstant
 
 // predicates
 predicates_definition: "(" ":" "predicates" predicate_definition* ")"
@@ -49,7 +54,7 @@ goal_definition: "(" ":" "goal" function_call ")"
 %import common.LETTER
 %import common.DIGIT
 VARNAME: LETTER ("_"|"-"|LETTER|DIGIT)*
-CONSTNAME: LETTER ("_"|"-"|":"|"#"|LETTER|DIGIT)*
+CONSTNAME: (LETTER|"@"|"_") ("_"|"-"|":"|"#"|LETTER|DIGIT)*
 
 // variables and constants
 VARIABLE: "?" VARNAME

@@ -145,36 +145,6 @@ class PDDLOperator(PDDLStringConfigurable):
 
 
 @dataclass
-class PDDLDomain(PDDLStringConfigurable):
-    name: str
-    types: Dict[str, PDDLType] = field(default_factory=dict)
-    predicates: Dict[str, PDDLPredicate] = field(default_factory=dict)
-    operators: Dict[str, PDDLOperator] = field(default_factory=dict)
-
-    def _to_pddl(self, ctx: StringifyContext) -> str:
-        fmt = f"(define (domain {self.name})\n"
-        fmt += "  (:requirements :strips :typing)\n"
-        fmt += "  (:types\n"
-        fmt += (
-            "    "
-            + indent_text("\n".join([t.to_pddl(ctx) for t in self.types.values()]), 2)
-            + "\n"
-        )
-        fmt += "  )\n"
-        fmt += "  (:predicates\n"
-        fmt += (
-            "    "
-            + indent_text(
-                "\n".join([p.to_pddl(ctx) for p in self.predicates.values()]), 2
-            )
-            + "\n"
-        )
-        fmt += "  )\n"
-        fmt += ")\n"
-        return fmt
-
-
-@dataclass
 class PDDLObject(PDDLStringConfigurable):
     name: str
     type: Optional[PDDLType] = None
@@ -254,6 +224,44 @@ class PDDLProposition(PDDLStringConfigurable):
             for a in self.arguments
         )
         return f"({self.predicate.pddl_name} {arguments_str})"
+
+
+@dataclass
+class PDDLDomain(PDDLStringConfigurable):
+    name: str
+    types: Dict[str, PDDLType] = field(default_factory=dict)
+    constants: Dict[str, PDDLObject] = field(default_factory=dict)
+    predicates: Dict[str, PDDLPredicate] = field(default_factory=dict)
+    operators: Dict[str, PDDLOperator] = field(default_factory=dict)
+
+    def _to_pddl(self, ctx: StringifyContext) -> str:
+        fmt = f"(define (domain {self.name})\n"
+        fmt += "  (:requirements :strips :typing)\n"
+        fmt += "  (:types\n"
+        fmt += (
+            "    "
+            + indent_text("\n".join([t.to_pddl(ctx) for t in self.types.values()]), 2)
+            + "\n"
+        )
+        fmt += "  )\n"
+        fmt += "  (:constants\n"
+        fmt += (
+            "    "
+            + indent_text("\n".join([c.to_pddl(ctx) for c in self.constants.values()]), 2)
+            + "\n"
+        )
+        fmt += "  )\n"
+        fmt += "  (:predicates\n"
+        fmt += (
+            "    "
+            + indent_text(
+                "\n".join([p.to_pddl(ctx) for p in self.predicates.values()]), 2
+            )
+            + "\n"
+        )
+        fmt += "  )\n"
+        fmt += ")\n"
+        return fmt
 
 
 @dataclass
