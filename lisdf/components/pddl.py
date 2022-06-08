@@ -247,7 +247,9 @@ class PDDLDomain(PDDLStringConfigurable):
         fmt += "  (:constants\n"
         fmt += (
             "    "
-            + indent_text("\n".join([c.to_pddl(ctx) for c in self.constants.values()]), 2)
+            + indent_text(
+                "\n".join([c.to_pddl(ctx) for c in self.constants.values()]), 2
+            )
             + "\n"
         )
         fmt += "  )\n"

@@ -146,7 +146,9 @@ class PDDLVisitor(Transformer):
         sdf_object = None
         if self.sdf is not None:
             if name in self.sdf.model_dict:
-                sdf_object = C.PDDLSDFObject(name, None, self.domain.types["sdf::model"])
+                sdf_object = C.PDDLSDFObject(
+                    name, None, self.domain.types["sdf::model"]
+                )
             elif name in self.sdf.link_dict:
                 if NAME_SCOPE_SEP is None:
                     model_name, lname = "", name
