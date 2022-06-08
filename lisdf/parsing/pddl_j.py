@@ -118,7 +118,11 @@ class PDDLVisitor(Transformer):
         self.problem.init.append(proposition)
         for arg in proposition.arguments:
             if isinstance(arg, C.PDDLObject):
-                if arg.name not in self.problem.objects and arg.sdf_object is None:
+                if (
+                    arg.name not in self.problem.objects
+                    and arg.name not in self.domain.constants
+                    and arg.sdf_object is None
+                ):
                     raise NameError(
                         "Unknown object: {} in {}.".format(
                             arg.name, proposition.to_pddl()
