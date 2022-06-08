@@ -143,7 +143,6 @@ class PDDLOperator(PDDLStringConfigurable):
 # TODO (Jiayuan Mao@04/04): add support for advanced PDDL operators.
 # a.k.a. PDSketch :)
 
-
 @dataclass
 class PDDLObject(PDDLStringConfigurable):
     name: str

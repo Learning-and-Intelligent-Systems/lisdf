@@ -2,6 +2,9 @@
 ![Build Status](https://github.com/Learning-and-Intelligent-Systems/lisdf/actions/workflows/ci_checks.yml/badge.svg)
 ![License](https://img.shields.io/badge/license-MIT-blue.svg)
 
+**Note:** this repository is under active development and is not yet ready for use. We will update this README
+once LISdf is ready for use.
+
 A repository for a universal I/O spec for Task and Motion Planning (TAMP), along with scripts to convert from 
 popular specs to our spec.
 
