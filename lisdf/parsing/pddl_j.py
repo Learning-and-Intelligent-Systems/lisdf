@@ -47,16 +47,16 @@ class LISPDDLParser(object):
 
 class PDDLVisitor(Transformer):
     def __init__(
-        self, sdf: Optional[C.LISDF], domain: C.PDDLDomain, problem: C.PDDLProblem
+        self, lisdf: Optional[C.LISDF], domain: C.PDDLDomain, problem: C.PDDLProblem
     ) -> None:
         super().__init__()
 
-        self.sdf = sdf
+        self.lisdf = lisdf
         self.domain = domain
         self.problem = problem
         self.mode = "domain"
 
-    def set_mode(self, mode):
+    def set_mode(self, mode: str) -> None:
         assert mode in ("domain", "problem", "extend")
         self.mode = mode
 
@@ -148,27 +148,29 @@ class PDDLVisitor(Transformer):
     def constant(self, name):
         name = name.value
         sdf_object = None
-        if self.sdf is not None:
-            if name in self.sdf.model_dict:
+        if self.lisdf is not None:
+            if name in self.lisdf.model_dict:
                 sdf_object = C.PDDLSDFObject(
                     name, None, self.domain.types["sdf::model"]
                 )
-            elif name in self.sdf.link_dict:
-                if NAME_SCOPE_SEP is None:
-                    model_name, lname = "", name
-                else:
-                    model_name, lname = name.split(NAME_SCOPE_SEP)
+            elif name in self.lisdf.link_dict:
+                model_name, lname = "", name if NAME_SCOPE_SEP is None else name.split(
+                    NAME_SCOPE_SEP
+                )
                 sdf_object = C.PDDLSDFObject(
                     model_name, lname, self.domain.types["sdf::link"]
                 )
-            elif name in self.sdf.joint_dict:
-                if NAME_SCOPE_SEP is None:
-                    model_name, lname = "", name
-                else:
-                    model_name, jname = name.split(NAME_SCOPE_SEP)
+            elif name in self.lisdf.joint_dict:
+                model_name, jname = "", name if NAME_SCOPE_SEP is None else name.split(
+                    NAME_SCOPE_SEP
+                )
                 sdf_object = C.PDDLSDFObject(
                     model_name, jname, self.domain.types["sdf::joint"]
                 )
+            else:
+                # The name refers to a standard PDDL object, not linked
+                # to any SDF object.
+                pass
 
         type = None
         if sdf_object is not None:

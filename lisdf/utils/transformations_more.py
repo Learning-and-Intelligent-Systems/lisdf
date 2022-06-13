@@ -18,6 +18,6 @@ def lookat_rpy(camera_pos: Vector3f, target_pos: Vector3f) -> np.ndarray:
         a numpy array of the roll, pitch, yaw angles.
     """
     delta = target_pos - camera_pos
-    pitch = math.atan2(-np.linalg.norm(delta[:2]), delta[2])  # type: ignore
+    pitch = math.atan2(-np.linalg.norm(delta[:2]), delta[2])
     yaw = math.atan2(-delta[1], -delta[0])
     return np.array([0, pitch, yaw], dtype="float32")

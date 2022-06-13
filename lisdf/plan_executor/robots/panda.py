@@ -18,7 +18,7 @@ class Panda(RobotWithGripper):
         return self.configuration[:7]
 
     def set_joint_configuration(self, joint_configuration: np.ndarray) -> None:
-        self.configuration = np.concatenate(  # type: ignore
+        self.configuration = np.concatenate(
             [joint_configuration, self.gripper_configuration]
         )
 
@@ -27,7 +27,7 @@ class Panda(RobotWithGripper):
         return self.configuration[7:]
 
     def set_gripper_configuration(self, gripper_configuration: np.ndarray) -> None:
-        self.configuration = np.concatenate(  # type: ignore
+        self.configuration = np.concatenate(
             [self.joint_configuration, gripper_configuration]
         )
 
