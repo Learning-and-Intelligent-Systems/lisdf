@@ -47,16 +47,16 @@ class LISPDDLParser(object):
 
 class PDDLVisitor(Transformer):
     def __init__(
-        self, sdf: C.LISDF, domain: C.PDDLDomain, problem: C.PDDLProblem
+        self, lisdf: Optional[C.LISDF], domain: C.PDDLDomain, problem: C.PDDLProblem
     ) -> None:
         super().__init__()
 
-        self.sdf = sdf
+        self.lisdf = lisdf
         self.domain = domain
         self.problem = problem
         self.mode = "domain"
 
-    def set_mode(self, mode):
+    def set_mode(self, mode: str) -> None:
         assert mode in ("domain", "problem", "extend")
         self.mode = mode
 
@@ -101,8 +101,8 @@ class PDDLVisitor(Transformer):
                 self.domain.types[arg_name] = C.PDDLType(arg_name, None)
 
     @inline_args
-    def constants_definition(self, *args):
-        raise NotImplementedError()
+    def constant_definition(self, constant):
+        self.domain.constants[constant.name] = constant
 
     @inline_args
     def predicate_definition(self, name, *args):
@@ -118,7 +118,11 @@ class PDDLVisitor(Transformer):
         self.problem.init.append(proposition)
         for arg in proposition.arguments:
             if isinstance(arg, C.PDDLObject):
-                if arg.name not in self.problem.objects and arg.sdf_object is None:
+                if (
+                    arg.name not in self.problem.objects
+                    and arg.name not in self.domain.constants
+                    and arg.sdf_object is None
+                ):
                     raise NameError(
                         "Unknown object: {} in {}.".format(
                             arg.name, proposition.to_pddl()
@@ -144,30 +148,36 @@ class PDDLVisitor(Transformer):
     def constant(self, name):
         name = name.value
         sdf_object = None
-        if name in self.sdf.model_dict:
-            sdf_object = C.PDDLSDFObject(name, None, self.domain.types["sdf::model"])
-        elif name in self.sdf.link_dict:
-            if NAME_SCOPE_SEP is None:
-                model_name, lname = "", name
+        if self.lisdf is not None:
+            if name in self.lisdf.model_dict:
+                sdf_object = C.PDDLSDFObject(
+                    name, None, self.domain.types["sdf::model"]
+                )
+            elif name in self.lisdf.link_dict:
+                model_name, lname = "", name if NAME_SCOPE_SEP is None else name.split(
+                    NAME_SCOPE_SEP
+                )
+                sdf_object = C.PDDLSDFObject(
+                    model_name, lname, self.domain.types["sdf::link"]
+                )
+            elif name in self.lisdf.joint_dict:
+                model_name, jname = "", name if NAME_SCOPE_SEP is None else name.split(
+                    NAME_SCOPE_SEP
+                )
+                sdf_object = C.PDDLSDFObject(
+                    model_name, jname, self.domain.types["sdf::joint"]
+                )
             else:
-                model_name, lname = name.split(NAME_SCOPE_SEP)
-            sdf_object = C.PDDLSDFObject(
-                model_name, lname, self.domain.types["sdf::link"]
-            )
-        elif name in self.sdf.joint_dict:
-            if NAME_SCOPE_SEP is None:
-                model_name, lname = "", name
-            else:
-                model_name, jname = name.split(NAME_SCOPE_SEP)
-            sdf_object = C.PDDLSDFObject(
-                model_name, jname, self.domain.types["sdf::joint"]
-            )
+                # The name refers to a standard PDDL object, not linked
+                # to any SDF object.
+                pass
 
         type = None
         if sdf_object is not None:
             type = sdf_object.sdf_type
         if name in self.problem.objects:
             type = self.problem.objects[name].type
+
         return C.PDDLObject(name, type, sdf_object=sdf_object)
 
     @inline_args
