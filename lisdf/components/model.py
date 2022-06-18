@@ -185,7 +185,7 @@ class Visual(_Geom):
 </visual>"""
 
     def to_material_urdf(self, ctx: StringifyContext) -> str:
-        print(self.material)
+        # print(self.material)
         if self.material is not None:
             name = ctx.get_scoped_name(self.name)
             return f"""<material name="{name}_material">
@@ -269,7 +269,7 @@ class Link(StringConfigurable):
                 material_str = "\n".join(
                     [v.to_material_urdf(ctx) for v in self.visuals]
                 )
-            print(ctx.options, material_str, self.visuals)
+            # print(ctx.options, material_str, self.visuals)
 
             return f"""{material_str}
 <link name="{name}">
