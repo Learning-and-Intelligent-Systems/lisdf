@@ -19,7 +19,7 @@ jobs:
         python-version: ${{ matrix.python-version }}
         cache: 'pip'
     - run: |
-        pip install -r requirements-dev.txt
+        pip install -e .[develop]
     - name: Pytest
       run: |
         # Note tests/ directory is not included in coverage
@@ -38,7 +38,7 @@ jobs:
         cache: 'pip'
     - name: Install dependencies
       run: |
-        pip install -r requirements-dev.txt
+        pip install -e .[develop]
     - name: Mypy
       run: |
         mypy . --config-file mypy.ini
@@ -56,7 +56,7 @@ jobs:
         cache: 'pip'
     - name: Install dependencies
       run: |
-        pip install -r requirements-dev.txt
+        pip install -e .[develop]
     - name: Flake8
       run: |
         flake8

@@ -9,6 +9,15 @@ A repository for a universal I/O spec for Task and Motion Planning (TAMP), along
 popular specs to our spec.
 
 ## Installation
+
+### Installing with `pip`
+
+**TLDR:** `pip install lisdf@git+https://github.com/Learning-and-Intelligent-Systems/lisdf.git`
+
+If you wish to use the `lisdf-models` repository that includes our model files, you will need install from source as described below.
+
+### Installing from Source
+
 1. Clone the repository using `git clone`. 
 2. If you wish to use the `lisdf-models` repository which includes our model files then run 
    `git submodule update --init`
@@ -25,12 +34,13 @@ the other dependencies.
 If you are creating a virtual environment within the project directory, then you might want to call it one of
 `.env, env, .venv, venv` as the code checks have been configured to exclude those directories.
 
-1. Run `pip install -r requirements.txt` to install dependencies.
+If you plan on contributing or running tests, follow the instructions in the next section. Otherwise:
+1. Run `pip install -e .` to install.
 
 ## Instructions For Contributing
 
 ### Dev Dependencies
-Run `pip install -r requirements-dev.txt` to install all dependencies for development/contribution. 
+Run `pip install -e .[develop]` to install all dependencies for development/contribution.
 You should also pull the `lisdf-models` submodule if you haven't already (see Installation section above).
 
 ### Pushing your Changes
