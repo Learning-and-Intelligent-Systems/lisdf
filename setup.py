@@ -11,6 +11,7 @@ setup(
         "lark",
     ],
     include_package_data=True,
+    package_data={"lisdf": ["py.typed"]},  # for mypy
     extras_require={
         "develop": [
             # Formatting
