@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from enum import Enum
@@ -168,6 +170,25 @@ class JointSpacePath(Command, type="JointSpacePath"):
         )
 
         return joint_positions_array
+
+    @classmethod
+    def from_waypoints_np_array(
+        cls,
+        joint_positions_array: np.ndarray,
+        joint_names: List[str],
+        duration: Optional[float] = None,
+        label: Optional[str] = None,
+    ) -> JointSpacePath:
+        """Create a JointSpacePath from an array of shape
+        (num_waypoints, num_joints) and a list of joint names of length
+        num_joints whose order corresponds to the array."""
+        _, num_joints = joint_positions_array.shape
+        assert len(joint_names) == num_joints
+        waypoints = {
+            name: joint_positions_array[:, i].tolist()
+            for i, name in enumerate(joint_names)
+        }
+        return JointSpacePath(waypoints, duration, label)
 
     def validate(self):
         # Check waypoints dict is not None
