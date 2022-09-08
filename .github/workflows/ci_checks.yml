@@ -17,9 +17,8 @@ jobs:
       uses: actions/setup-python@v2
       with:
         python-version: ${{ matrix.python-version }}
-        cache: 'pip'
     - run: |
-        pip install -r requirements-dev.txt
+        pip install -e .[develop]
     - name: Pytest
       run: |
         # Note tests/ directory is not included in coverage
@@ -35,10 +34,9 @@ jobs:
       uses: actions/setup-python@v2
       with:
         python-version: ${{ matrix.python-version }}
-        cache: 'pip'
     - name: Install dependencies
       run: |
-        pip install -r requirements-dev.txt
+        pip install -e .[develop]
     - name: Mypy
       run: |
         mypy . --config-file mypy.ini
@@ -53,10 +51,9 @@ jobs:
       uses: actions/setup-python@v2
       with:
         python-version: ${{ matrix.python-version }}
-        cache: 'pip'
     - name: Install dependencies
       run: |
-        pip install -r requirements-dev.txt
+        pip install -e .[develop]
     - name: Flake8
       run: |
         flake8
@@ -71,7 +68,6 @@ jobs:
       uses: actions/setup-python@v2
       with:
         python-version: ${{ matrix.python-version }}
-        cache: 'pip'
     - name: Run isort to organize imports
       uses: isort/isort-action@master
     - name: Run black to check code formatting
