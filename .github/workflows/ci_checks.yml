@@ -17,7 +17,6 @@ jobs:
       uses: actions/setup-python@v2
       with:
         python-version: ${{ matrix.python-version }}
-        cache: 'pip'
     - run: |
         pip install -e .[develop]
     - name: Pytest
@@ -35,7 +34,6 @@ jobs:
       uses: actions/setup-python@v2
       with:
         python-version: ${{ matrix.python-version }}
-        cache: 'pip'
     - name: Install dependencies
       run: |
         pip install -e .[develop]
@@ -53,7 +51,6 @@ jobs:
       uses: actions/setup-python@v2
       with:
         python-version: ${{ matrix.python-version }}
-        cache: 'pip'
     - name: Install dependencies
       run: |
         pip install -e .[develop]
@@ -71,7 +68,6 @@ jobs:
       uses: actions/setup-python@v2
       with:
         python-version: ${{ matrix.python-version }}
-        cache: 'pip'
     - name: Run isort to organize imports
       uses: isort/isort-action@master
     - name: Run black to check code formatting
