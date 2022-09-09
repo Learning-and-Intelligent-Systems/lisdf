@@ -11,7 +11,7 @@ setup(
         "lark",
     ],
     include_package_data=True,
-    package_data={"lisdf": ["py.typed"]},  # for mypy
+    package_data={"lisdf": ["lisdf/**"]},  # mypy and pddl files
     extras_require={
         "develop": [
             # Formatting
@@ -28,7 +28,7 @@ setup(
             "pytest-cov",
             "mock",
             # LISdf models (TODO: remove commit after merging lisdf-models PR)
-            "lisdf_models@git+https://github.com/Learning-and-Intelligent-Systems/lisdf-models.git@db01fdc",  # noqa: E501
+            "lisdf_models@git+https://github.com/Learning-and-Intelligent-Systems/lisdf-models.git@020e34d",  # noqa: E501
         ]
     },
 )
