@@ -10,7 +10,7 @@ setup(
         "numpy",
         "lark",
     ],
-    package_data={"lisdf": ["**"]},  # mypy and pddl files
+    package_data={"lisdf": ["lisdf/**"]},  # mypy and pddl files
     extras_require={
         "develop": [
             # Formatting
@@ -27,7 +27,7 @@ setup(
             "pytest-cov",
             "mock",
             # LISdf models (TODO: remove commit after merging lisdf-models PR)
-            "lisdf_models@git+https://github.com/Learning-and-Intelligent-Systems/lisdf-models.git@41d2c5d",  # noqa: E501
+            "lisdf_models@git+https://github.com/Learning-and-Intelligent-Systems/lisdf-models.git@2e246d6",  # noqa: E501
         ]
     },
 )
