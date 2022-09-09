@@ -10,22 +10,8 @@ popular specs to our spec.
 
 ## Installation
 
-### Installing with `pip`
-
-**TLDR:** `pip install lisdf@git+https://github.com/Learning-and-Intelligent-Systems/lisdf.git`
-
-If you wish to use the `lisdf-models` repository that includes our model files, you will need install from source as described below.
-
-### Installing from Source
-
-1. Clone the repository using `git clone`. 
-2. If you wish to use the `lisdf-models` repository which includes our model files then run 
-   `git submodule update --init`
-   - **WARNING!** The models in this repo are ~600MB as of 2022-03-25.
-3. Follow the instructions below to install dependencies. If you plan on contributing or running the tests, then 
-   additionally follow the "Instructions for Contributing" section.
-
 ### Dependencies
+
 This repository requires Python 3.8+. We recommend you create a 
 [conda env](https://docs.conda.io/projects/conda/en/latest/user-guide/tasks/manage-environments.html) or 
 [virtual env](https://docs.python.org/3.8/library/venv.html) with an appropriate Python version before installing
@@ -34,14 +20,19 @@ the other dependencies.
 If you are creating a virtual environment within the project directory, then you might want to call it one of
 `.env, env, .venv, venv` as the code checks have been configured to exclude those directories.
 
-If you plan on contributing or running tests, follow the instructions in the next section. Otherwise:
-1. Run `pip install -e .` to install.
+### Installing with `pip`
+
+Run `pip install lisdf@git+https://github.com/Learning-and-Intelligent-Systems/lisdf.git` to install.
+
+### Installing from Source
+
+1. Clone the repository using `git clone`. 
+2. Run `pip install -e .` to install.
 
 ## Instructions For Contributing
 
 ### Dev Dependencies
-Run `pip install -e .[develop]` to install all dependencies for development/contribution.
-You should also pull the `lisdf-models` submodule if you haven't already (see Installation section above).
+Clone the repository using `git clone`. Then run `pip install -e .[develop]` to install all dependencies for development/contribution.
 
 ### Pushing your Changes
 You can't directly push to the `main` branch.  All contributions will require review to ensure code is understandable 

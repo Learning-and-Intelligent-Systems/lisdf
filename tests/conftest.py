@@ -1,21 +1,14 @@
 import os
 
+import lisdf_models
 import pytest
-
-_LISDF_MODELS = os.path.join("lisdf-models", "models")
 
 
 @pytest.fixture(scope="session")
 def models_dir() -> str:
-    """Determine models directory for the lisdf-models submodule"""
-    # e.g. /home/user/lisdf/tests
-    test_dir = os.path.dirname(__file__)
-
-    # e.g. /home/user/lisdf
-    lisdf_dir = os.path.dirname(test_dir)
-
+    """Determine models directory for the lisdf-models"""
     # e.g./home/user/lisdf/lisdf-models/models
-    lisdf_models_dir = os.path.join(lisdf_dir, _LISDF_MODELS)
+    lisdf_models_dir = os.path.dirname(lisdf_models.__file__)
 
     # Check if lisdf-models actually exists
     if not os.path.exists(lisdf_models_dir):
