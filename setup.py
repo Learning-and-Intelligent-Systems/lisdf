@@ -11,7 +11,7 @@ setup(
         "lark",
     ],
     include_package_data=True,
-    package_data={"lisdf": ["lisdf/**"]},  # mypy and pddl files
+    package_data={"lisdf": ["**"]},  # mypy and pddl files
     extras_require={
         "develop": [
             # Formatting
