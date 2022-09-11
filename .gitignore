@@ -137,8 +137,3 @@ dmypy.json
 
 # DS store is annoying
 **/.DS_Store
-
-# Add lisdf-models as gitignore even though its submodule
-# We've already committed the reference.
-# Black uses this to discover what to ignore as well so it's a small hack
-lisdf-models

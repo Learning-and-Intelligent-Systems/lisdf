@@ -1,4 +1,0 @@
-[submodule "lisdf-models"]
-	path = lisdf-models
-	url = https://github.com/Learning-and-Intelligent-Systems/lisdf-models
-	branch = main

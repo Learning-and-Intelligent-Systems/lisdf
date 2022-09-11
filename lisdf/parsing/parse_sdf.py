@@ -60,6 +60,9 @@ def load_sdf(model_name: str, models_dir: str) -> SDF:
 
 
 if __name__ == "__main__":  # pragma: no cover
+    import lisdf_models
+
+    models_dir = os.path.dirname(lisdf_models.__file__)
     sdf_test = "mud_test/model.sdf"
-    sdf_results = load_sdf(sdf_test, models_dir="lisdf-models/models/")
+    sdf_results = load_sdf(sdf_test, models_dir=models_dir)
     # print(sdf_results)

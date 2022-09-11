@@ -10,8 +10,7 @@ setup(
         "numpy",
         "lark",
     ],
-    include_package_data=True,
-    package_data={"lisdf": ["py.typed"]},  # for mypy
+    package_data={"lisdf": ["lisdf/**"]},  # mypy and pddl files
     extras_require={
         "develop": [
             # Formatting
@@ -27,6 +26,8 @@ setup(
             "pytest",
             "pytest-cov",
             "mock",
+            # LISdf models
+            "lisdf_models@git+https://github.com/Learning-and-Intelligent-Systems/lisdf-models.git",  # noqa: E501
         ]
     },
 )
