@@ -26,8 +26,8 @@ setup(
             "pytest",
             "pytest-cov",
             "mock",
-            # LISdf models (TODO: remove commit after merging lisdf-models PR)
-            "lisdf_models@git+https://github.com/Learning-and-Intelligent-Systems/lisdf-models.git@ea2d13b0",  # noqa: E501
+            # LISdf models
+            "lisdf_models@git+https://github.com/Learning-and-Intelligent-Systems/lisdf-models.git",  # noqa: E501
         ]
     },
 )
