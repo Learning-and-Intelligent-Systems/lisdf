@@ -21,7 +21,7 @@ def test_recursive_sdf_parsing(models_dir):
 
 
 def test_m0m(models_dir):
-    parsed_sdf = load_sdf("m0m/model.sdf", models_dir)
+    parsed_sdf = load_sdf("m0m/model_no_pr2.sdf", models_dir)
     world = parsed_sdf.aggregate_order[0]
     assert world.models[4].links[0].collisions[0].geometry.uri == os.path.join(
         models_dir, "m0m/../ycb/011_banana/textured.obj"
