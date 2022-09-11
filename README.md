@@ -32,7 +32,9 @@ Run `pip install lisdf@git+https://github.com/Learning-and-Intelligent-Systems/l
 ## Instructions For Contributing
 
 ### Dev Dependencies
-Clone the repository using `git clone`. Then run `pip install -e .[develop]` to install all dependencies for development/contribution.
+Clone the repository using `git clone`. Then run `pip install -e '.[develop]'` to install all dependencies for development/contribution.
+
+Warning: the dev dependencies include the [`lisdf-models` repository](https://github.com/Learning-and-Intelligent-Systems/lisdf-models) which is ~700MB big as of 10th September 2022.
 
 ### Pushing your Changes
 You can't directly push to the `main` branch.  All contributions will require review to ensure code is understandable 
