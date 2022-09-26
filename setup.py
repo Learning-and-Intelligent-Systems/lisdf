@@ -10,7 +10,7 @@ setup(
         "numpy",
         "lark",
     ],
-    package_data={"lisdf": ["lisdf/**"]},  # mypy and pddl files
+    package_data={"lisdf": ["lisdf/**", "py.typed"]},  # mypy, pddl files
     extras_require={
         "develop": [
             # Formatting
