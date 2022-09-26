@@ -6,6 +6,7 @@ setup(
     version="0.0.0",
     packages=find_packages(include=["lisdf", "lisdf.*"]),
     include_package_data=True,  # check MANIFEST.in
+    package_data={"lisdf": ["lisdf/**"]},
     install_requires=[
         "pyyaml",
         "numpy",
