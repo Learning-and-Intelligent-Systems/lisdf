@@ -5,12 +5,12 @@ setup(
     name="lisdf",
     version="0.0.0",
     packages=find_packages(include=["lisdf", "lisdf.*"]),
+    include_package_data=True,  # check MANIFEST.in
     install_requires=[
         "pyyaml",
         "numpy",
         "lark",
     ],
-    package_data={"lisdf": ["lisdf/**"]},  # mypy and pddl files
     extras_require={
         "develop": [
             # Formatting
