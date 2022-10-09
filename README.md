@@ -30,6 +30,7 @@ Please contact `willshen at mit.edu` and `jiayuanm at mit.edu` if you are intere
 - [Documentation](#documentation)
 - [Contributing](#contributing)
 - [License](#license)
+- [Authors](#authors)
 - [Change Log](#change-log)
 
 ## Installation
@@ -75,8 +76,32 @@ Follow the instructions below:
 4. Check [CONTRIBUTING.md](CONTRIBUTING.md) for more information on how to contribute to this repository, including 
     how to run the tests, code checks, and publishing to PyPI.
 
+
 ## License
 This repository is licensed under the MIT License. See [LICENSE](LICENSE) for more details.
+
+
+## Authors
+LISdf is an intitiative within the [Learning and Intelligent Systems (LIS) group](lis.csail.mit.edu) at 
+[MIT CSAIL](https://www.csail.mit.edu/).
+
+Contributors and Programmers (alphabetical order):
+- Aidan Curtis
+- Jiayuan Mao
+- Nishanth Kumar
+- Sahit Chintalapudi
+- Tom Silver
+- William Shen
+- Zhutian Yang
+
+Others who helped with general discussions, design, feedback (alphabetical order):
+- Leslie Kaelbling
+- Michael Noseworthy
+- Nicholas Roy
+- Rachel Holladay
+- Tomás Lozano-Pérez
+- Yilun Du
+
 
 ## Change Log
 
