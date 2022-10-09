@@ -17,8 +17,9 @@ jobs:
       uses: actions/setup-python@v2
       with:
         python-version: ${{ matrix.python-version }}
-    - run: |
+    - run: |  # Unit tests require lisdf-models
         pip install -e .[develop]
+        pip install lisdf_models@git+https://github.com/Learning-and-Intelligent-Systems/lisdf-models.git
     - name: Pytest
       run: |
         # Note tests/ directory is not included in coverage

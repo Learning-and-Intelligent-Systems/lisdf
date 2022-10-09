@@ -66,7 +66,7 @@ Follow the instructions below:
     - If you are creating a virtual environment within the project directory, then you might want to call it one of
     `.env, env, .venv, venv` as the code checks have been configured to exclude those directories.
 2. Run `pip install -e '.[develop]'` to install all dependencies for development/contribution.
-3. Install the `lisdf-models` model files by running
+3. (Optional, required for unit tests) Install the `lisdf-models` model files by running
    ```
    pip install lisdf_models@git+https://github.com/Learning-and-Intelligent-Systems/lisdf-models.git
    ```
