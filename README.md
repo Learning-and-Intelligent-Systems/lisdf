@@ -82,7 +82,7 @@ This repository is licensed under the MIT License. See [LICENSE](LICENSE) for mo
 
 
 ## Authors
-LISdf is an intitiative within the [Learning and Intelligent Systems (LIS) group](lis.csail.mit.edu) at 
+LISdf is an intitiative within the [Learning and Intelligent Systems (LIS) group](https://lis.csail.mit.edu) at 
 [MIT CSAIL](https://www.csail.mit.edu/).
 
 Contributors and Programmers (alphabetical order):
