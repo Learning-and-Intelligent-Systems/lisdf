@@ -6,6 +6,4 @@ exclude = (?x)(
     | env/
     | .venv/
     | venv/
-    | pybullet-planning/
-    | kitchen-worlds/
   )
