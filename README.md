@@ -40,7 +40,7 @@ or [virtual env](https://docs.python.org/3.8/library/venv.html) with an appropri
 
 ### Installing with `pip`
 
-```console
+```
 pip install lisdf
 ```
 
@@ -60,17 +60,20 @@ Clone the repository and install the dependencies with `pip`:
 ## Contributing
 
 ### Dev Dependencies
-Clone the repository using `git clone`. If you are creating a virtual environment within the project directory, 
-then you might want to call it one of `.env, env, .venv, venv` as the code checks have been configured to exclude
-those directories.
+Follow the instructions below:
 
-Now, run `pip install -e '.[develop]'` to install all dependencies for development/contribution.
-
-**WARNING:** the dev dependencies include the [`lisdf-models` repository](https://github.com/Learning-and-Intelligent-Systems/lisdf-models)
-which is ~700MB big as of 10th September 2022.
-
-Next, check [CONTRIBUTING.md](CONTRIBUTING.md) for more information on how to contribute to this repository,
-including how to run the tests, code checks, and publishing to PyPI.
+1. Clone the repository using `git clone`. 
+    - If you are creating a virtual environment within the project directory, then you might want to call it one of
+    `.env, env, .venv, venv` as the code checks have been configured to exclude those directories.
+2. Run `pip install -e '.[develop]'` to install all dependencies for development/contribution.
+3. Install the `lisdf-models` model files by running
+   ```
+   pip install lisdf_models@git+https://github.com/Learning-and-Intelligent-Systems/lisdf-models.git
+   ```
+    **WARNING:** the [`lisdf-models` repository](https://github.com/Learning-and-Intelligent-Systems/lisdf-models)
+    is ~700MB big as of 10th September 2022.
+4. Check [CONTRIBUTING.md](CONTRIBUTING.md) for more information on how to contribute to this repository, including 
+    how to run the tests, code checks, and publishing to PyPI.
 
 ## License
 This repository is licensed under the MIT License. See [LICENSE](LICENSE) for more details.

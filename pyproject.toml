@@ -42,8 +42,8 @@ develop = [
     "pytest",
     "pytest-cov",
     "mock",
-    # LISdf models
-    "lisdf_models@git+https://github.com/Learning-and-Intelligent-Systems/lisdf-models.git"
+    # LISdf models - comment out for now as pypi doesn't support git dependencies
+    # "lisdf_models@git+https://github.com/Learning-and-Intelligent-Systems/lisdf-models.git"
 ]
 
 [tool.hatch.version]
