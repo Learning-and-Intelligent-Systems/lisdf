@@ -3,10 +3,11 @@
 <div align="center">
 <img src="docs/assets/lisdf_logo.png" alt="Hatch logo" width="300" role="img">
 
-[![PyPI - Version](https://img.shields.io/pypi/v/lisdf.svg)](https://pypi.org/project/lisdf)
-[![PyPI - Python Version](https://img.shields.io/pypi/pyversions/lisdf.svg)](https://pypi.org/project/lisdf)
-[![PyPI - License](https://img.shields.io/pypi/l/lisdf.svg)](https://pypi.org/project/lisdf)
-[![PyPI - Downloads](https://img.shields.io/pypi/dm/lisdf.svg)](https://pypistats.org/packages/lisdf)
+[![PyPI - Version](https://img.shields.io/pypi/v/lisdf.svg?label=Version)](https://pypi.org/project/lisdf)
+[![PyPI - Python Version](https://img.shields.io/pypi/pyversions/lisdf.svg?label=Python)](https://pypi.org/project/lisdf)
+[![PyPI - License](https://img.shields.io/pypi/l/lisdf.svg?label=License)](https://pypi.org/project/lisdf)
+[![PyPI - Downloads](https://img.shields.io/pypi/dm/lisdf.svg?label=Downloads)](https://pypistats.org/packages/lisdf)
+![Contributors](https://img.shields.io/github/contributors/Learning-and-Intelligent-Systems/lisdf?label=Contributors)
 ![Build Status](https://github.com/Learning-and-Intelligent-Systems/lisdf/actions/workflows/ci_checks.yml/badge.svg)
 </div>
 
@@ -75,9 +76,9 @@ including how to run the tests, code checks, and publishing to PyPI.
 This repository is licensed under the MIT License. See [LICENSE](LICENSE) for more details.
 
 ## Change Log
-### 0.0.1 (2022-10-09)
+### 0.0.0 (2022-10-09)
 Initial release to PyPI.
 
-___
+-----
 
 <sub>LISdf = Learning and Intelligent Systems Description Format</sub>
