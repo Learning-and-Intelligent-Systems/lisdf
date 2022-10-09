@@ -1,0 +1,68 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "lisdf"
+description = "LISdf - a universal I/O spec for Task and Motion Planning (TAMP)."
+readme = "README.md"
+requires-python = ">=3.8"
+license = "MIT"
+authors = [
+    { name = "Learning and Intelligent Systems (MIT CSAIL)", email = "willshen@mit.edu" }
+]
+classifiers = [
+  "Programming Language :: Python",
+  "Programming Language :: Python :: 3.8",
+  "License :: OSI Approved :: MIT License",
+]
+keywords = ["robotics", "task and motion planning", "urdf", "sdf"]
+dependencies = [
+    "pyyaml",
+    "numpy",
+    "lark",
+]
+dynamic = ["version"]
+
+[project.urls]
+Homepage = "https://github.com/Learning-and-Intelligent-Systems/lisdf/"
+
+[project.optional-dependencies]
+develop = [
+    # Formatting
+    "black",
+    "isort",
+    # Linting and type checking
+    "flake8",
+    "mypy",
+    # Typing stubs for mypy
+    "types-PyYAML",
+    "types-mock",
+    # Testing
+    "pytest",
+    "pytest-cov",
+    "mock",
+    # LISdf models - comment out for now as pypi doesn't support git dependencies
+    # "lisdf_models@git+https://github.com/Learning-and-Intelligent-Systems/lisdf-models.git"
+]
+
+[tool.hatch.version]
+path = "lisdf/__init__.py"
+
+[tool.hatch.build.targets.sdist]
+exclude = [
+  "/.github",
+]
+
+[tool.hatch.build.targets.wheel]
+packages = ["lisdf"]
+
+[tool.hatch.metadata]
+allow-direct-references = true
+
+[tool.isort]
+profile = "black"
+skip = [".env", "env", ".venv", "venv"]
+
+[tool.black]
+target-version = ['py38']
