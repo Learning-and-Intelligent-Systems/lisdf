@@ -94,7 +94,7 @@ Contributors and Programmers (alphabetical order):
 - William Shen
 - Zhutian Yang
 
-Others who helped with general discussions, design, feedback (alphabetical order):
+Other contributors who helped with general discussions, design, feedback (alphabetical order):
 - Leslie Kaelbling
 - Michael Noseworthy
 - Nicholas Roy
