@@ -1,7 +1,7 @@
 # LISdf
 
 <div align="center">
-<img src="docs/assets/lisdf_logo.png" alt="Hatch logo" width="300" role="img">
+<img src="https://raw.githubusercontent.com/Learning-and-Intelligent-Systems/lisdf/master/docs/assets/lisdf_logo.png" alt="LISdf logo" width="300" role="img">
 
 [![PyPI - Version](https://img.shields.io/pypi/v/lisdf.svg?label=Version)](https://pypi.org/project/lisdf)
 [![PyPI - Python Version](https://img.shields.io/pypi/pyversions/lisdf.svg?label=Python)](https://pypi.org/project/lisdf)
@@ -79,7 +79,8 @@ Follow the instructions below:
 This repository is licensed under the MIT License. See [LICENSE](LICENSE) for more details.
 
 ## Change Log
-### 0.0.0 (2022-10-09)
+
+### 0.1.0
 Initial release to PyPI.
 
 -----
