@@ -35,7 +35,7 @@ Right now, the plan is to manually publish to PyPI when required. We can automat
 We use [Hatch](https://hatch.pypa.io/latest/) as our build system because it is lightweight, easy to use yet powerful
 in comparison to other tools like `poetry`. 
 
-1. Increment the `version` field in `pyproject.toml` to the new version number. 
+1. Increment `__version__` in `lisdf/__init__.py` to the new version number. 
     - We try to follow the [semantic versioning](https://semver.org/) convention.
 2. Install `hatch` via `pip install hatch` if you haven't already.
 3. Build the package via `hatch build`
