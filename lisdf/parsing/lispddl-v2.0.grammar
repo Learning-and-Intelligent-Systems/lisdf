@@ -1,0 +1,132 @@
+start: definition | expr
+
+definition: "(" "define" definition_decl supp_definitions ")"
+
+definition_decl: "(" definition_type definition_name ")"
+?definition_type: VARNAME
+?definition_name: VARNAME
+
+supp_definitions: supp_definition* supp_definition
+?supp_definition: domain_definition
+                | requirements_definition
+                | types_definition
+                | object_types_definition
+                | constants_definition
+                | predicates_definition
+                | objects_definition
+                | init_definition
+                | goal_definition
+
+// domain
+domain_definition: "(" ":" "domain" domain_name ")"
+domain_name: VARNAME
+
+// requirements
+requirements_definition: "(" ":" "requirements" requirement_name* ")"
+requirement_name: ":" VARNAME
+
+// types
+types_definition: "(" ":" "types" type_definition* ")"
+type_definition:  object_type_name+
+                | object_type_name+ "-" parent_type_name
+parent_type_name: object_type_name
+
+// types
+object_types_definition: "(" ":" "object-types" object_type_definition* ")"
+object_type_definition:  "(" object_type_name string ")"
+
+// constants
+constants_definition: "(" ":" "constants" constant_definition* ")"
+constant_definition: allconstant
+
+// predicates
+predicates_definition: "(" ":" "predicates" predicate_definition* ")"
+predicate_definition: "(" predicate_name allvariable* ")"
+?predicate_name: function_name | method_name
+
+// objects
+objects_definition: "(" ":" "objects" object_definition* ")"
+object_definition: allconstant
+
+// init
+init_definition: "(" ":" "init" init_definition_item* ")"
+init_definition_item: function_call
+
+// goal
+goal_definition: "(" ":" "goal" function_call ")"
+
+// variable name
+%import common.LETTER
+%import common.DIGIT
+VARNAME: LETTER ("_"|"-"|LETTER|DIGIT)*
+CONSTNAME: (LETTER|"@"|"_") ("_"|"-"|":"|"#"|LETTER|DIGIT)*
+
+// variables and constants
+VARIABLE: "?" VARNAME
+variable: VARIABLE
+CONSTANT: CONSTNAME
+constant: CONSTANT
+typedvariable: variable "-" object_type_name
+typedconstant: constant "-" object_type_name
+
+?allconstant: constant | typedconstant
+?allvariable: variable | typedvariable
+
+// type name
+type_name: CONSTANT
+object_type_name: type_name
+
+// literal types
+?literal: bool | number | string | list
+TRUE: "true"
+FALSE: "false"
+bool: TRUE | FALSE
+
+// numbers
+INT: DIGIT+
+SIGNED_INT: ["+"|"-"] INT
+// DECIMAL: INT "." INT? | "." INT
+DECIMAL: INT "." INT? | "." INT
+
+// float = /-?\d+(\.\d+)?([eE][+-]?\d+)?/
+_EXP: ("e"|"E") SIGNED_INT
+FLOAT: INT _EXP | DECIMAL _EXP?
+SIGNED_FLOAT: ["+"|"-"] FLOAT
+
+NUMBER: FLOAT | INT
+SIGNED_NUMBER: ["+"|"-"] NUMBER
+
+int: INT | SIGNED_INT
+float: NUMBER | SIGNED_NUMBER
+?number: int | float
+
+%import common.ESCAPED_STRING
+string: ESCAPED_STRING
+list: "[" "]"
+    | "[" literal ("," literal)* "]"
+    | "(" literal ("," literal)* ")"
+
+named_literal: CONSTNAME "=" literal
+
+// expression
+?expr_function_call: function_call | quantified_function_call
+?expr: variable | constant | literal | named_literal | expr_function_call
+
+function_call: "(" (function_name|method_name) expr* ")"
+function_name: VARNAME
+method_name: VARNAME SCOPE_SEP VARNAME
+SCOPE_SEP: "::"
+
+EXISTS: "exists"
+FORALL: "forall"
+IOTA: "iota"
+?quantifier: EXISTS | FORALL | IOTA
+quantified_function_call: "(" quantifier "(" typedvariable ")" expr ")"
+
+%import common.WS
+%ignore WS
+
+%import common.NEWLINE
+COMMENT: ";" /(.)+/ NEWLINE
+       | "#" /(.)+/ NEWLINE
+%ignore COMMENT

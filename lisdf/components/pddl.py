@@ -75,6 +75,18 @@ class PDDLType(PDDLStringConfigurable):
 
 
 @dataclass
+class PDDLObjectType(PDDLType):
+    url: Optional[str] = None
+
+    def __init__(self, identifier: str, url: str) -> None:
+        super().__init__(identifier)
+        self.url = url
+
+    def _to_pddl(self, ctx: StringifyContext) -> str:
+        return f'({self.pddl_name} {self.url})'
+
+
+@dataclass
 class PDDLVariable(PDDLStringConfigurable):
     name: str
     type: Optional[PDDLType] = None
@@ -165,7 +177,7 @@ class PDDLObject(PDDLStringConfigurable):
 class PDDLSDFObject(PDDLStringConfigurable):
     model_name: str
     name: Optional[str]
-    sdf_type: PDDLType
+    sdf_type: Optional[PDDLType] = None
 
     @property
     def pddl_name(self) -> str:
@@ -230,6 +242,7 @@ class PDDLProposition(PDDLStringConfigurable):
 class PDDLDomain(PDDLStringConfigurable):
     name: str
     types: Dict[str, PDDLType] = field(default_factory=dict)
+    object_types: Dict[str, PDDLObjectType] = field(default_factory=dict)
     constants: Dict[str, PDDLObject] = field(default_factory=dict)
     predicates: Dict[str, PDDLPredicate] = field(default_factory=dict)
     operators: Dict[str, PDDLOperator] = field(default_factory=dict)

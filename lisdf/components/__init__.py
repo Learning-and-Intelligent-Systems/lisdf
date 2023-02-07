@@ -64,6 +64,7 @@ from .pddl import (  # noqa: F401
     PDDLProposition,
     PDDLSDFObject,
     PDDLStringConfigurable,
+    PDDLObjectType,
     PDDLType,
     PDDLValue,
     PDDLVariable,
