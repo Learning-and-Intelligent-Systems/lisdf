@@ -106,7 +106,7 @@ class PDDLVariable(PDDLStringConfigurable):
 class PDDLPredicate(PDDLStringConfigurable):
     name: str
     arguments: List[PDDLVariable] = field(default_factory=list)
-    return_type: PDDLType = PDDLType("bool")
+    return_type: PDDLType = field(default_factory=lambda x: PDDLType("bool"))
     scope_name: Optional[str] = None
 
     def __init__(
