@@ -26,7 +26,7 @@ _VALID_COMMANDS = [_VALID_JOINT_SPACE_PATH]
 class _UnvalidatedCommand(Command, type="unvalidated_command_for_tests"):
     @classmethod
     def _from_json_dict(cls, json_dict: Dict) -> "Command":
-        pass
+        raise NotImplementedError
 
     def validate(self):
         pass
