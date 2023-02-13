@@ -62,7 +62,7 @@ def to_yaml(obj):
         out = xml_string(obj, addHeader=False)
     elif type(obj) == dict:
         out = {}
-        for (var, value) in obj.items():
+        for var, value in obj.items():
             out[str(var)] = to_yaml(value)
     elif hasattr(obj, "tolist"):
         # For numpy objects
