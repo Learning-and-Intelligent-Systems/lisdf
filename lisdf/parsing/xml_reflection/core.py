@@ -29,6 +29,7 @@ def reflect(cls, *args, **kwargs):
 # 'pre_dump' and 'post_load'?
 # When dumping to yaml, include tag name?
 
+
 # How to incorporate line number and all that jazz?
 def on_error_stderr(message):
     """What to do on an error. This can be changed to raise an exception."""
@@ -208,7 +209,7 @@ class RawType(ValueType):
         children = xml_children(value)
         list(map(node.append, children))
         # Copy attributes
-        for (attrib_key, attrib_value) in value.attrib.items():
+        for attrib_key, attrib_value in value.attrib.items():
             node.set(attrib_key, attrib_value)
 
 
@@ -249,7 +250,7 @@ class FactoryType(ValueType):
         self.name = name
         self.typeMap = typeMap
         self.nameMap = {}
-        for (key, value) in typeMap.items():
+        for key, value in typeMap.items():
             # Reverse lookup
             self.nameMap[value] = key
 
@@ -286,7 +287,7 @@ class DuckTypedFactory(ValueType):
                 error_set.append((value_type, e))
         # Should have returned, we encountered errors
         out = "Could not perform duck-typed parsing."
-        for (value_type, err) in error_set:
+        for value_type, err in error_set:
             out += "\nValue Type: {}\nException: {}\n".format(value_type, err)
             raise ParseError(Exception(out), path)
 

@@ -254,7 +254,7 @@ def test_joint_space_path_waypoint_as_np_array(complex_path):
         )
 
 
-def test_joint_space_paths_waypoints_as_np_array(complex_path):
+def test_joint_space_path_waypoints_as_np_array(complex_path):
     """Test getting all the waypoints as a np.array"""
     # joint_1, joint_2, ..., joint_7
     joint_name_ordering = [f"joint_{num}" for num in range(1, 8)]
@@ -282,7 +282,7 @@ def test_joint_space_paths_waypoints_as_np_array(complex_path):
         )
 
 
-def test_joint_space_paths_from_waypoints_np_array(complex_path):
+def test_joint_space_path_from_waypoints_np_array(complex_path):
     """Test creating a path from a np.array"""
     # joint_1, joint_2, ..., joint_7
     joint_names = [f"joint_{num}" for num in range(1, 8)]
@@ -294,6 +294,19 @@ def test_joint_space_paths_from_waypoints_np_array(complex_path):
     assert path.label == "test_joint_space_path"
     recovered_arr = path.waypoints_as_np_array(joint_names)
     assert np.allclose(recovered_arr, arr)
+
+
+def test_joint_space_path_get_reversed_path(complex_path):
+    reversed_waypoints = {
+        joint_name: list(reversed(joint_waypoints))
+        for joint_name, joint_waypoints in complex_path.waypoints.items()
+    }
+    expected_path = JointSpacePath(
+        waypoints=reversed_waypoints,
+        duration=complex_path.duration,
+        label=f"{complex_path.label}_reversed",
+    )
+    assert complex_path.get_reversed_path() == expected_path
 
 
 @pytest.mark.parametrize(

@@ -190,6 +190,17 @@ class JointSpacePath(Command, type="JointSpacePath"):
         }
         return JointSpacePath(waypoints, duration, label)
 
+    def get_reversed_path(self) -> "JointSpacePath":
+        """Get the reversed joint space path."""
+        return JointSpacePath(
+            waypoints={
+                joint_name: list(reversed(positions))
+                for joint_name, positions in self.waypoints.items()
+            },
+            duration=self.duration,
+            label=f"{self.label}_reversed",
+        )
+
     def validate(self):
         # Check waypoints dict is not None
         if not self.waypoints:

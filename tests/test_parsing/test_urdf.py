@@ -419,7 +419,6 @@ class LinkOriginTestCase(unittest.TestCase):
 
 
 class LinkMultiVisualsAndCollisionsTest(unittest.TestCase):
-
     xml = """<?xml version="1.0"?>
 <robot name="test" version="1.0">
   <link name="link">

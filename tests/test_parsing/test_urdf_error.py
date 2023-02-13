@@ -33,6 +33,7 @@ class TestURDFParserError(unittest.TestCase):
         """
         Check XML parsing of a given string, using both "from_xml_string" and "parse"
         """
+
         # Static method for parsing an object
         # TODO: Use parameterized tests to decide which method to use
         def preclean(func):
