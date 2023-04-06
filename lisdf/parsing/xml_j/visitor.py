@@ -99,8 +99,8 @@ class XMLVisitor(XMLVisitorInterface):
         return self.visit("string_file", node)
 
     def _resolve_path(self, path: str) -> str:
-        if path.startswith('package://'):
-            package, path = path[10:].split('/', 1)
+        if path.startswith("package://"):
+            package, path = path[10:].split("/", 1)
             if package not in self.package_map:
                 raise ValueError(
                     'Package "{}" not found in package map.'.format(package)
