@@ -48,10 +48,11 @@ class XMLVisitor(XMLVisitorInterface):
     See the docstring for the visit method for detailed explanation.
     """
 
-    def __init__(self) -> None:
+    def __init__(self, package_map: Optional[Dict[str, str]] = None) -> None:
         self.filename_stack: List[str] = list()
         self.node_stack: List[XMLNode] = list()
         self.scope_stack: List[str] = list()
+        self.package_map: Dict[str, str] = package_map or dict()
 
         # The SDF parser doesn't rely on additional stacks.
         # These are primarily for the MJCF parser.
@@ -98,6 +99,15 @@ class XMLVisitor(XMLVisitorInterface):
         return self.visit("string_file", node)
 
     def _resolve_path(self, path: str) -> str:
+        if path.startswith('package://'):
+            package, path = path[10:].split('/', 1)
+            if package not in self.package_map:
+                raise ValueError(
+                    'Package "{}" not found in package map.'.format(package)
+                )
+            return osp.join(self.package_map[package], path)
+        if osp.isabs(path):
+            return path
         return osp.normpath(osp.join(osp.dirname(self.filename_stack[-1]), path))
 
     def visit(self, filename: str, root: XMLNode) -> Any:

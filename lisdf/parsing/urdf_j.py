@@ -1,5 +1,7 @@
 import warnings
 
+from typing import Optional, Dict
+
 import lisdf.components as C
 from lisdf.parsing.srdf import SRDFParserMixin
 from lisdf.parsing.string_utils import safe_float, vector2f, vector3f, vector4f
@@ -9,7 +11,7 @@ from lisdf.parsing.xml_j.visitor import XMLVisitor, check_done_decorator
 class URDFVisitor(XMLVisitor, SRDFParserMixin):
     def _parse_filename(self, filename: str) -> str:
         if filename.startswith("package://"):
-            return filename
+            return self._resolve_path(filename)
         elif filename.startswith("file://"):
             return self._resolve_path(filename[len("file://") :])
         else:
@@ -305,13 +307,13 @@ class URDFVisitor(XMLVisitor, SRDFParserMixin):
         return node.set_data(model)
 
 
-def load_urdf(filename: str, verbose: bool = False) -> C.URDFModel:
-    visitor = URDFVisitor()
+def load_urdf(filename: str, verbose: bool = False, package_map: Optional[Dict[str, str]] = None) -> C.URDFModel:
+    visitor = URDFVisitor(package_map)
     visitor.set_verbose(verbose)
     return visitor.load_file(filename).data
 
 
-def load_urdf_string(string: str, verbose: bool = False) -> C.URDFModel:
-    visitor = URDFVisitor()
+def load_urdf_string(string: str, verbose: bool = False, package_map: Optional[Dict[str, str]] = None) -> C.URDFModel:
+    visitor = URDFVisitor(package_map)
     visitor.set_verbose(verbose)
     return visitor.load_string(string).data

@@ -1,3 +1,5 @@
+from typing import Optional, Dict
+
 import lisdf.components as C
 from lisdf.parsing.srdf import SRDFParserMixin
 from lisdf.parsing.string_utils import (
@@ -465,13 +467,13 @@ class SDFVisitor(XMLVisitor, SRDFParserMixin):
         return node.set_data(lisdf)
 
 
-def load_sdf(filename: str, verbose: bool = False) -> C.LISDF:
-    visitor = SDFVisitor()
+def load_sdf(filename: str, verbose: bool = False, package_map: Optional[Dict[str, str]] = None) -> C.LISDF:
+    visitor = SDFVisitor(package_map)
     visitor.set_verbose(verbose)
     return visitor.load_file(filename).data
 
 
-def load_sdf_string(string: str, verbose: bool = False) -> C.LISDF:
-    visitor = SDFVisitor()
+def load_sdf_string(string: str, verbose: bool = False, package_map: Optional[Dict[str, str]] = None) -> C.LISDF:
+    visitor = SDFVisitor(package_map)
     visitor.set_verbose(verbose)
     return visitor.load_string(string).data
