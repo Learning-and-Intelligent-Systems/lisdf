@@ -39,7 +39,7 @@
 
     ; ?body: a free body
     ; ?pose: (x, y)
-    (body-pose-2d ?body - qr::body ?pose - qr::pose2d ?atol - qr::value)
+    (body-pose-close-2d ?body - qr::body ?pose - qr::pose2d ?atol - qr::value)
 
     ; ?body: a body
     ; ?scale: a single valuekj
