@@ -12,7 +12,8 @@
     qr::chain-conf - qr::value
     qr::color      - qr::value  ; (r, g, b, a)
 
-    qr::pose - qr::value  ; (x, y, z, roll, pitch, yaw)
+    qr::pose   - qr::value  ; (x, y, z, roll, pitch, yaw)
+    qr::pose2d - qr::value  ; (x, y)
   )
 
   (:object-types
@@ -35,6 +36,10 @@
     ; ?body: a free body
     ; ?pose: (x, y, z, roll, pitch, yaw)
     (body-pose ?body - qr::body ?pose - qr::pose)
+
+    ; ?body: a free body
+    ; ?pose: (x, y)
+    (body-pose-2d ?body - qr::body ?pose - qr::pose2d ?atol - qr::value)
 
     ; ?body: a body
     ; ?scale: a single valuekj
