@@ -177,6 +177,16 @@ class XMLVisitor(XMLVisitorInterface):
 def check_done(node: XMLNode, attr: bool = True, children: bool = True) -> None:
     """A helper function to check whether all attributes and children of a
     node have been processed."""
+
+    for attr in node.attributes:
+        if attr.startswith('gazebo') or attr.startswith('drake'):
+            # remove the attribute
+            node.attributes.pop(attr)
+    for child in node.children:
+        if child.tag.startswith('gazebo') or child.tag.startswith('drake'):
+            # remove the child
+            node.children.remove(child)
+
     if attr:
         if len(node.attributes) != 0:
             print("Unprocessed attributes.")

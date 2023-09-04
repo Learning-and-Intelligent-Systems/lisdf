@@ -21,6 +21,7 @@ dependencies = [
     "pyyaml",
     "numpy",
     "lark",
+    "lxml"
 ]
 dynamic = ["version"]
 

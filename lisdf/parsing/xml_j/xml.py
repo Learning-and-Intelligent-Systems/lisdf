@@ -1,5 +1,4 @@
-import re
-import xml.etree.ElementTree as et
+from lxml import etree as et
 from typing import Any, List, Optional
 
 from lisdf.utils.printing import indent_text
@@ -133,9 +132,9 @@ def _xml2obj(element) -> XMLNode:
 
 
 def load_string(value: str) -> XMLNode:
-    # TODO:: temporary fix for some drake files.
-    value = re.sub(' xmlns="[^"]+"', "", value, count=1)
-    return _xml2obj(et.fromstring(value))
+    # value = re.sub(' xmlns="[^"]+"', "", value, count=1)
+    parser = et.XMLParser(remove_blank_text=True, remove_comments=True, recover=True)
+    return _xml2obj(et.fromstring(value, parser))
 
 
 def load_file(filename: str) -> XMLNode:
