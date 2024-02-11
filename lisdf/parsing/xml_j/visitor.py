@@ -179,11 +179,11 @@ def check_done(node: XMLNode, attr: bool = True, children: bool = True) -> None:
     node have been processed."""
 
     for attr in node.attributes:
-        if attr.startswith('gazebo') or attr.startswith('drake'):
+        if attr.startswith('gazebo') or attr.startswith('drake') or attr.startswith('{http://drake.mit.edu}'):
             # remove the attribute
             node.attributes.pop(attr)
     for child in node.children:
-        if child.tag.startswith('gazebo') or child.tag.startswith('drake'):
+        if child.tag.startswith('gazebo') or child.tag.startswith('drake') or child.tag.startswith('{http://drake.mit.edu}'):
             # remove the child
             node.children.remove(child)
 
